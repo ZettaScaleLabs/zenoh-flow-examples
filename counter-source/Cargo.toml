@@ -1,0 +1,31 @@
+[package]
+name = "counter-source"
+version = "0.1.0"
+repository = "https://github.com/atolab/zenoh-flow-examples"
+homepage = "http://zenoh.io"
+authors = ["kydos <angelo@icorsaro.net>",
+           "gabrik <gabriele.baldoni@gmail.com>",
+           "Julien Loudet <julien.loudet@adlinktech.com>",]
+edition = "2018"
+license = " EPL-2.0 OR Apache-2.0"
+categories = ["network-programming"]
+description = "Zenoh Flow Examples"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master"}
+async-trait = "0.1"
+
+[lib]
+name = "counter_source"
+crate-type=["cdylib"]
+path="src/lib.rs"
+
+[package.metadata.zenohflow]
+id = "counter-source"
+kind = "source"
+outputs=[ {id ="Data", type="int"}]
+

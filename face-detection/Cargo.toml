@@ -1,0 +1,45 @@
+[package]
+name = "face-detection"
+version = "0.1.0"
+repository = "https://github.com/atolab/zenoh-flow-examples"
+homepage = "http://zenoh.io"
+authors = ["kydos <angelo@icorsaro.net>",
+           "gabrik <gabriele.baldoni@gmail.com>",
+           "Julien Loudet <julien.loudet@adlinktech.com>",]
+edition = "2018"
+license = " EPL-2.0 OR Apache-2.0"
+categories = ["network-programming"]
+description = "Zenoh Flow Examples"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "=1.9.0", features = ["attributes","unstable"] }
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master" }
+zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
+serde = { version = "1.0.55", features = ["derive"] }
+typetag = "0.1"
+bincode = "1"
+async-ctrlc ={version = "1.2.0", features = ["stream"]}
+async-trait = "0.1.50"
+futures = "0.3.5"
+rand = "0.8.0"
+uhlc = { version = "0.3" }
+env_logger = "0.9"
+log = "0.4"
+uuid = { version = "0.8", features = ["serde", "v4"] }
+opencv = "0.53.0"
+
+[lib]
+name = "face_detection"
+crate-type=["cdylib"]
+path="src/lib.rs"
+
+[package.metadata.zenohflow]
+id = "face-detection"
+kind = "operator"
+inputs=[ {id ="Frame", type="bytes"}]
+outputs=[ {id ="Frame", type="bytes"}]
+
