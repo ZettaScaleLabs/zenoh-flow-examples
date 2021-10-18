@@ -16,8 +16,6 @@ use async_ctrlc::CtrlC;
 use async_trait::async_trait;
 use opencv::{core, highgui, prelude::*, videoio};
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
@@ -210,11 +208,9 @@ async fn main() {
 
     let source = Arc::new(CameraSource);
     let sink = Arc::new(VideoSink);
-    let hlc = Arc::new(uhlc::HLC::default());
 
     zf_graph
         .add_static_source(
-            hlc,
             "camera-source".into(),
             PortDescriptor {
                 port_id: String::from(SOURCE),
@@ -252,12 +248,6 @@ async fn main() {
             None,
         )
         .unwrap();
-
-    let dot_notation = zf_graph.to_dot_notation();
-
-    let mut file = File::create("video-pipeline.dot").unwrap();
-    write!(file, "{}", dot_notation).unwrap();
-    file.sync_all().unwrap();
 
     zf_graph.make_connections().await.unwrap();
 

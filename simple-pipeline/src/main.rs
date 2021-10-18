@@ -15,8 +15,6 @@
 use async_ctrlc::CtrlC;
 use async_trait::async_trait;
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
@@ -119,11 +117,9 @@ async fn main() {
 
     let source = Arc::new(CountSource::new(None));
     let sink = Arc::new(ExampleGenericSink {});
-    let hlc = Arc::new(uhlc::HLC::default());
 
     zf_graph
         .add_static_source(
-            hlc,
             "counter-source".into(),
             PortDescriptor {
                 port_id: String::from(SOURCE),
@@ -161,12 +157,6 @@ async fn main() {
             None,
         )
         .unwrap();
-
-    let dot_notation = zf_graph.to_dot_notation();
-
-    let mut file = File::create("simple-pipeline.dot").unwrap();
-    write!(file, "{}", dot_notation).unwrap();
-    file.sync_all().unwrap();
 
     zf_graph.make_connections().await.unwrap();
 

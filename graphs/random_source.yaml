@@ -1,0 +1,21 @@
+flow: RandomGeneration
+operators: []
+sources:
+  - id : RandomGenerator
+    uri: file://./target/release/librandom_source.dylib
+    output:
+        id: Random
+        type: usize
+sinks:
+  - id : PrintSink
+    uri: file://./target/release/libgeneric_sink.dylib
+    input:
+        id: Data
+        type: usize
+links:
+- from:
+    node : RandomGenerator
+    output : Random
+  to:
+    node : PrintSink
+    input : Data
