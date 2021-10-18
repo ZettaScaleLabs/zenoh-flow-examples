@@ -25,7 +25,7 @@ Zenoh-Flow provides several working examples that illustrate how to define opera
 First, compile the relevant examples:
 
 ```bash
-cargo build --example manual-source --example example-fizz --example example-buzz --example generic-sink
+cargo build --release --example manual-source --example example-fizz --example example-buzz --example generic-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -35,7 +35,7 @@ This will create, depending on your OS, the libraries that the pipeline will fet
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz_buzz_pipeline.yaml --runtime foo
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz_buzz_pipeline.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -45,13 +45,13 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime foo
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime foo
 ```
 
 In a second machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime bar
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime bar
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -69,7 +69,7 @@ In a second machine, run:
 First, compile the relevant examples:
 
 ```bash
-cargo build --example camera-source --example face-detection --example video-sink
+cargo build --release --example camera-source --example face-detection --example video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -79,7 +79,7 @@ This will create, depending on your OS, the libraries that the pipeline will fet
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/face_detection.yaml --runtime foo
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face_detection.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -89,19 +89,19 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime gigot
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime gigot
 ```
 
 In a second machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime nuc
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime nuc
 ```
 
 In a third machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime leia
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime leia
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -123,7 +123,7 @@ In a third machine, run:
 First, compile the relevant examples:
 
 ```bash
-cargo build --example camera-source --example object-detection-dnn --example video-sink
+cargo build --release --example camera-source --example object-detection-dnn --example video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -135,7 +135,7 @@ Then please update the files `zenoh-flow-examples/graphs/dnn-object-detection.ya
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection.yaml --runtime foo
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -145,19 +145,19 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime foo
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime foo
 ```
 
 In a second machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime cuda
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime cuda
 ```
 
 In a third machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime bar
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime bar
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -183,7 +183,7 @@ This dataset contains the frames, in oder to merge them in video you need `ffmpe
 First, compile the relevant examples:
 
 ```bash
-cargo build --example video-file-source --example object-detection-dnn --example video-sink
+cargo build --release --example video-file-source --example object-detection-dnn --example video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -197,19 +197,19 @@ You also need to edit the `file` in `zenoh-flow-examples/graphs/car-pipeline-mul
 In a first machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime gigot
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime gigot
 ```
 
 In a second machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime cuda
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime cuda
 ```
 
 In a third machine, run:
 
 ```bash
-./target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime macbook
+../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime macbook
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
