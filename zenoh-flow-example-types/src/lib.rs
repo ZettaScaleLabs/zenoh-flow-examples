@@ -11,18 +11,15 @@
 //   ADLINK zenoh team, <zenoh@adlink-labs.tech>
 //
 
-use async_std::sync::Mutex;
-use std::cell::RefCell;
 use std::convert::TryInto;
-use zenoh_flow::serde::{Deserialize, Serialize};
 use zenoh_flow::zenoh_flow_derive::{ZFData, ZFState};
-use zenoh_flow::{Data, Deserializable, ZFError, ZFResult};
+use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 // We may want to provide some "built-in" types
 
 #[derive(Debug, Clone, ZFData)]
 pub struct ZFString(pub String);
 
-impl Data for ZFString {
+impl ZFData for ZFString {
     fn try_serialize(&self) -> zenoh_flow::ZFResult<Vec<u8>> {
         Ok(self.0.as_bytes().to_vec())
     }
@@ -54,7 +51,7 @@ impl Deserializable for ZFString {
 #[derive(Debug, Clone, ZFData)]
 pub struct ZFUsize(pub usize);
 
-impl Data for ZFUsize {
+impl ZFData for ZFUsize {
     fn try_serialize(&self) -> ZFResult<Vec<u8>> {
         Ok(self.0.to_ne_bytes().to_vec())
     }
@@ -77,7 +74,7 @@ pub struct ZFEmptyState;
 #[derive(Debug, Clone, ZFData)]
 pub struct ZFBytes(pub Vec<u8>);
 
-impl Data for ZFBytes {
+impl ZFData for ZFBytes {
     fn try_serialize(&self) -> ZFResult<Vec<u8>> {
         Ok(self.0.clone())
     }
@@ -91,14 +88,3 @@ impl Deserializable for ZFBytes {
         Ok(ZFBytes(bytes.into()))
     }
 }
-
-#[derive(Debug, Serialize, Deserialize, ZFData)]
-pub struct ZFOpenCVBytes {
-    #[serde(skip_serializing, skip_deserializing)]
-    pub bytes: Mutex<RefCell<opencv::types::VectorOfu8>>,
-}
-
-// #[derive(Debug, ZFData)]
-// pub struct OpenCVMat {
-//     pub mat: Mutex<RefCell<opencv::prelude::Mat>>,
-// }

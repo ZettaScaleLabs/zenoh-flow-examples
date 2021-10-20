@@ -1,9 +1,9 @@
-use async_std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast, get_input_raw_from,
-    runtime::message::DataMessage, zenoh_flow_derive::ZFState, zf_data_raw, zf_spin_lock, Node,
-    Operator, PortId, SerDeData, State, ZFResult,
+    default_input_rule, default_output_rule, downcast, runtime::message::DataMessage,
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, ZFError, ZFResult,
+    ZFState,
 };
 
 use opencv::{core, imgproc, objdetect, prelude::*, types};
@@ -53,7 +53,7 @@ impl Operator for FaceDetection {
     fn input_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::State>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
         tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -62,17 +62,21 @@ impl Operator for FaceDetection {
     fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn State>,
+        dyn_state: &mut Box<dyn ZFState>,
         inputs: &mut HashMap<zenoh_flow::PortId, DataMessage>,
-    ) -> ZFResult<HashMap<PortId, SerDeData>> {
-        let mut results: HashMap<zenoh_flow::PortId, SerDeData> = HashMap::new();
+    ) -> ZFResult<HashMap<PortId, Data>> {
+        let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
 
         let state = downcast!(FDState, dyn_state).unwrap();
 
         let mut face = zf_spin_lock!(state.face);
         let encode_options = zf_spin_lock!(state.encode_options);
 
-        let (_, data) = get_input_raw_from!(String::from(INPUT), inputs).unwrap();
+        let input_value = inputs
+            .remove(INPUT)
+            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
+        let data = Arc::try_unwrap(input_value.data.try_as_bytes()?)
+            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
@@ -134,8 +138,7 @@ impl Operator for FaceDetection {
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
 
-        results.insert(OUTPUT.into(), zf_data_raw!(buf.into()));
-
+        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
         drop(face);
 
         Ok(results)
@@ -144,8 +147,8 @@ impl Operator for FaceDetection {
     fn output_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::State>,
-        outputs: HashMap<zenoh_flow::PortId, SerDeData>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
+        outputs: HashMap<zenoh_flow::PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }
@@ -155,11 +158,11 @@ impl Node for FaceDetection {
     fn initialize(
         &self,
         configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         Box::new(FDState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }

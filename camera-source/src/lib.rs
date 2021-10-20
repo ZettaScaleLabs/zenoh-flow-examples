@@ -17,8 +17,7 @@ use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use std::collections::HashMap;
 use zenoh_flow::{
-    downcast_mut, types::ZFResult, zenoh_flow_derive::ZFState, zf_data_raw, zf_spin_lock, Node,
-    SerDeData, Source, State,
+    downcast_mut, types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source,
 };
 
 #[derive(Debug)]
@@ -101,11 +100,11 @@ impl Node for CameraSource {
     fn initialize(
         &self,
         configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         Box::new(CameraState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn zenoh_flow::ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -115,8 +114,8 @@ impl Source for CameraSource {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::State>,
-    ) -> ZFResult<SerDeData> {
+        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+    ) -> ZFResult<Data> {
         let state = downcast_mut!(CameraState, dyn_state).unwrap();
 
         let mut cam = zf_spin_lock!(state.camera);
@@ -140,8 +139,7 @@ impl Source for CameraSource {
         opencv::imgcodecs::imencode(".jpg", &reduced, &mut buf, &encode_options).unwrap();
 
         async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
-
-        Ok(zf_data_raw!(buf.into()))
+        Ok(Data::from_bytes(buf.into()))
     }
 }
 

@@ -14,20 +14,14 @@
 
 use async_trait::async_trait;
 use std::{collections::HashMap, sync::Arc, usize};
-use zenoh_flow::{
-    zf_data, zf_empty_state, Context, Node, SerDeData, Source, State, ZFError, ZFResult,
-};
+use zenoh_flow::{zf_empty_state, Context, Data, Node, Source, ZFError, ZFResult, ZFState};
 use zenoh_flow_example_types::ZFUsize;
 
 struct ManualSource;
 
 #[async_trait]
 impl Source for ManualSource {
-    async fn run(
-        &self,
-        _context: &mut Context,
-        _state: &mut Box<dyn State>,
-    ) -> ZFResult<SerDeData> {
+    async fn run(&self, _context: &mut Context, _state: &mut Box<dyn ZFState>) -> ZFResult<Data> {
         println!("> Please input a number: ");
         let mut number = String::new();
         zenoh_flow::async_std::io::stdin()
@@ -40,16 +34,16 @@ impl Source for ManualSource {
             Err(_) => return Err(ZFError::GenericError),
         };
 
-        Ok(zf_data!(ZFUsize(value)))
+        Ok(Data::from::<ZFUsize>(ZFUsize(value)))
     }
 }
 
 impl Node for ManualSource {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> Box<dyn State> {
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> Box<dyn ZFState> {
         zf_empty_state!()
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }

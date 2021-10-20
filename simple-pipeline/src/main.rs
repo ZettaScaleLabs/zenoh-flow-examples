@@ -20,9 +20,9 @@ use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
 use zenoh_flow::runtime::RuntimeContext;
-use zenoh_flow::{model::link::PortDescriptor, zf_data, zf_empty_state};
-use zenoh_flow::{Context, Node, SerDeData, Sink, Source};
-use zenoh_flow::{State, ZFResult};
+use zenoh_flow::{model::link::PortDescriptor, zf_empty_state};
+use zenoh_flow::{Context, Data, Node, Sink, Source};
+use zenoh_flow::{ZFResult, ZFState};
 use zenoh_flow_example_types::ZFUsize;
 
 static SOURCE: &str = "Counter";
@@ -49,11 +49,11 @@ impl Source for CountSource {
     async fn run(
         &self,
         _context: &mut Context,
-        _state: &mut Box<dyn zenoh_flow::State>,
-    ) -> zenoh_flow::ZFResult<SerDeData> {
+        _state: &mut Box<dyn zenoh_flow::ZFState>,
+    ) -> zenoh_flow::ZFResult<Data> {
         let d = ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel));
         async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-        Ok(zf_data!(d))
+        Ok(Data::from::<ZFUsize>(d))
     }
 }
 
@@ -61,11 +61,11 @@ impl Node for CountSource {
     fn initialize(
         &self,
         _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         zf_empty_state!()
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -77,7 +77,7 @@ impl Sink for ExampleGenericSink {
     async fn run(
         &self,
         _context: &mut Context,
-        _state: &mut Box<dyn zenoh_flow::State>,
+        _state: &mut Box<dyn zenoh_flow::ZFState>,
         input: zenoh_flow::runtime::message::DataMessage,
     ) -> zenoh_flow::ZFResult<()> {
         println!("Example Generic Sink Received: {:?}", input);
@@ -89,11 +89,11 @@ impl Node for ExampleGenericSink {
     fn initialize(
         &self,
         _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         zf_empty_state!()
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }

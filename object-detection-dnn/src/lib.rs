@@ -20,14 +20,8 @@ use std::{
     path::Path,
 };
 use zenoh_flow::{
-    default_input_rule, default_output_rule, Context, Node, NodeOutput, Operator, PortId,
-    SerDeData, State,
-};
-use zenoh_flow::{
-    downcast, get_input_raw_from,
-    types::{Token, ZFResult},
-    zenoh_flow_derive::ZFState,
-    zf_data_raw, zf_spin_lock,
+    default_input_rule, default_output_rule, downcast, zenoh_flow_derive::ZFState, zf_spin_lock,
+    Context, Data, Node, NodeOutput, Operator, PortId, Token, ZFError, ZFResult, ZFState,
 };
 
 use opencv::core::prelude::MatTrait;
@@ -97,11 +91,11 @@ impl Node for ObjDetection {
     fn initialize(
         &self,
         configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         Box::new(ODState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -110,7 +104,7 @@ impl Operator for ObjDetection {
     fn input_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn zenoh_flow::State>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
         tokens: &mut HashMap<PortId, Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -119,13 +113,13 @@ impl Operator for ObjDetection {
     fn run(
         &self,
         _context: &mut Context,
-        dyn_state: &mut Box<dyn zenoh_flow::State>,
+        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
         inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, SerDeData>> {
+    ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
         let scale = 1.0 / 255.0;
         let mean = core::Scalar::new(0f64, 0f64, 0f64, 0f64);
 
-        let mut results: HashMap<PortId, SerDeData> = HashMap::with_capacity(1);
+        let mut results: HashMap<PortId, Data> = HashMap::with_capacity(1);
 
         let mut detections: opencv::types::VectorOfMat = core::Vector::new();
 
@@ -147,7 +141,11 @@ impl Operator for ObjDetection {
             core::Scalar::new(255f64, 0f64, 0f64, -1f64),
         ];
 
-        let (_, data) = get_input_raw_from!(String::from(INPUT), inputs).unwrap();
+        let input_value = inputs
+            .remove(INPUT)
+            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
+        let data = Arc::try_unwrap(input_value.data.try_as_bytes()?)
+            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
@@ -305,7 +303,7 @@ impl Operator for ObjDetection {
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
 
-        results.insert(OUTPUT.into(), zf_data_raw!(buf.into()));
+        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
 
         Ok(results)
     }
@@ -313,8 +311,8 @@ impl Operator for ObjDetection {
     fn output_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn zenoh_flow::State>,
-        outputs: HashMap<PortId, SerDeData>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
+        outputs: HashMap<PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

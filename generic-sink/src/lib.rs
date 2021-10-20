@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{downcast, downcast_mut, export_sink, types::ZFResult, Node, State};
+use zenoh_flow::{downcast, downcast_mut, export_sink, types::ZFResult, Node, ZFState};
 use zenoh_flow::{Context, Sink};
 
 use std::fs::File;
@@ -48,7 +48,7 @@ impl Sink for GenericSink {
     async fn run(
         &self,
         _context: &mut Context,
-        _state: &mut Box<dyn State>,
+        _state: &mut Box<dyn ZFState>,
         input: DataMessage,
     ) -> ZFResult<()> {
         let state = downcast!(SinkState, _state).unwrap();
@@ -73,11 +73,11 @@ impl Sink for GenericSink {
 }
 
 impl Node for GenericSink {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> Box<dyn State> {
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> Box<dyn ZFState> {
         Box::new(SinkState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         let state = downcast_mut!(SinkState, _state).unwrap();
 
         match &mut state.file {

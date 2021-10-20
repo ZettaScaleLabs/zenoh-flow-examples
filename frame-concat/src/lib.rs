@@ -15,8 +15,8 @@
 use async_std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast, get_input_raw_from, types::ZFResult,
-    zenoh_flow_derive::ZFState, zf_data_raw, zf_spin_lock, Node, Operator, SerDeData, State,
+    default_input_rule, default_output_rule, downcast, zenoh_flow_derive::ZFState, zf_spin_lock,
+    Data, Node, Operator, ZFError, ZFResult, ZFState,
 };
 
 use opencv::core;
@@ -51,11 +51,11 @@ impl Node for FrameConcat {
     fn initialize(
         &self,
         _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         Box::new(FrameConcatState::new())
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -64,7 +64,7 @@ impl Operator for FrameConcat {
     fn input_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::State>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
         tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -73,16 +73,25 @@ impl Operator for FrameConcat {
     fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::State>,
+        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
         inputs: &mut HashMap<zenoh_flow::PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, SerDeData>> {
-        let mut results: HashMap<zenoh_flow::PortId, SerDeData> = HashMap::new();
+    ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
+        let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
 
         let state = downcast!(FrameConcatState, dyn_state).unwrap();
         let encode_options = zf_spin_lock!(state.encode_options);
 
-        let (_, frame1) = get_input_raw_from!(String::from(INPUT1), inputs)?;
-        let (_, frame2) = get_input_raw_from!(String::from(INPUT2), inputs)?;
+        let input_frame1 = inputs
+            .remove(INPUT1)
+            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
+        let frame1 = Arc::try_unwrap(input_frame1.data.try_as_bytes()?)
+            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
+
+        let input_frame2 = inputs
+            .remove(INPUT2)
+            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
+        let frame2 = Arc::try_unwrap(input_frame2.data.try_as_bytes()?)
+            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
 
         // Decode Image
         let frame1 = opencv::imgcodecs::imdecode(
@@ -105,7 +114,7 @@ impl Operator for FrameConcat {
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
 
-        results.insert(OUTPUT.into(), zf_data_raw!(buf.into()));
+        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
 
         Ok(results)
     }
@@ -113,8 +122,8 @@ impl Operator for FrameConcat {
     fn output_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::State>,
-        outputs: HashMap<zenoh_flow::PortId, SerDeData>,
+        state: &mut Box<dyn zenoh_flow::ZFState>,
+        outputs: HashMap<zenoh_flow::PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }

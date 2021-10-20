@@ -20,7 +20,7 @@ use zenoh_flow::{
     downcast,
     types::{ZFError, ZFResult},
     zenoh_flow_derive::ZFState,
-    zf_data_raw, zf_spin_lock, Node, SerDeData, Source, State,
+    zf_spin_lock, Data, Node, Source, ZFState,
 };
 
 #[derive(Debug)]
@@ -78,11 +78,11 @@ impl Node for VideoSource {
     fn initialize(
         &self,
         configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::State> {
+    ) -> Box<dyn zenoh_flow::ZFState> {
         Box::new(VideoSourceState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn State>) -> ZFResult<()> {
+    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -92,8 +92,8 @@ impl Source for VideoSource {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::State>,
-    ) -> ZFResult<SerDeData> {
+        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+    ) -> ZFResult<Data> {
         let state = downcast!(VideoSourceState, dyn_state).unwrap();
 
         let mut cam = zf_spin_lock!(state.camera);
@@ -133,7 +133,7 @@ impl Source for VideoSource {
 
         async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
 
-        Ok(zf_data_raw!(buf.into()))
+        Ok(Data::from_bytes(buf.into()))
     }
 }
 
