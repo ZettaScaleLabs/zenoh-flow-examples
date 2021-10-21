@@ -84,14 +84,12 @@ impl Operator for FrameConcat {
         let input_frame1 = inputs
             .remove(INPUT1)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame1 = Arc::try_unwrap(input_frame1.data.try_as_bytes()?)
-            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
+        let frame1 = input_frame1.data.try_as_bytes()?.as_ref().clone();
 
         let input_frame2 = inputs
             .remove(INPUT2)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame2 = Arc::try_unwrap(input_frame2.data.try_as_bytes()?)
-            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
+        let frame2 = input_frame2.data.try_as_bytes()?.as_ref().clone();
 
         // Decode Image
         let frame1 = opencv::imgcodecs::imdecode(

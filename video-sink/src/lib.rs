@@ -64,8 +64,7 @@ impl Sink for VideoSink {
         // Downcasting to right type
         let state = downcast!(VideoState, dyn_state).unwrap();
 
-        let data = Arc::try_unwrap(input.data.try_as_bytes()?)
-            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
+        let data = input.data.try_as_bytes()?.as_ref().clone();
 
         let decoded = opencv::imgcodecs::imdecode(
             &opencv::types::VectorOfu8::from_iter(data),

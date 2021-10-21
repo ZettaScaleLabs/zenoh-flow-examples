@@ -75,8 +75,7 @@ impl Operator for FaceDetection {
         let input_value = inputs
             .remove(INPUT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = Arc::try_unwrap(input_value.data.try_as_bytes()?)
-            .map_err(|_| ZFError::InvalidData("Unable to unwrap".to_string()))?;
+        let data = input_value.data.try_as_bytes()?.as_ref().clone();
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
