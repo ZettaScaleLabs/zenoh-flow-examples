@@ -17,8 +17,8 @@ use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::PortId;
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast_mut, Data, Node, NodeOutput, Operator,
-    ZFError, ZFResult, ZFState,
+    default_input_rule, default_output_rule, Data, Node, NodeOutput, Operator, State, ZFError,
+    ZFResult,
 };
 use zenoh_flow_example_types::ZFUsize;
 
@@ -37,7 +37,7 @@ impl Operator for SumAndSend {
     fn input_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         tokens: &mut HashMap<PortId, zenoh_flow::Token>,
     ) -> zenoh_flow::ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -46,13 +46,13 @@ impl Operator for SumAndSend {
     fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
         inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
     ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
         let mut results: HashMap<PortId, Data> = HashMap::new();
 
         // Downcasting state to right type
-        let mut state = downcast_mut!(SumAndSendState, dyn_state).unwrap();
+        let mut state = dyn_state.try_get::<SumAndSendState>()?;
 
         let mut input_value = inputs
             .remove(INPUT)
@@ -69,7 +69,7 @@ impl Operator for SumAndSend {
     fn output_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         outputs: HashMap<PortId, Data>,
     ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
@@ -77,14 +77,11 @@ impl Operator for SumAndSend {
 }
 
 impl Node for SumAndSend {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(SumAndSendState { x: ZFUsize(0) })
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(SumAndSendState { x: ZFUsize(0) })
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }

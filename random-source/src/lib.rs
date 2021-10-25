@@ -15,32 +15,25 @@
 use async_trait::async_trait;
 use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::{types::ZFResult, zf_empty_state, Context, Data, Node, Source, ZFState};
+use zenoh_flow::{types::ZFResult, zf_empty_state, Context, Data, Node, Source, State};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(Debug)]
 struct ExampleRandomSource;
 
 impl Node for ExampleRandomSource {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
         zf_empty_state!()
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
 
 #[async_trait]
 impl Source for ExampleRandomSource {
-    async fn run(
-        &self,
-        _context: &mut Context,
-        _state: &mut Box<dyn zenoh_flow::ZFState>,
-    ) -> ZFResult<Data> {
+    async fn run(&self, _context: &mut Context, _state: &mut State) -> ZFResult<Data> {
         zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
         Ok(Data::from::<ZFUsize>(ZFUsize(rand::random::<usize>())))
     }

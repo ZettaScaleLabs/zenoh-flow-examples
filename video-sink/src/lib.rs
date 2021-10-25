@@ -15,8 +15,7 @@
 use async_std::sync::Arc;
 use async_trait::async_trait;
 use std::collections::HashMap;
-use zenoh_flow::ZFState;
-use zenoh_flow::{downcast, types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, ZFError};
+use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, State};
 
 use opencv::{highgui, prelude::*};
 
@@ -39,15 +38,12 @@ impl VideoState {
 }
 
 impl Node for VideoSink {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(VideoState::new())
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(VideoState::new())
     }
 
-    fn clean(&self, state: &mut Box<dyn ZFState>) -> ZFResult<()> {
-        let state = downcast!(VideoState, state).ok_or(ZFError::MissingState)?;
+    fn finalize(&self, state: &mut State) -> ZFResult<()> {
+        let state = state.try_get::<VideoState>()?;
         highgui::destroy_window(&state.window_name).unwrap();
         Ok(())
     }
@@ -58,11 +54,11 @@ impl Sink for VideoSink {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
         input: zenoh_flow::runtime::message::DataMessage,
     ) -> zenoh_flow::ZFResult<()> {
         // Downcasting to right type
-        let state = downcast!(VideoState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<VideoState>()?;
 
         let data = input.data.try_as_bytes()?.as_ref().clone();
 

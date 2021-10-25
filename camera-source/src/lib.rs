@@ -17,7 +17,7 @@ use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use std::collections::HashMap;
 use zenoh_flow::{
-    downcast_mut, types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source,
+    types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source, State,
 };
 
 #[derive(Debug)]
@@ -97,14 +97,11 @@ impl CameraState {
 }
 
 impl Node for CameraSource {
-    fn initialize(
-        &self,
-        configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(CameraState::new(configuration))
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(CameraState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn zenoh_flow::ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -114,9 +111,9 @@ impl Source for CameraSource {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
     ) -> ZFResult<Data> {
-        let state = downcast_mut!(CameraState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<CameraState>()?;
 
         let mut cam = zf_spin_lock!(state.camera);
         let encode_options = zf_spin_lock!(state.encode_options);

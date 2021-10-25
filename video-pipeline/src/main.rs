@@ -21,8 +21,8 @@ use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
 use zenoh_flow::runtime::RuntimeContext;
 use zenoh_flow::{
-    downcast, model::link::PortDescriptor, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node,
-    Sink, Source, ZFError, ZFResult, ZFState,
+    model::link::PortDescriptor, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Sink,
+    Source, State, ZFResult,
 };
 
 static SOURCE: &str = "Frame";
@@ -75,10 +75,10 @@ impl Source for CameraSource {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
     ) -> zenoh_flow::ZFResult<Data> {
         // Downcasting to right type
-        let state = downcast!(CameraState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<CameraState>()?;
         let data: Vec<u8>;
 
         {
@@ -114,14 +114,11 @@ impl Source for CameraSource {
 }
 
 impl Node for CameraSource {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(CameraState::new())
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(CameraState::new())
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -145,15 +142,12 @@ impl VideoState {
 }
 
 impl Node for VideoSink {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(VideoState::new())
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(VideoState::new())
     }
 
-    fn clean(&self, state: &mut Box<dyn ZFState>) -> ZFResult<()> {
-        let state = downcast!(VideoState, state).ok_or(ZFError::MissingState)?;
+    fn finalize(&self, state: &mut State) -> ZFResult<()> {
+        let state = state.try_get::<VideoState>()?;
         highgui::destroy_window(&state.window_name).unwrap();
         Ok(())
     }
@@ -164,11 +158,11 @@ impl Sink for VideoSink {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
         input: zenoh_flow::runtime::message::DataMessage,
     ) -> zenoh_flow::ZFResult<()> {
         // Downcasting to right type
-        let state = downcast!(VideoState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<VideoState>()?;
 
         let data = input.data.try_as_bytes()?.as_ref().clone();
 

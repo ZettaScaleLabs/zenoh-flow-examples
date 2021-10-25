@@ -20,8 +20,8 @@ use std::{
     path::Path,
 };
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast, zenoh_flow_derive::ZFState, zf_spin_lock,
-    Context, Data, Node, NodeOutput, Operator, PortId, Token, ZFError, ZFResult, ZFState,
+    default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
+    Data, Node, NodeOutput, Operator, PortId, State, Token, ZFError, ZFResult,
 };
 
 use opencv::core::prelude::MatTrait;
@@ -88,14 +88,11 @@ impl ODState {
 }
 
 impl Node for ObjDetection {
-    fn initialize(
-        &self,
-        configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(ODState::new(configuration))
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(ODState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -104,7 +101,7 @@ impl Operator for ObjDetection {
     fn input_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         tokens: &mut HashMap<PortId, Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -113,7 +110,7 @@ impl Operator for ObjDetection {
     fn run(
         &self,
         _context: &mut Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
         inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
         let scale = 1.0 / 255.0;
@@ -123,7 +120,7 @@ impl Operator for ObjDetection {
 
         let mut detections: opencv::types::VectorOfMat = core::Vector::new();
 
-        let state = downcast!(ODState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<ODState>()?;
 
         let mut net = zf_spin_lock!(state.dnn);
         let encode_options = zf_spin_lock!(state.encode_options);
@@ -310,7 +307,7 @@ impl Operator for ObjDetection {
     fn output_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         outputs: HashMap<PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)

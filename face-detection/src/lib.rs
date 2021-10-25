@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast, runtime::message::DataMessage,
-    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, ZFError, ZFResult,
-    ZFState,
+    default_input_rule, default_output_rule, runtime::message::DataMessage,
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, State, ZFError,
+    ZFResult,
 };
 
 use opencv::{core, imgproc, objdetect, prelude::*, types};
@@ -53,7 +53,7 @@ impl Operator for FaceDetection {
     fn input_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -62,12 +62,12 @@ impl Operator for FaceDetection {
     fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn ZFState>,
+        dyn_state: &mut State,
         inputs: &mut HashMap<zenoh_flow::PortId, DataMessage>,
     ) -> ZFResult<HashMap<PortId, Data>> {
         let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
 
-        let state = downcast!(FDState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<FDState>()?;
 
         let mut face = zf_spin_lock!(state.face);
         let encode_options = zf_spin_lock!(state.encode_options);
@@ -146,7 +146,7 @@ impl Operator for FaceDetection {
     fn output_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
@@ -154,14 +154,11 @@ impl Operator for FaceDetection {
 }
 
 impl Node for FaceDetection {
-    fn initialize(
-        &self,
-        configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(FDState::new(configuration))
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(FDState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }

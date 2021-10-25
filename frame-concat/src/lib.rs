@@ -15,8 +15,8 @@
 use async_std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use zenoh_flow::{
-    default_input_rule, default_output_rule, downcast, zenoh_flow_derive::ZFState, zf_spin_lock,
-    Data, Node, Operator, ZFError, ZFResult, ZFState,
+    default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node,
+    Operator, State, ZFError, ZFResult,
 };
 
 use opencv::core;
@@ -48,14 +48,11 @@ impl FrameConcatState {
 struct FrameConcat;
 
 impl Node for FrameConcat {
-    fn initialize(
-        &self,
-        _configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(FrameConcatState::new())
+    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(FrameConcatState::new())
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -64,7 +61,7 @@ impl Operator for FrameConcat {
     fn input_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -73,12 +70,12 @@ impl Operator for FrameConcat {
     fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
         inputs: &mut HashMap<zenoh_flow::PortId, zenoh_flow::runtime::message::DataMessage>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
         let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
 
-        let state = downcast!(FrameConcatState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<FrameConcatState>()?;
         let encode_options = zf_spin_lock!(state.encode_options);
 
         let input_frame1 = inputs
@@ -120,7 +117,7 @@ impl Operator for FrameConcat {
     fn output_rule(
         &self,
         _context: &mut zenoh_flow::Context,
-        state: &mut Box<dyn zenoh_flow::ZFState>,
+        state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)

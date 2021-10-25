@@ -18,9 +18,9 @@ use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
-    Operator, Token, ZFState,
+    Operator, State, Token,
 };
-use zenoh_flow::{downcast, Context, Data, ZFError};
+use zenoh_flow::{Context, Data, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct BuzzOperator;
@@ -38,7 +38,7 @@ impl Operator for BuzzOperator {
     fn input_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn ZFState>,
+        state: &mut State,
         tokens: &mut HashMap<zenoh_flow::PortId, Token>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
@@ -47,12 +47,12 @@ impl Operator for BuzzOperator {
     fn run(
         &self,
         _context: &mut Context,
-        dyn_state: &mut Box<dyn ZFState>,
+        dyn_state: &mut State,
         inputs: &mut HashMap<zenoh_flow::PortId, DataMessage>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
         let mut results = HashMap::<zenoh_flow::PortId, Data>::with_capacity(1);
 
-        let state = downcast!(BuzzState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<BuzzState>()?;
 
         let mut input_fizz = inputs
             .remove(LINK_ID_INPUT_STR)
@@ -82,7 +82,7 @@ impl Operator for BuzzOperator {
     fn output_rule(
         &self,
         _context: &mut Context,
-        state: &mut Box<dyn ZFState>,
+        state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
@@ -90,7 +90,7 @@ impl Operator for BuzzOperator {
 }
 
 impl Node for BuzzOperator {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> Box<dyn ZFState> {
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
         let state = match configuration {
             Some(config) => match config.get("buzzword") {
                 Some(buzzword) => BuzzState {
@@ -104,10 +104,10 @@ impl Node for BuzzOperator {
                 buzzword: "Buzz".to_string(),
             },
         };
-        Box::new(state)
+        State::from(state)
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }

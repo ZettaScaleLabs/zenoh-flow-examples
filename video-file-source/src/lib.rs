@@ -17,10 +17,9 @@ use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use std::collections::HashMap;
 use zenoh_flow::{
-    downcast,
     types::{ZFError, ZFResult},
     zenoh_flow_derive::ZFState,
-    zf_spin_lock, Data, Node, Source, ZFState,
+    zf_spin_lock, Data, Node, Source, State,
 };
 
 #[derive(Debug)]
@@ -75,14 +74,11 @@ impl VideoSourceState {
 }
 
 impl Node for VideoSource {
-    fn initialize(
-        &self,
-        configuration: &Option<HashMap<String, String>>,
-    ) -> Box<dyn zenoh_flow::ZFState> {
-        Box::new(VideoSourceState::new(configuration))
+    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+        State::from(VideoSourceState::new(configuration))
     }
 
-    fn clean(&self, _state: &mut Box<dyn ZFState>) -> ZFResult<()> {
+    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -92,9 +88,9 @@ impl Source for VideoSource {
     async fn run(
         &self,
         _context: &mut zenoh_flow::Context,
-        dyn_state: &mut Box<dyn zenoh_flow::ZFState>,
+        dyn_state: &mut State,
     ) -> ZFResult<Data> {
-        let state = downcast!(VideoSourceState, dyn_state).unwrap();
+        let state = dyn_state.try_get::<VideoSourceState>()?;
 
         let mut cam = zf_spin_lock!(state.camera);
         let encode_options = zf_spin_lock!(state.encode_options);
