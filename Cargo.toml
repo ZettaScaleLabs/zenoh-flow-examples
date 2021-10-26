@@ -30,6 +30,7 @@ members = [
   "manual-source",
   "random-source",
   "video-file-source",
+  "python-source",
 ]
 
 [profile.dev]
