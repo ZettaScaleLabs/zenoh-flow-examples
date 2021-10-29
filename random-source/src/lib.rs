@@ -13,8 +13,8 @@
 //
 
 use async_trait::async_trait;
-use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
+use zenoh_flow::Configuration;
 use zenoh_flow::{types::ZFResult, zf_empty_state, Context, Data, Node, Source, State};
 use zenoh_flow_example_types::ZFUsize;
 
@@ -22,7 +22,7 @@ use zenoh_flow_example_types::ZFUsize;
 struct ExampleRandomSource;
 
 impl Node for ExampleRandomSource {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
         zf_empty_state!()
     }
 

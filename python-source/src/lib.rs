@@ -1,14 +1,12 @@
 use async_trait::async_trait;
-use pyo3::{
-    prelude::*,
-    types::{IntoPyDict, PyModule},
-};
-use std::collections::HashMap;
+use pyo3::types::PyDict;
+use pyo3::{prelude::*, types::PyModule};
 use std::fs;
 use std::path::Path;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{Data, Node, PortId, Source, State, ZFError, ZFResult};
+use zenoh_flow::Configuration;
+use zenoh_flow::{Data, Node, Source, State, ZFError, ZFResult};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(ZFState, Clone)]
@@ -44,7 +42,11 @@ impl Source for PythonSource {
             .call_method(
                 py,
                 "run",
-                (source_class.clone(), "", current_state.py_state.as_ref().clone()),
+                (
+                    source_class.clone(),
+                    "",
+                    current_state.py_state.as_ref().clone(),
+                ),
                 None,
             )
             .map_err(|e| ZFError::InvalidData(e.to_string()))?
@@ -55,31 +57,40 @@ impl Source for PythonSource {
 }
 
 impl Node for PythonSource {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
         pyo3::prepare_freethreaded_python();
         let gil = Python::acquire_gil();
         let py = gil.python();
         match configuration {
             Some(configuration) => {
-                let script_file_path = Path::new(configuration.get("python-script").unwrap());
+                let script_file_path = Path::new(
+                    configuration["python-script"]
+                        .as_str()
+                        .ok_or(ZFError::InvalidState)?,
+                );
                 let mut config = configuration.clone();
-                config.remove("python-script");
+                config["python-script"].take();
+
+                // let config : Vec<serde_json::Value> = serde_json::from_value::<Vec<serde_json::Value>>(config).map_err(|_| ZFError::InvalidState)?;
+
+                let py_config = PyDict::new(py);
 
                 let code = read_file(script_file_path);
-                let module = PyModule::from_code(py, &code, "source.py", "source").unwrap();
+                let module = PyModule::from_code(py, &code, "source.py", "source")
+                    .map_err(|_| ZFError::InvalidState)?;
 
-                let node_class = module.getattr("Node").unwrap();
+                let node_class = module.getattr("Node").map_err(|_| ZFError::InvalidState)?;
                 let state: Py<PyAny> = node_class
-                    .call_method("initialize", (node_class, config), None)
-                    .unwrap()
+                    .call_method1("initialize", (node_class, py_config))
+                    .map_err(|_| ZFError::InvalidState)?
                     .into();
 
-                State::from(PythonState {
+                Ok(State::from(PythonState {
                     module: Arc::new(module.into()),
                     py_state: Arc::new(state),
-                })
+                }))
             }
-            None => panic!("Missing configuration"),
+            None => Err(ZFError::InvalidState),
         }
     }
 

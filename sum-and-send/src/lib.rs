@@ -15,6 +15,7 @@
 use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
+use zenoh_flow::Configuration;
 use zenoh_flow::PortId;
 use zenoh_flow::{
     default_input_rule, default_output_rule, Data, Node, NodeOutput, Operator, State, ZFError,
@@ -77,8 +78,8 @@ impl Operator for SumAndSend {
 }
 
 impl Node for SumAndSend {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(SumAndSendState { x: ZFUsize(0) })
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(SumAndSendState { x: ZFUsize(0) }))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {

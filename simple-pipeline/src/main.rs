@@ -19,7 +19,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
+use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::RuntimeContext;
+use zenoh_flow::Configuration;
 use zenoh_flow::{model::link::PortDescriptor, zf_empty_state};
 use zenoh_flow::{Context, Data, Node, Sink, Source};
 use zenoh_flow::{State, ZFResult};
@@ -54,7 +56,7 @@ impl Source for CountSource {
 }
 
 impl Node for CountSource {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
         zf_empty_state!()
     }
 
@@ -79,7 +81,7 @@ impl Sink for ExampleGenericSink {
 }
 
 impl Node for ExampleGenericSink {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
         zf_empty_state!()
     }
 
@@ -103,34 +105,32 @@ async fn main() {
         runtime_uuid: uuid::Uuid::new_v4(),
     };
 
-    let mut zf_graph = zenoh_flow::runtime::graph::DataFlowGraph::new(ctx.clone());
+    let mut zf_graph =
+        zenoh_flow::runtime::dataflow::Dataflow::new(ctx.clone(), "simple-pipeline".into(), None);
 
     let source = Arc::new(CountSource::new(None));
     let sink = Arc::new(ExampleGenericSink {});
 
-    zf_graph
-        .add_static_source(
-            "counter-source".into(),
-            PortDescriptor {
-                port_id: String::from(SOURCE),
-                port_type: String::from("int"),
-            },
-            source,
-            None,
-        )
-        .unwrap();
+    zf_graph.add_static_source(
+        "counter-source".into(),
+        None,
+        PortDescriptor {
+            port_id: String::from(SOURCE),
+            port_type: String::from("int"),
+        },
+        source.initialize(&None).unwrap(),
+        source,
+    );
 
-    zf_graph
-        .add_static_sink(
-            "generic-sink".into(),
-            PortDescriptor {
-                port_id: String::from(SOURCE),
-                port_type: String::from("int"),
-            },
-            sink,
-            None,
-        )
-        .unwrap();
+    zf_graph.add_static_sink(
+        "generic-sink".into(),
+        PortDescriptor {
+            port_id: String::from(SOURCE),
+            port_type: String::from("int"),
+        },
+        sink.initialize(&None).unwrap(),
+        sink,
+    );
 
     zf_graph
         .add_link(
@@ -148,11 +148,11 @@ async fn main() {
         )
         .unwrap();
 
-    zf_graph.make_connections().await.unwrap();
+    let instance = DataflowInstance::try_instantiate(zf_graph).unwrap();
 
     let mut managers = vec![];
 
-    let runners = zf_graph.get_runners();
+    let runners = instance.get_runners();
     for runner in &runners {
         let m = runner.start();
         managers.push(m)

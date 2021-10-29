@@ -11,6 +11,7 @@ zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch =
 async-trait = "0.1"
 pyo3 = "0.14.5"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
+serde_json = { version = "1.0"}
 
 [lib]
 name = "python_source"

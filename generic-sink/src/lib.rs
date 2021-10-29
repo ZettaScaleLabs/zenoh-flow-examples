@@ -13,10 +13,10 @@
 //
 
 use async_trait::async_trait;
-use std::collections::HashMap;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
+use zenoh_flow::Configuration;
 use zenoh_flow::{export_sink, types::ZFResult, Node, State};
 use zenoh_flow::{Context, Sink};
 
@@ -31,10 +31,10 @@ struct SinkState {
 }
 
 impl SinkState {
-    pub fn new(configuration: &Option<HashMap<String, String>>) -> Self {
+    pub fn new(configuration: &Option<Configuration>) -> Self {
         let file = match configuration {
             Some(c) => {
-                let f = File::create(c.get("file").unwrap()).unwrap();
+                let f = File::create(c["file"].as_str().unwrap()).unwrap();
                 Some(Arc::new(Mutex::new(f)))
             }
             None => None,
@@ -73,8 +73,8 @@ impl Sink for GenericSink {
 }
 
 impl Node for GenericSink {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(SinkState::new(configuration))
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(SinkState::new(configuration)))
     }
 
     fn finalize(&self, dyn_state: &mut State) -> ZFResult<()> {

@@ -13,9 +13,9 @@
 //
 
 use async_trait::async_trait;
-use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::sync::Arc;
+use zenoh_flow::Configuration;
 use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, zf_empty_state, Data, State};
 use zenoh_flow::{Node, Source};
 use zenoh_flow_example_types::ZFUsize;
@@ -35,9 +35,9 @@ impl Source for CountSource {
 }
 
 impl Node for CountSource {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
         if let Some(conf) = configuration {
-            let initial = conf.get("initial").unwrap().parse::<usize>().unwrap();
+            let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
         }
 

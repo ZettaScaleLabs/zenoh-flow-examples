@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
     Operator, State, Token,
@@ -90,9 +91,9 @@ impl Operator for BuzzOperator {
 }
 
 impl Node for BuzzOperator {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
         let state = match configuration {
-            Some(config) => match config.get("buzzword") {
+            Some(config) => match config["buzzword"].as_str() {
                 Some(buzzword) => BuzzState {
                     buzzword: buzzword.to_string(),
                 },
@@ -104,7 +105,7 @@ impl Node for BuzzOperator {
                 buzzword: "Buzz".to_string(),
             },
         };
-        State::from(state)
+        Ok(State::from(state))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {

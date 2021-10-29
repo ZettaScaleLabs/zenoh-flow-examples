@@ -15,7 +15,7 @@
 use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
-use std::collections::HashMap;
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source, State,
 };
@@ -43,10 +43,10 @@ impl std::fmt::Debug for CameraState {
 }
 
 impl CameraState {
-    fn new(configuration: &Option<HashMap<String, String>>) -> Self {
+    fn new(configuration: &Option<Configuration>) -> Self {
         let (camera, resolution, delay) = match configuration {
             Some(configuration) => {
-                let camera = match configuration.get("camera") {
+                let camera = match configuration["camera"].as_str() {
                     Some(configured_camera) => {
                         videoio::VideoCapture::from_file(configured_camera, videoio::CAP_ANY)
                             .unwrap()
@@ -54,7 +54,7 @@ impl CameraState {
                     None => videoio::VideoCapture::new(0, videoio::CAP_ANY).unwrap(),
                 };
 
-                let configured_resolution = match configuration.get("resolution") {
+                let configured_resolution = match configuration["resolution"].as_str() {
                     Some(res) => {
                         let v = res.split('x').collect::<Vec<&str>>();
                         (v[0].parse::<i32>().unwrap(), v[1].parse::<i32>().unwrap())
@@ -62,9 +62,8 @@ impl CameraState {
                     None => (800, 600),
                 };
 
-                let delay = match configuration.get("fps") {
+                let delay = match configuration["fps"].as_f64() {
                     Some(fps) => {
-                        let fps = fps.parse::<f64>().unwrap();
                         let delay: f64 = 1f64 / fps;
                         (delay * 1000f64) as u64
                     }
@@ -97,8 +96,8 @@ impl CameraState {
 }
 
 impl Node for CameraSource {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(CameraState::new(configuration))
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(CameraState::new(configuration)))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {

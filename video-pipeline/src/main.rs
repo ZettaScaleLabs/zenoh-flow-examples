@@ -15,11 +15,12 @@
 use async_ctrlc::CtrlC;
 use async_trait::async_trait;
 use opencv::{core, highgui, prelude::*, videoio};
-use std::collections::HashMap;
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
+use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::RuntimeContext;
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     model::link::PortDescriptor, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Sink,
     Source, State, ZFResult,
@@ -114,8 +115,8 @@ impl Source for CameraSource {
 }
 
 impl Node for CameraSource {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(CameraState::new())
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(CameraState::new()))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {
@@ -142,8 +143,8 @@ impl VideoState {
 }
 
 impl Node for VideoSink {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(VideoState::new())
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(VideoState::new()))
     }
 
     fn finalize(&self, state: &mut State) -> ZFResult<()> {
@@ -196,34 +197,32 @@ async fn main() {
         runtime_uuid: uuid::Uuid::new_v4(),
     };
 
-    let mut zf_graph = zenoh_flow::runtime::graph::DataFlowGraph::new(ctx.clone());
+    let mut zf_graph =
+        zenoh_flow::runtime::dataflow::Dataflow::new(ctx.clone(), "video-pipeline".into(), None);
 
     let source = Arc::new(CameraSource);
     let sink = Arc::new(VideoSink);
 
-    zf_graph
-        .add_static_source(
-            "camera-source".into(),
-            PortDescriptor {
-                port_id: String::from(SOURCE),
-                port_type: String::from("image"),
-            },
-            source,
-            None,
-        )
-        .unwrap();
+    zf_graph.add_static_source(
+        "camera-source".into(),
+        None,
+        PortDescriptor {
+            port_id: String::from(SOURCE),
+            port_type: String::from("image"),
+        },
+        source.initialize(&None).unwrap(),
+        source,
+    );
 
-    zf_graph
-        .add_static_sink(
-            "video-sink".into(),
-            PortDescriptor {
-                port_id: String::from(INPUT),
-                port_type: String::from("image"),
-            },
-            sink,
-            None,
-        )
-        .unwrap();
+    zf_graph.add_static_sink(
+        "video-sink".into(),
+        PortDescriptor {
+            port_id: String::from(INPUT),
+            port_type: String::from("image"),
+        },
+        sink.initialize(&None).unwrap(),
+        sink,
+    );
 
     zf_graph
         .add_link(
@@ -241,11 +240,11 @@ async fn main() {
         )
         .unwrap();
 
-    zf_graph.make_connections().await.unwrap();
+    let instance = DataflowInstance::try_instantiate(zf_graph).unwrap();
 
     let mut managers = vec![];
 
-    let runners = zf_graph.get_runners();
+    let runners = instance.get_runners();
     for runner in &runners {
         let m = runner.start();
         managers.push(m)

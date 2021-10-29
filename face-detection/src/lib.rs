@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, runtime::message::DataMessage,
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, State, ZFError,
@@ -28,11 +29,11 @@ impl std::fmt::Debug for FDState {
 }
 
 impl FDState {
-    fn new(configuration: &Option<HashMap<String, String>>) -> Self {
+    fn new(configuration: &Option<Configuration>) -> Self {
         let default_neural_network = &"haarcascades/haarcascade_frontalface_alt.xml".to_owned();
         let neural_network = if let Some(configuration) = configuration {
-            configuration
-                .get("neural-network")
+            configuration["neural-network"]
+                .as_str()
                 .unwrap_or(default_neural_network)
         } else {
             default_neural_network
@@ -154,8 +155,8 @@ impl Operator for FaceDetection {
 }
 
 impl Node for FaceDetection {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(FDState::new(configuration))
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(FDState::new(configuration)))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {

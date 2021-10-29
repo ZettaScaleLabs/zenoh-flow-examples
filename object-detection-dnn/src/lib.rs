@@ -19,6 +19,7 @@ use std::{
     io::{prelude::*, BufReader},
     path::Path,
 };
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
     Data, Node, NodeOutput, Operator, PortId, State, Token, ZFError, ZFResult,
@@ -59,13 +60,13 @@ impl std::fmt::Debug for ODState {
 }
 
 impl ODState {
-    fn new(configuration: &Option<HashMap<String, String>>) -> Self {
+    fn new(configuration: &Option<Configuration>) -> Self {
         // Configuration is mandatory.
         let configuration = configuration.as_ref().unwrap();
 
-        let net_cfg = configuration.get("neural-network").unwrap();
-        let net_weights = configuration.get("network-weights").unwrap();
-        let net_classes = configuration.get("network-classes").unwrap();
+        let net_cfg = configuration["neural-network"].as_str().unwrap();
+        let net_weights = configuration["network-weights"].as_str().unwrap();
+        let net_classes = configuration["network-classes"].as_str().unwrap();
         let classes = lines_from_file(net_classes);
 
         let mut net = opencv::dnn::read_net_from_darknet(net_cfg, net_weights).unwrap();
@@ -88,8 +89,8 @@ impl ODState {
 }
 
 impl Node for ObjDetection {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(ODState::new(configuration))
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(ODState::new(configuration)))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {

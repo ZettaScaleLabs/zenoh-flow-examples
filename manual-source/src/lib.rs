@@ -13,8 +13,10 @@
 //
 
 use async_trait::async_trait;
-use std::{collections::HashMap, sync::Arc, usize};
-use zenoh_flow::{zf_empty_state, Context, Data, Node, Source, State, ZFError, ZFResult};
+use std::{sync::Arc, usize};
+use zenoh_flow::{
+    zf_empty_state, Configuration, Context, Data, Node, Source, State, ZFError, ZFResult,
+};
 use zenoh_flow_example_types::ZFUsize;
 
 struct ManualSource;
@@ -39,7 +41,7 @@ impl Source for ManualSource {
 }
 
 impl Node for ManualSource {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
         zf_empty_state!()
     }
 

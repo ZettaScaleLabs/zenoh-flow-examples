@@ -14,7 +14,7 @@
 
 use async_std::sync::Arc;
 use async_trait::async_trait;
-use std::collections::HashMap;
+use zenoh_flow::Configuration;
 use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, State};
 
 use opencv::{highgui, prelude::*};
@@ -38,8 +38,8 @@ impl VideoState {
 }
 
 impl Node for VideoSink {
-    fn initialize(&self, _configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(VideoState::new())
+    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(VideoState::new()))
     }
 
     fn finalize(&self, state: &mut State) -> ZFResult<()> {

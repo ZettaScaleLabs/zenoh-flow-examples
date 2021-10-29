@@ -15,7 +15,7 @@
 use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
-use std::collections::HashMap;
+use zenoh_flow::Configuration;
 use zenoh_flow::{
     types::{ZFError, ZFResult},
     zenoh_flow_derive::ZFState,
@@ -45,14 +45,13 @@ impl std::fmt::Debug for VideoSourceState {
 }
 
 impl VideoSourceState {
-    fn new(configuration: &Option<HashMap<String, String>>) -> Self {
+    fn new(configuration: &Option<Configuration>) -> Self {
         // Configuration is mandatory
         let configuration = configuration.as_ref().unwrap();
 
-        let source_file = configuration.get("file").unwrap();
-        let delay = match configuration.get("fps") {
+        let source_file = configuration["file"].as_str().unwrap();
+        let delay = match configuration["fps"].as_f64() {
             Some(fps) => {
-                let fps = fps.parse::<f64>().unwrap();
                 let delay: f64 = 1f64 / fps;
                 (delay * 1000f64) as u64
             }
@@ -74,8 +73,8 @@ impl VideoSourceState {
 }
 
 impl Node for VideoSource {
-    fn initialize(&self, configuration: &Option<HashMap<String, String>>) -> State {
-        State::from(VideoSourceState::new(configuration))
+    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+        Ok(State::from(VideoSourceState::new(configuration)))
     }
 
     fn finalize(&self, _state: &mut State) -> ZFResult<()> {
