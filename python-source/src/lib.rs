@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyList};//, PyBool, PyString};
 use pyo3::{prelude::*, types::PyModule};
 use std::fs;
 use std::path::Path;
@@ -71,9 +71,7 @@ impl Node for PythonSource {
                 let mut config = configuration.clone();
                 config["python-script"].take();
 
-                // let config : Vec<serde_json::Value> = serde_json::from_value::<Vec<serde_json::Value>>(config).map_err(|_| ZFError::InvalidState)?;
-
-                let py_config = PyDict::new(py);
+                let py_config = into_py(py, config);
 
                 let code = read_file(script_file_path);
                 let module = PyModule::from_code(py, &code, "source.py", "source")
@@ -108,4 +106,32 @@ fn register() -> ZFResult<Arc<dyn Source>> {
 
 fn read_file(path: &Path) -> String {
     fs::read_to_string(path).unwrap()
+}
+
+
+fn into_py(py: Python, value : serde_json::Value) -> PyObject {
+    match value {
+        serde_json::Value::Array(arr) => {
+            let py_list = PyList::empty(py);
+            for v in arr {
+                py_list.append(into_py(py, v)).unwrap();
+            }
+           py_list.to_object(py)
+        }
+        serde_json::Value::Object(obj) => {
+            let py_dict = PyDict::new(py);
+            for (k,v) in obj {
+                py_dict.set_item(k, into_py(py, v)).unwrap();
+            }
+            py_dict.to_object(py)
+        }
+        // serde_json::Value::Bool(b) => PyBool::new(py,b).to_object(py),
+        // serde_json::Value::Number(n) => n.as_u64().unwrap().to_object(py),
+        // serde_json::Value::String(s) => PyString::new(py,&s).to_object(py),
+        // serde_json::Value::Null => py.None(),
+        serde_json::Value::Bool(b) => b.to_object(py),
+        serde_json::Value::Number(n) => n.as_u64().unwrap().to_object(py),
+        serde_json::Value::String(s) => s.to_object(py),
+        serde_json::Value::Null => py.None(),
+    }
 }
