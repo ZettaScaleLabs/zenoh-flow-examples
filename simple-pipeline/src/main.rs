@@ -115,8 +115,8 @@ async fn main() {
         "counter-source".into(),
         None,
         PortDescriptor {
-            port_id: String::from(SOURCE),
-            port_type: String::from("int"),
+            port_id: String::from(SOURCE).into(),
+            port_type: String::from("int").into(),
         },
         source.initialize(&None).unwrap(),
         source,
@@ -125,8 +125,8 @@ async fn main() {
     zf_graph.add_static_sink(
         "generic-sink".into(),
         PortDescriptor {
-            port_id: String::from(SOURCE),
-            port_type: String::from("int"),
+            port_id: String::from(SOURCE).into(),
+            port_type: String::from("int").into(),
         },
         sink.initialize(&None).unwrap(),
         sink,
@@ -136,11 +136,11 @@ async fn main() {
         .add_link(
             LinkFromDescriptor {
                 node: "counter-source".into(),
-                output: String::from(SOURCE),
+                output: String::from(SOURCE).into(),
             },
             LinkToDescriptor {
                 node: "generic-sink".into(),
-                input: String::from(SOURCE),
+                input: String::from(SOURCE).into(),
             },
             None,
             None,

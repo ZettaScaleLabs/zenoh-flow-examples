@@ -207,8 +207,8 @@ async fn main() {
         "camera-source".into(),
         None,
         PortDescriptor {
-            port_id: String::from(SOURCE),
-            port_type: String::from("image"),
+            port_id: String::from(SOURCE).into(),
+            port_type: String::from("image").into(),
         },
         source.initialize(&None).unwrap(),
         source,
@@ -217,8 +217,8 @@ async fn main() {
     zf_graph.add_static_sink(
         "video-sink".into(),
         PortDescriptor {
-            port_id: String::from(INPUT),
-            port_type: String::from("image"),
+            port_id: String::from(INPUT).into(),
+            port_type: String::from("image").into(),
         },
         sink.initialize(&None).unwrap(),
         sink,
@@ -228,11 +228,11 @@ async fn main() {
         .add_link(
             LinkFromDescriptor {
                 node: "camera-source".into(),
-                output: String::from(SOURCE),
+                output: String::from(SOURCE).into(),
             },
             LinkToDescriptor {
                 node: "video-sink".into(),
-                input: String::from(INPUT),
+                input: String::from(INPUT).into(),
             },
             None,
             None,

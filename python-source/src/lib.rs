@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use pyo3::types::{PyDict, PyList};//, PyBool, PyString};
+use pyo3::types::{PyDict, PyList}; //, PyBool, PyString};
 use pyo3::{prelude::*, types::PyModule};
 use std::fs;
 use std::path::Path;
@@ -108,19 +108,18 @@ fn read_file(path: &Path) -> String {
     fs::read_to_string(path).unwrap()
 }
 
-
-fn into_py(py: Python, value : serde_json::Value) -> PyObject {
+fn into_py(py: Python, value: serde_json::Value) -> PyObject {
     match value {
         serde_json::Value::Array(arr) => {
             let py_list = PyList::empty(py);
             for v in arr {
                 py_list.append(into_py(py, v)).unwrap();
             }
-           py_list.to_object(py)
+            py_list.to_object(py)
         }
         serde_json::Value::Object(obj) => {
             let py_dict = PyDict::new(py);
-            for (k,v) in obj {
+            for (k, v) in obj {
                 py_dict.set_item(k, into_py(py, v)).unwrap();
             }
             py_dict.to_object(py)
