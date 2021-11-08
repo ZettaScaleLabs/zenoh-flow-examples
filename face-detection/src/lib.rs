@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
-use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, runtime::message::DataMessage,
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, State, ZFError,
     ZFResult,
 };
+use zenoh_flow::{Configuration, DeadlineMiss};
 
 use opencv::{core, imgproc, objdetect, prelude::*, types};
 
@@ -149,6 +149,7 @@ impl Operator for FaceDetection {
         _context: &mut zenoh_flow::Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
+        _deadlinemiss: Option<DeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }

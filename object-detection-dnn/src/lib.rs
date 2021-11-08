@@ -19,11 +19,11 @@ use std::{
     io::{prelude::*, BufReader},
     path::Path,
 };
-use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
     Data, Node, NodeOutput, Operator, PortId, State, Token, ZFError, ZFResult,
 };
+use zenoh_flow::{Configuration, DeadlineMiss};
 
 use opencv::core::prelude::MatTrait;
 use opencv::dnn::NetTrait;
@@ -310,6 +310,7 @@ impl Operator for ObjDetection {
         _context: &mut Context,
         state: &mut State,
         outputs: HashMap<PortId, Data>,
+        _deadlinemiss: Option<DeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

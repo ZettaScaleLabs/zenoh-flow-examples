@@ -14,11 +14,11 @@
 
 use async_std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node,
     Operator, State, ZFError, ZFResult,
 };
+use zenoh_flow::{Configuration, DeadlineMiss};
 
 use opencv::core;
 
@@ -120,6 +120,7 @@ impl Operator for FrameConcat {
         _context: &mut zenoh_flow::Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
+        _deadlinemiss: Option<DeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }

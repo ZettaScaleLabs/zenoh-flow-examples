@@ -16,11 +16,11 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::Configuration;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
     Operator, State, Token,
 };
+use zenoh_flow::{Configuration, DeadlineMiss};
 use zenoh_flow::{Context, Data, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
@@ -85,6 +85,7 @@ impl Operator for BuzzOperator {
         _context: &mut Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
+        _deadlinemiss: Option<DeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

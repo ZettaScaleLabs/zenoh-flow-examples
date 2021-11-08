@@ -20,6 +20,7 @@ use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
 use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
+use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
 use zenoh_flow::Configuration;
 use zenoh_flow::{model::link::PortDescriptor, zf_empty_state};
@@ -101,6 +102,7 @@ async fn main() {
     let ctx = RuntimeContext {
         session,
         hlc,
+        loader: Arc::new(Loader::new(LoaderConfig { extensions: vec![] })),
         runtime_name: String::from("local").into(),
         runtime_uuid: uuid::Uuid::new_v4(),
     };
