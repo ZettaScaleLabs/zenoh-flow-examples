@@ -1,0 +1,17 @@
+[package]
+name = "run-record-replay"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "=1.9.0", features = ["attributes"] }
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master"}
+structopt = "0.3.21"
+log = "0.4"
+serde_yaml = "0.8.13"
+uhlc = "0.3"
+uuid = { version = "0.8", features = ["serde", "v4"] }
+env_logger = "0.9"
