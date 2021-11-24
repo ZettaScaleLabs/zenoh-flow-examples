@@ -20,12 +20,23 @@ Zenoh-Flow provides several working examples that illustrate how to define opera
 -----------
 ## Examples
 
+
+### Runtime
+First, let's build an example runtime to run the examples
+```bash
+cargo build --release -p runtime
+```
+
+This will create the runtime binary in `./target/release/runtime`
+
+---
+
 ### FizzBuzz
 
 First, compile the relevant examples:
 
 ```bash
-cargo build --release --example manual-source --example example-fizz --example example-buzz --example generic-sink
+cargo build --release -p manual-source -p example-fizz -p example-buzz -p generic-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -35,7 +46,7 @@ This will create, depending on your OS, the libraries that the pipeline will fet
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz_buzz_pipeline.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/fizz_buzz_pipeline.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -45,13 +56,13 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/fizz-buzz-multiple-runtimes.yaml --runtime foo
 ```
 
 In a second machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/fizz-buzz-multiple-runtimes.yaml --runtime bar
+./target/release/runtime --graph-file ./graphs/fizz-buzz-multiple-runtimes.yaml --runtime bar
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -69,7 +80,7 @@ In a second machine, run:
 First, compile the relevant examples:
 
 ```bash
-cargo build --release --example camera-source --example face-detection --example video-sink
+cargo build --release -p camera-source -p face-detection -p video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
@@ -79,7 +90,7 @@ This will create, depending on your OS, the libraries that the pipeline will fet
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face_detection.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/face_detection.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -89,19 +100,19 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime gigot
+./target/release/runtime --graph-file ./graphs/face-detection-multi-runtime.yaml --runtime gigot
 ```
 
 In a second machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime nuc
+./target/release/runtime --graph-file ./graphs/face-detection-multi-runtime.yaml --runtime nuc
 ```
 
 In a third machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/face-detection-multi-runtime.yaml --runtime leia
+./target/release/runtime --graph-file ./graphs/face-detection-multi-runtime.yaml --runtime leia
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -123,19 +134,19 @@ In a third machine, run:
 First, compile the relevant examples:
 
 ```bash
-cargo build --release --example camera-source --example object-detection-dnn --example video-sink
+cargo build --release -p camera-source -p object-detection-dnn -p video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
 
-Then please update the files `zenoh-flow-examples/graphs/dnn-object-detection.yaml` and `zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml` by changing the `neural-network`, `network-weights`, and `network-classes` to match the absolute path of your *Neural Network* configuration
+Then please update the files `./graphs/dnn-object-detection.yaml` and `./graphs/dnn-object-detection-multi-runtime.yaml` by changing the `neural-network`, `network-weights`, and `network-classes` to match the absolute path of your *Neural Network* configuration
 
 #### Single runtime
 
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/dnn-object-detection.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._
@@ -145,19 +156,19 @@ _Note: in that particular case the `--runtime foo` is discarded._
 In a first machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/dnn-object-detection-multi-runtime.yaml --runtime foo
 ```
 
 In a second machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime cuda
+./target/release/runtime --graph-file ./graphs/dnn-object-detection-multi-runtime.yaml --runtime cuda
 ```
 
 In a third machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/dnn-object-detection-multi-runtime.yaml --runtime bar
+./target/release/runtime --graph-file ./graphs/dnn-object-detection-multi-runtime.yaml --runtime bar
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.
@@ -183,33 +194,33 @@ This dataset contains the frames, in oder to merge them in video you need `ffmpe
 First, compile the relevant examples:
 
 ```bash
-cargo build --release --example video-file-source --example object-detection-dnn --example video-sink
+cargo build --release -p video-file-source -p object-detection-dnn -p video-sink
 ```
 
 This will create, depending on your OS, the libraries that the pipeline will fetch.
 
-Then please edit the file `zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml` by changing the `neural-network`, `network-weights`, and `network-classes` to match the absolute path of your *Neural Network* configuration.
+Then please edit the file `./graphs/car-pipeline-multi-runtime.yaml` by changing the `neural-network`, `network-weights`, and `network-classes` to match the absolute path of your *Neural Network* configuration.
 
-You also need to edit the `file` in `zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml` to match the absolute path of your video file.
+You also need to edit the `file` in `./graphs/car-pipeline-multi-runtime.yaml` to match the absolute path of your video file.
 
 #### Multiple runtimes
 
 In a first machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime gigot
+./target/release/runtime --graph-file ./graphs/car-pipeline-multi-runtime.yaml --runtime gigot
 ```
 
 In a second machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime cuda
+./target/release/runtime --graph-file ./graphs/car-pipeline-multi-runtime.yaml --runtime cuda
 ```
 
 In a third machine, run:
 
 ```bash
-../zenoh-flow/target/release/runtime --graph-file zenoh-flow-examples/graphs/car-pipeline-multi-runtime.yaml --runtime macbook
+./target/release/runtime --graph-file ./graphs/car-pipeline-multi-runtime.yaml --runtime macbook
 ```
 
 :warning: If you change the name of the runtime in the yaml file, the name(s) passed as argument of the previous commands must be changed accordingly.

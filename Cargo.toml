@@ -30,7 +30,8 @@ members = [
   "manual-source",
   "random-source",
   "video-file-source",
-  "python-source",
+  "runtime",
+  "run-record-replay",
 ]
 
 [profile.dev]

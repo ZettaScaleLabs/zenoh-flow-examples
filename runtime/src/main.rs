@@ -17,7 +17,6 @@ use std::convert::TryFrom;
 use std::fs::{File, *};
 use std::io::Write;
 use std::path::Path;
-use std::time::Duration;
 use structopt::StructOpt;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
@@ -116,39 +115,6 @@ async fn main() {
     for id in &sources {
         instance.start_node(id).await.unwrap()
     }
-
-    let recording_source = sources.get(0).unwrap();
-
-    // Start recording a source
-    instance.start_recording(recording_source).await.unwrap();
-
-    // Sleep 5 seconds, records 5 seconds
-    async_std::task::sleep(Duration::from_secs(5)).await;
-
-    // stop recording a source
-
-    let resource = instance.stop_recording(recording_source).await.unwrap();
-    println!("############ Recording available on: {:?}", resource);
-
-    async_std::task::sleep(Duration::from_secs(1)).await;
-
-    //Now replaying the source
-    println!("############ Start replay from: {:?}", resource);
-    let replay_id = instance
-        .start_replay(recording_source, resource.clone())
-        .await
-        .unwrap();
-
-    // Sleep 5 seconds
-    async_std::task::sleep(Duration::from_secs(5)).await;
-
-    instance.stop_replay(&replay_id).await.unwrap();
-    println!("############ Done replay from: {:?}", resource);
-
-    // Sleep 5 seconds
-    async_std::task::sleep(Duration::from_secs(5)).await;
-    println!("############ Restaring source {:?}", recording_source);
-    instance.start_node(recording_source).await.unwrap();
 
     let () = std::future::pending().await;
 }

@@ -205,29 +205,33 @@ async fn main() {
     let source = Arc::new(CameraSource);
     let sink = Arc::new(VideoSink);
 
-    zf_graph.add_static_source(
-        "camera-source".into(),
-        None,
-        PortDescriptor {
-            port_id: String::from(SOURCE).into(),
-            port_type: String::from("image").into(),
-        },
-        source.initialize(&None).unwrap(),
-        source,
-    );
-
-    zf_graph.add_static_sink(
-        "video-sink".into(),
-        PortDescriptor {
-            port_id: String::from(INPUT).into(),
-            port_type: String::from("image").into(),
-        },
-        sink.initialize(&None).unwrap(),
-        sink,
-    );
+    zf_graph
+        .try_add_static_source(
+            "camera-source".into(),
+            None,
+            PortDescriptor {
+                port_id: String::from(SOURCE).into(),
+                port_type: String::from("image").into(),
+            },
+            source.initialize(&None).unwrap(),
+            source,
+        )
+        .unwrap();
 
     zf_graph
-        .add_link(
+        .try_add_static_sink(
+            "video-sink".into(),
+            PortDescriptor {
+                port_id: String::from(INPUT).into(),
+                port_type: String::from("image").into(),
+            },
+            sink.initialize(&None).unwrap(),
+            sink,
+        )
+        .unwrap();
+
+    zf_graph
+        .try_add_link(
             LinkFromDescriptor {
                 node: "camera-source".into(),
                 output: String::from(SOURCE).into(),
@@ -242,14 +246,11 @@ async fn main() {
         )
         .unwrap();
 
-    let instance = DataflowInstance::try_instantiate(zf_graph).unwrap();
+    let mut instance = DataflowInstance::try_instantiate(zf_graph).unwrap();
 
-    let mut managers = vec![];
-
-    let runners = instance.get_runners();
-    for runner in &runners {
-        let m = runner.start();
-        managers.push(m)
+    let nodes = instance.get_nodes();
+    for id in &nodes {
+        instance.start_node(id).await.unwrap()
     }
 
     let ctrlc = CtrlC::new().expect("Unable to create Ctrl-C handler");
@@ -257,11 +258,7 @@ async fn main() {
     stream.next().await;
     println!("Received Ctrl-C start teardown");
 
-    for m in managers.iter() {
-        m.kill().await.unwrap()
-    }
-
-    for runner in runners {
-        runner.clean().await.unwrap();
+    for id in nodes {
+        instance.stop_node(&id).await.unwrap()
     }
 }
