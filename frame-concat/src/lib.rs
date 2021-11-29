@@ -18,7 +18,7 @@ use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node,
     Operator, State, ZFError, ZFResult,
 };
-use zenoh_flow::{Configuration, DeadlineMiss};
+use zenoh_flow::{Configuration, LocalDeadlineMiss};
 
 use opencv::core;
 
@@ -79,15 +79,23 @@ impl Operator for FrameConcat {
         let state = dyn_state.try_get::<FrameConcatState>()?;
         let encode_options = zf_spin_lock!(state.encode_options);
 
-        let input_frame1 = inputs
+        let mut input_frame1 = inputs
             .remove(INPUT1)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame1 = input_frame1.data.try_as_bytes()?.as_ref().clone();
+        let frame1 = input_frame1
+            .get_inner_data()
+            .try_as_bytes()?
+            .as_ref()
+            .clone();
 
-        let input_frame2 = inputs
+        let mut input_frame2 = inputs
             .remove(INPUT2)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame2 = input_frame2.data.try_as_bytes()?.as_ref().clone();
+        let frame2 = input_frame2
+            .get_inner_data()
+            .try_as_bytes()?
+            .as_ref()
+            .clone();
 
         // Decode Image
         let frame1 = opencv::imgcodecs::imdecode(
@@ -120,7 +128,7 @@ impl Operator for FrameConcat {
         _context: &mut zenoh_flow::Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }

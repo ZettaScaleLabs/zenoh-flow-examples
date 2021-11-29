@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::Configuration;
-use zenoh_flow::DeadlineMiss;
+use zenoh_flow::LocalDeadlineMiss;
 use zenoh_flow::PortId;
 use zenoh_flow::{
     default_input_rule, default_output_rule, Data, Node, NodeOutput, Operator, State, ZFError,
@@ -59,7 +59,7 @@ impl Operator for SumAndSend {
         let mut input_value = inputs
             .remove(INPUT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value.data.try_get::<ZFUsize>()?;
+        let data = input_value.get_inner_data().try_get::<ZFUsize>()?;
 
         let res = ZFUsize(state.x.0 + data.0);
         state.x = res.clone();
@@ -73,7 +73,7 @@ impl Operator for SumAndSend {
         _context: &mut zenoh_flow::Context,
         state: &mut State,
         outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

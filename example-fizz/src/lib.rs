@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::Configuration;
-use zenoh_flow::DeadlineMiss;
+use zenoh_flow::LocalDeadlineMiss;
 use zenoh_flow::Token;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, zf_empty_state,
@@ -65,7 +65,7 @@ impl Operator for FizzOperator {
             .remove(LINK_ID_INPUT_INT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
 
-        let zfusize = input_value.data.try_get::<ZFUsize>()?;
+        let zfusize = input_value.get_inner_data().try_get::<ZFUsize>()?;
 
         if zfusize.0 % 2 == 0 {
             fizz = ZFString::from("Fizz");
@@ -86,7 +86,7 @@ impl Operator for FizzOperator {
         _context: &mut Context,
         state: &mut State,
         outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

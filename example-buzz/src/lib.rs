@@ -20,7 +20,7 @@ use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
     Operator, State, Token,
 };
-use zenoh_flow::{Configuration, DeadlineMiss};
+use zenoh_flow::{Configuration, LocalDeadlineMiss};
 use zenoh_flow::{Context, Data, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
@@ -59,13 +59,13 @@ impl Operator for BuzzOperator {
             .remove(LINK_ID_INPUT_STR)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
 
-        let fizz = input_fizz.data.try_get::<ZFString>()?;
+        let fizz = input_fizz.get_inner_data().try_get::<ZFString>()?;
 
         let mut input_value = inputs
             .remove(LINK_ID_INPUT_INT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
 
-        let value = input_value.data.try_get::<ZFUsize>()?;
+        let value = input_value.get_inner_data().try_get::<ZFUsize>()?;
 
         let mut buzz = fizz.clone();
         if value.0 % 3 == 0 {
@@ -85,7 +85,7 @@ impl Operator for BuzzOperator {
         _context: &mut Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

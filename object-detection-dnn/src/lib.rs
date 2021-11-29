@@ -23,7 +23,7 @@ use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
     Data, Node, NodeOutput, Operator, PortId, State, Token, ZFError, ZFResult,
 };
-use zenoh_flow::{Configuration, DeadlineMiss};
+use zenoh_flow::{Configuration, LocalDeadlineMiss};
 
 use opencv::core::prelude::MatTrait;
 use opencv::dnn::NetTrait;
@@ -139,10 +139,14 @@ impl Operator for ObjDetection {
             core::Scalar::new(255f64, 0f64, 0f64, -1f64),
         ];
 
-        let input_value = inputs
+        let mut input_value = inputs
             .remove(INPUT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value.data.try_as_bytes()?.as_ref().clone();
+        let data = input_value
+            .get_inner_data()
+            .try_as_bytes()?
+            .as_ref()
+            .clone();
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
@@ -310,7 +314,7 @@ impl Operator for ObjDetection {
         _context: &mut Context,
         state: &mut State,
         outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
         default_output_rule(state, outputs)
     }

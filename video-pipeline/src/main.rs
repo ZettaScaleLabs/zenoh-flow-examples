@@ -17,7 +17,7 @@ use async_trait::async_trait;
 use opencv::{core, highgui, prelude::*, videoio};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
-use zenoh_flow::model::link::{LinkFromDescriptor, LinkToDescriptor};
+use zenoh_flow::model::{FromDescriptor, ToDescriptor};
 use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
@@ -161,12 +161,12 @@ impl Sink for VideoSink {
         &self,
         _context: &mut zenoh_flow::Context,
         dyn_state: &mut State,
-        input: zenoh_flow::runtime::message::DataMessage,
+        mut input: zenoh_flow::runtime::message::DataMessage,
     ) -> zenoh_flow::ZFResult<()> {
         // Downcasting to right type
         let state = dyn_state.try_get::<VideoState>()?;
 
-        let data = input.data.try_as_bytes()?.as_ref().clone();
+        let data = input.get_inner_data().try_as_bytes()?.as_ref().clone();
 
         let decoded = opencv::imgcodecs::imdecode(
             &opencv::types::VectorOfu8::from_iter(data),
@@ -232,11 +232,11 @@ async fn main() {
 
     zf_graph
         .try_add_link(
-            LinkFromDescriptor {
+            FromDescriptor {
                 node: "camera-source".into(),
                 output: String::from(SOURCE).into(),
             },
-            LinkToDescriptor {
+            ToDescriptor {
                 node: "video-sink".into(),
                 input: String::from(INPUT).into(),
             },

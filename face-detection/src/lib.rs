@@ -5,7 +5,7 @@ use zenoh_flow::{
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, State, ZFError,
     ZFResult,
 };
-use zenoh_flow::{Configuration, DeadlineMiss};
+use zenoh_flow::{Configuration, LocalDeadlineMiss};
 
 use opencv::{core, imgproc, objdetect, prelude::*, types};
 
@@ -73,10 +73,14 @@ impl Operator for FaceDetection {
         let mut face = zf_spin_lock!(state.face);
         let encode_options = zf_spin_lock!(state.encode_options);
 
-        let input_value = inputs
+        let mut input_value = inputs
             .remove(INPUT)
             .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value.data.try_as_bytes()?.as_ref().clone();
+        let data = input_value
+            .get_inner_data()
+            .try_as_bytes()?
+            .as_ref()
+            .clone();
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
@@ -149,7 +153,7 @@ impl Operator for FaceDetection {
         _context: &mut zenoh_flow::Context,
         state: &mut State,
         outputs: HashMap<zenoh_flow::PortId, Data>,
-        _deadlinemiss: Option<DeadlineMiss>,
+        _deadlinemiss: Option<LocalDeadlineMiss>,
     ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
         default_output_rule(state, outputs)
     }

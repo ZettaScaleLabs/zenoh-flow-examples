@@ -55,12 +55,12 @@ impl Sink for VideoSink {
         &self,
         _context: &mut zenoh_flow::Context,
         dyn_state: &mut State,
-        input: zenoh_flow::runtime::message::DataMessage,
+        mut input: zenoh_flow::runtime::message::DataMessage,
     ) -> zenoh_flow::ZFResult<()> {
         // Downcasting to right type
         let state = dyn_state.try_get::<VideoState>()?;
 
-        let data = input.data.try_as_bytes()?.as_ref().clone();
+        let data = input.get_inner_data().try_as_bytes()?.as_ref().clone();
 
         let decoded = opencv::imgcodecs::imdecode(
             &opencv::types::VectorOfu8::from_iter(data),
