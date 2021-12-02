@@ -12,6 +12,6 @@ zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master"}
 structopt = "0.3.21"
 log = "0.4"
 serde_yaml = "0.8.13"
-uhlc = "0.3"
+uhlc = "0.4"
 uuid = { version = "0.8", features = ["serde", "v4"] }
 env_logger = "0.9"

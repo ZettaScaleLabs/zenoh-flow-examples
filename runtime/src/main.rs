@@ -59,8 +59,7 @@ async fn main() {
         None => LoaderConfig { extensions: vec![] },
     };
 
-    let session =
-        async_std::sync::Arc::new(zenoh::net::open(zenoh::net::config::peer()).await.unwrap());
+    let session = Arc::new(zenoh::open(zenoh::config::Config::default()).await.unwrap());
     let hlc = async_std::sync::Arc::new(uhlc::HLC::default());
     let loader = Arc::new(Loader::new(loader_config));
 
