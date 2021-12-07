@@ -29,7 +29,7 @@ struct Opt {
     #[structopt(short = "g", long = "graph-file")]
     graph_file: String,
     #[structopt(short = "o", long = "out-file", default_value = "output.dot")]
-    outfile: String,
+    _outfile: String,
     #[structopt(short = "l", long = "loader_config")]
     loader_config: Option<String>,
     #[structopt(short = "r", long = "runtime")]

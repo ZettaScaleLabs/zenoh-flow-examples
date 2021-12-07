@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::model::{FromDescriptor, ToDescriptor};
+use zenoh_flow::model::{OutputDescriptor, InputDescriptor};
 use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
@@ -139,11 +139,11 @@ async fn main() {
 
     zf_graph
         .try_add_link(
-            FromDescriptor {
+            OutputDescriptor {
                 node: "counter-source".into(),
                 output: String::from(SOURCE).into(),
             },
-            ToDescriptor {
+            InputDescriptor {
                 node: "generic-sink".into(),
                 input: String::from(SOURCE).into(),
             },

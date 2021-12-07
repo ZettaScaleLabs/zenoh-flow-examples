@@ -17,7 +17,7 @@ use async_trait::async_trait;
 use opencv::{core, highgui, prelude::*, videoio};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
-use zenoh_flow::model::{FromDescriptor, ToDescriptor};
+use zenoh_flow::model::{OutputDescriptor, InputDescriptor};
 use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
@@ -231,11 +231,11 @@ async fn main() {
 
     zf_graph
         .try_add_link(
-            FromDescriptor {
+            OutputDescriptor {
                 node: "camera-source".into(),
                 output: String::from(SOURCE).into(),
             },
-            ToDescriptor {
+            InputDescriptor {
                 node: "video-sink".into(),
                 input: String::from(INPUT).into(),
             },
