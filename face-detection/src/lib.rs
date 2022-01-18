@@ -55,7 +55,7 @@ impl Operator for FaceDetection {
         &self,
         _context: &mut zenoh_flow::Context,
         state: &mut State,
-        tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::Token>,
+        tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::InputToken>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
     }

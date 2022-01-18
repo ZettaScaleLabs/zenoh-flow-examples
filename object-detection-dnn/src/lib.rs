@@ -21,7 +21,7 @@ use std::{
 };
 use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
-    Data, Node, NodeOutput, Operator, PortId, State, Token, ZFError, ZFResult,
+    Data, Node, NodeOutput, Operator, PortId, State, InputToken, ZFError, ZFResult,
 };
 use zenoh_flow::{Configuration, LocalDeadlineMiss};
 
@@ -103,7 +103,7 @@ impl Operator for ObjDetection {
         &self,
         _context: &mut Context,
         state: &mut State,
-        tokens: &mut HashMap<PortId, Token>,
+        tokens: &mut HashMap<PortId, InputToken>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
     }

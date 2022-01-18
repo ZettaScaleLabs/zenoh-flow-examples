@@ -18,7 +18,7 @@ use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
-    Operator, State, Token,
+    Operator, State, InputToken,
 };
 use zenoh_flow::{Configuration, LocalDeadlineMiss};
 use zenoh_flow::{Context, Data, ZFError};
@@ -40,7 +40,7 @@ impl Operator for BuzzOperator {
         &self,
         _context: &mut Context,
         state: &mut State,
-        tokens: &mut HashMap<zenoh_flow::PortId, Token>,
+        tokens: &mut HashMap<zenoh_flow::PortId, InputToken>,
     ) -> ZFResult<bool> {
         default_input_rule(state, tokens)
     }

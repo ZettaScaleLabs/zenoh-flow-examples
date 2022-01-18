@@ -17,7 +17,7 @@ use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::Configuration;
 use zenoh_flow::LocalDeadlineMiss;
-use zenoh_flow::Token;
+use zenoh_flow::InputToken;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, zf_empty_state,
     Node, NodeOutput, Operator, State, ZFError,
@@ -46,7 +46,7 @@ impl Operator for FizzOperator {
         &self,
         _context: &mut Context,
         state: &mut State,
-        inputs: &mut HashMap<PortId, Token>,
+        inputs: &mut HashMap<PortId, InputToken>,
     ) -> ZFResult<bool> {
         default_input_rule(state, inputs)
     }
