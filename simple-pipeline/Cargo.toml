@@ -15,7 +15,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-std = { version = "=1.9.0", features = ["attributes","unstable"] }
+async-std = { version = "=1.10.0", features = ["attributes","unstable"] }
 zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
 zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master" }
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
