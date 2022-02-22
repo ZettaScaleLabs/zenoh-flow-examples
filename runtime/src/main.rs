@@ -17,21 +17,21 @@ use std::convert::TryFrom;
 use std::fs::{File, *};
 use std::io::Write;
 use std::path::Path;
-use structopt::StructOpt;
+use clap::Parser;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "dpn")]
+#[derive(Debug, Parser)]
+#[clap(name = "dpn")]
 struct Opt {
-    #[structopt(short = "g", long = "graph-file")]
+    #[clap(short = 'g', long = "graph-file")]
     graph_file: String,
-    #[structopt(short = "o", long = "out-file", default_value = "output.dot")]
+    #[clap(short = 'o', long = "out-file", default_value = "output.dot")]
     _outfile: String,
-    #[structopt(short = "l", long = "loader_config")]
+    #[clap(short = 'l', long = "loader_config")]
     loader_config: Option<String>,
-    #[structopt(short = "r", long = "runtime")]
+    #[clap(short = 'r', long = "runtime")]
     runtime: String,
 }
 
@@ -48,7 +48,7 @@ fn _write_record_to_file(
 async fn main() {
     env_logger::init();
 
-    let opt = Opt::from_args();
+    let opt = Opt::parse();
     let yaml_df = read_to_string(opt.graph_file).unwrap();
 
     let loader_config = match opt.loader_config {

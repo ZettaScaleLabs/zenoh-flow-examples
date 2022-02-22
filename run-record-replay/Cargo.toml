@@ -9,7 +9,7 @@ edition = "2018"
 async-std = { version = "=1.10.0", features = ["attributes"] }
 zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
 zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master"}
-structopt = "0.3.21"
+clap = { version = "3.1.1", features = ["derive"] }
 log = "0.4"
 serde_yaml = "0.8.13"
 uhlc = "0.4"
