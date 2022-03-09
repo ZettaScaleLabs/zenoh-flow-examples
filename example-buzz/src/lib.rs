@@ -17,8 +17,8 @@ use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::{
-    default_input_rule, default_output_rule, export_operator, types::ZFResult, Node, NodeOutput,
-    Operator, State, InputToken,
+    default_input_rule, default_output_rule, export_operator, types::ZFResult, InputToken, Node,
+    NodeOutput, Operator, State,
 };
 use zenoh_flow::{Configuration, LocalDeadlineMiss};
 use zenoh_flow::{Context, Data, ZFError};

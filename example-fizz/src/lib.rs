@@ -16,8 +16,8 @@ use std::collections::HashMap;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::message::DataMessage;
 use zenoh_flow::Configuration;
-use zenoh_flow::LocalDeadlineMiss;
 use zenoh_flow::InputToken;
+use zenoh_flow::LocalDeadlineMiss;
 use zenoh_flow::{
     default_input_rule, default_output_rule, export_operator, types::ZFResult, zf_empty_state,
     Node, NodeOutput, Operator, State, ZFError,

@@ -13,11 +13,11 @@
 
 // TODO: this should become a deamon.
 
+use clap::Parser;
 use std::convert::TryFrom;
 use std::fs::{File, *};
 use std::io::Write;
 use std::path::Path;
-use clap::Parser;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
@@ -56,7 +56,7 @@ async fn main() {
             let yaml_conf = read_to_string(config).unwrap();
             serde_yaml::from_str::<LoaderConfig>(&yaml_conf).unwrap()
         }
-        None => LoaderConfig { extensions: vec![] },
+        None => LoaderConfig::new(),
     };
 
     let session = Arc::new(zenoh::open(zenoh::config::Config::default()).await.unwrap());

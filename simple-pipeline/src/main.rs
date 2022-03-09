@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::stream::StreamExt;
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::model::{OutputDescriptor, InputDescriptor};
+use zenoh_flow::model::{InputDescriptor, OutputDescriptor};
 use zenoh_flow::runtime::dataflow::instance::DataflowInstance;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
@@ -101,7 +101,7 @@ async fn main() {
     let ctx = RuntimeContext {
         session,
         hlc,
-        loader: Arc::new(Loader::new(LoaderConfig { extensions: vec![] })),
+        loader: Arc::new(Loader::new(LoaderConfig::new())),
         runtime_name: String::from("local").into(),
         runtime_uuid: uuid::Uuid::new_v4(),
     };

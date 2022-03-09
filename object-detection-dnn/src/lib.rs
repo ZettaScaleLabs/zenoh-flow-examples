@@ -21,7 +21,7 @@ use std::{
 };
 use zenoh_flow::{
     default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
-    Data, Node, NodeOutput, Operator, PortId, State, InputToken, ZFError, ZFResult,
+    Data, InputToken, Node, NodeOutput, Operator, PortId, State, ZFError, ZFResult,
 };
 use zenoh_flow::{Configuration, LocalDeadlineMiss};
 
