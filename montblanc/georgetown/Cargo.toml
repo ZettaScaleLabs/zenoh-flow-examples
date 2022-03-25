@@ -1,0 +1,13 @@
+[package]
+name = "georgetown"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "georgetown"
+crate-type=["cdylib"]
+path="src/lib.rs"
+
+[dependencies]
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+nodes = {path = "../nodes"}

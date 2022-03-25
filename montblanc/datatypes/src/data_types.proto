@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package datatypes.data_types;
+
+message Timestamp {
+  uint64 sec = 1;
+  uint32 nanosec = 2;
+}
+
+message Header {
+  int32 sec = 1;
+  uint32 nanosec = 2;
+  string frame_id = 3;
+}
+
+message Point {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Quaternion {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+  double w = 4;
+}
+
+message Vector3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Vector3Stamped {
+  Header header = 1;
+  Vector3 vector = 2;
+}
+
+message Pose {
+  Point position = 1;
+  Quaternion orientation = 2;
+}
+
+message Twist {
+  Vector3 linear = 1;
+  Vector3 angular = 2;
+}
+
+message TwistWithCovariance {
+  Twist twist = 1;
+  repeated double covariance = 2;
+}
+
+message TwistWithCovarianceStamped {
+  Header header = 1;
+  TwistWithCovariance twist = 2;
+}
+
+message Wrench {
+  Vector3 force = 1;
+  Vector3 torque = 2;
+}
+
+message WrenchStamped {
+  Header header = 1;
+  Wrench wrench = 2;
+}
+
+message Image {
+  Header header = 1;
+  uint32 height = 2;
+  uint32 width = 3;
+  string encoding = 4;
+  bool is_bigendian = 5;
+  uint32 step = 6;
+  bytes data = 7;
+}
+
+message PointCloud2 {
+  message PointField {
+    enum DataType {
+      INT8 = 0;
+      UINT8 = 1;
+      INT16 = 2;
+      UINT16 = 3;
+      INT32 = 4;
+      UINT32 = 5;
+      FLOAT32 = 6;
+      FLOAT64 = 7;
+    }
+    string name = 1;
+    uint32 offset = 2;
+    DataType datatype = 3;
+    uint32 count = 4;
+  }
+
+  Header header = 1;
+  uint32 height = 2;
+  uint32 width = 3;
+  repeated PointField fields = 4;
+  bool is_bigendian = 5;
+  uint32 point_step = 6;
+  uint32 row_step = 7;
+  bytes data = 8;
+  bool is_dense = 9;
+}
+
+message LaserScan {
+  Header header = 1;
+  float angle_min = 2;
+  float angle_max = 3;
+  float angle_increment = 4;
+  float time_increment = 5;
+  float scan_time = 6;
+  float range_min = 7;
+  float range_max = 8;
+  repeated float ranges = 9;
+  repeated float intensities = 10;
+}
+
+message Float32 {
+  float value = 1;
+}
+
+message Int64 {
+  int64 value = 1;
+}
+
+message Int32 {
+  int32 value = 1;
+}
+
+message Float64 {
+  double value = 1;
+}
+
+message String {
+  string value = 1;
+}
