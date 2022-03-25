@@ -56,7 +56,9 @@ operators:
         type: point-cloud2
   - id : Mandalay
     uri: file://./target/release/libmandalay.so
-    # period: 100ms
+    # period:
+    #   length: 100
+    #   unit: ms
     inputs:
       - id: Danube
         type: str
@@ -100,8 +102,8 @@ operators:
       - id: Congo
         type: twist
       - id: Mekong
-        type: Twist-w-coovariance-ts
-  - id : Gevena
+        type: twist-w-coovariance-ts
+  - id : Geneva
     uri: file://./target/release/libgevena.so
     inputs:
       - id: Danube
@@ -141,10 +143,14 @@ operators:
         type: wrench-ts
   - id : Georgetown
     uri: file://./target/release/libgeorgetown.so
-    # period: 50ms
+    # period:
+    #   length: 50
+    #   unit: ms
     inputs:
       - id: Lena
         type: wrench-ts
+      - id: Murray
+        type: vector3-ts
     outputs: []
       # - id: Volga
       #   type: f64
@@ -154,35 +160,56 @@ operators:
 sources:
   - id : Cordoba
     uri: file://./target/release/libcordoba.so
+    period:
+      length: 100
+      unit: ms
     output:
       id: Amazon
       type: f32
   - id : Portsmouth
     uri: file://./target/release/libportsmouth.so
+    period:
+      length: 500
+      unit: ms
     output:
       id: Danube
       type: str
   - id : Freeport
     uri: file://./target/release/libfreeport.so
+    period:
+      length: 50
+      unit: ms
     output:
       id: Ganges
       type: i64
   - id : Madelin
     uri: file://./target/release/libmadelin.so
+    period:
+      length: 10
+      unit: ms
     output:
       id: Nile
       type: i32
   - id : Delhi
     uri: file://./target/release/libdelhi.so
+    period:
+      length: 1
+      unit: s
     output:
       id: Columbia
       type: img
   - id : Hebron
     uri: file://./target/release/libhebron.so
+    period:
+      length: 100
+      unit: ms
     output:
       id: Chanab
       type: quaternion
   - id : Kingston
+    period:
+      length: 100
+      unit: ms
     uri: file://./target/release/libkingston.so
     output:
       id: Yamuna
@@ -281,6 +308,12 @@ links:
     node : Mandalay
     input : Chanab
 - from:
+    node : Osaka
+    output : Godavari
+  to:
+    node : Mandalay
+    input : Godavari
+- from:
     node : Tripoli
     output : Loire
   to:
@@ -328,6 +361,12 @@ links:
   to:
     node : Ponce
     input : Yamuna
+- from:
+    node : Osaka
+    output : Godavari
+  to:
+    node : Ponce
+    input : Godavari
 - from:
     node : Ponce
     output : Congo
@@ -404,42 +443,42 @@ loops:
   port_type: f64
 
 
-mapping:
-  - id: Cordoba
-    runtime: robot
-  - id: Portsmouth
-    runtime: robot
-  - id: Freeport
-    runtime: robot
-  - id: Madelin
-    runtime: robot
-  - id: Lyon
-    runtime: robot
-  - id: Delhi
-    runtime: robot
-  - id: Hamburg
-    runtime: robot
-  - id: Taipei
-    runtime: robot
-  - id: Osaka
-    runtime: robot
-  - id: Hebron
-    runtime: robot
-  - id: Tripoli
-    runtime: robot
-  - id: Kingston
-    runtime: robot
-  - id: Mandalay
-    runtime: robot
-  - id: Ponce
-    runtime: robot
-  - id: Geneva
-    runtime: ws
-  - id: Monaco
-    runtime: ws
-  - id: Rotterdam
-    runtime: ws
-  - id: Barcelona
-    runtime: ws
-  - id: Georgetown
-    runtime: ws
+# mapping:
+#   - id: Cordoba
+#     runtime: robot
+#   - id: Portsmouth
+#     runtime: robot
+#   - id: Freeport
+#     runtime: robot
+#   - id: Madelin
+#     runtime: robot
+#   - id: Lyon
+#     runtime: robot
+#   - id: Delhi
+#     runtime: robot
+#   - id: Hamburg
+#     runtime: robot
+#   - id: Taipei
+#     runtime: robot
+#   - id: Osaka
+#     runtime: robot
+#   - id: Hebron
+#     runtime: robot
+#   - id: Tripoli
+#     runtime: robot
+#   - id: Kingston
+#     runtime: robot
+#   - id: Mandalay
+#     runtime: robot
+#   - id: Ponce
+#     runtime: robot
+#   - id: Geneva
+#     runtime: ws
+#   - id: Monaco
+#     runtime: ws
+#   - id: Rotterdam
+#     runtime: ws
+#   - id: Barcelona
+#     runtime: ws
+#   - id: Georgetown
+#     runtime: ws
