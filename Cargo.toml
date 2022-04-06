@@ -32,6 +32,7 @@ members = [
   "video-file-source",
   "runtime",
   "run-record-replay",
+  "turtlebot3-source",
 ]
 
 [profile.dev]

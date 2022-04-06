@@ -9,7 +9,7 @@ edition = "2021"
 zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
 env_logger = "0.9"
 serde = { version = "1.0.55", features = ["derive"] }
-async-std = { version = "=1.10.0", features = ["attributes"] }
+async-std = { version = "=1.11.0", features = ["attributes"] }
 typetag = "0.1"
 log = "0.4"
 bincode = "1"

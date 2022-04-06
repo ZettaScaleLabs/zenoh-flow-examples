@@ -1,0 +1,27 @@
+flow: RandomGeneration
+operators: []
+sources:
+  - id : TB3
+    period:
+      length: 100
+      unit: ms
+    configuration:
+      serial: /dev/ttyACM0
+      baudrate: 115200
+    uri: file://./target/debug/libtb3_source.so
+    output:
+        id: Data
+        type: robot
+sinks:
+  - id : PrintSink
+    uri: file://./target/debug/libgeneric_sink.so
+    input:
+        id: Data
+        type: robot
+links:
+- from:
+    node : TB3
+    output : Data
+  to:
+    node : PrintSink
+    input : Data
