@@ -14,11 +14,6 @@ sinks:
       type: image
 
 links:
-- from: Camera.Frame
-  to: Window.Frame
-
-
-links:
 - from:
     node : Camera
     output : Frame
