@@ -44,9 +44,6 @@ links:
 
 
 mapping:
-  - id: Window
-    runtime: runtime1
-  - id: Camera0
-    runtime: runtime
-  - id: ObjectDetection
-    runtime: runtime2
+  Window : runtime1
+  Camera0 : runtime
+  ObjectDetection: runtime2

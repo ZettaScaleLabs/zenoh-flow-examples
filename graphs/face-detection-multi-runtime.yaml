@@ -45,9 +45,6 @@ links:
 
 
 mapping:
-  - id: Window
-    runtime: gigot
-  - id: Camera0
-    runtime: nuc
-  - id: FaceDetection
-    runtime: leia
+  Window: gigot
+  Camera0: nuc
+  FaceDetection: leia

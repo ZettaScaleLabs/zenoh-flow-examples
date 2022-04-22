@@ -46,9 +46,6 @@ configuration:
   test: "toto"
 
 # mapping:
-#   - id: SumOperator
-#     runtime: runtime1
-#   - id: Counter
-#     runtime: runtime0
-#   - id: PrintSink
-#     runtime: runtime0
+#   SumOperator: runtime1
+#   Counter: runtime0
+#   PrintSink: runtime0

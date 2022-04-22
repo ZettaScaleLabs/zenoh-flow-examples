@@ -44,9 +44,6 @@ links:
     input : Frame
 
 mapping:
-  - id: Window
-    runtime: foo
-  - id: Camera0
-    runtime: bar
-  - id: ObjectDetection
-    runtime: cuda
+  Window : foo
+  Camera0: bar
+  ObjectDetection: cuda

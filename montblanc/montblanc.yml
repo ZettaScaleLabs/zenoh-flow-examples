@@ -458,41 +458,22 @@ loops:
 
 
 # mapping:
-#   - id: Cordoba
-#     runtime: robot
-#   - id: Portsmouth
-#     runtime: robot
-#   - id: Freeport
-#     runtime: robot
-#   - id: Madelin
-#     runtime: robot
-#   - id: Lyon
-#     runtime: robot
-#   - id: Delhi
-#     runtime: robot
-#   - id: Hamburg
-#     runtime: robot
-#   - id: Taipei
-#     runtime: robot
-#   - id: Osaka
-#     runtime: robot
-#   - id: Hebron
-#     runtime: robot
-#   - id: Tripoli
-#     runtime: robot
-#   - id: Kingston
-#     runtime: robot
-#   - id: Mandalay
-#     runtime: robot
-#   - id: Ponce
-#     runtime: robot
-#   - id: Geneva
-#     runtime: ws
-#   - id: Monaco
-#     runtime: ws
-#   - id: Rotterdam
-#     runtime: ws
-#   - id: Barcelona
-#     runtime: ws
-#   - id: Georgetown
-#     runtime: ws
+#   Cordoba: robot
+#   Portsmouth: robot
+#   Freeport: robot
+#   Madelin: robot
+#   Lyon: robot
+#   Delhi robot
+#   Hamburg: robot
+#   Taipei: robot
+#   Osaka: robot
+#   Hebron: robot
+#   Tripoli: robot
+#   Kingston: robot
+#   Mandalay: robot
+#   Ponce: robot
+#   Geneva: ws
+#   Monaco: ws
+#   Rotterdam: ws
+#   Barcelona: ws
+#   Georgetown: ws

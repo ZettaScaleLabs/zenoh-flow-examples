@@ -153,19 +153,11 @@ links:
       input: Str
 
 mapping:
-  - id: ManualSenderOperator
-    runtime: foo
-  - id: FizzOperator
-    runtime: foo
-  - id: BuzzOperator
-    runtime: bar
-  - id: ReceiverOperator
-    runtime: bar
-  - id: BuzzOperator2
-    runtime: baz
-  - id: ReceiverOperator2
-    runtime: baz
-  - id: BuzzOperator3
-    runtime: foo
-  - id: ReceiverOperator3
-    runtime: foo
+  ManualSenderOperator: foo
+  FizzOperator: foo
+  BuzzOperator: bar
+  ReceiverOperator: bar
+  BuzzOperator2: baz
+  ReceiverOperator2: baz
+  BuzzOperator3: foo
+  ReceiverOperator3: foo
