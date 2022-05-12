@@ -16,7 +16,7 @@ use zenoh_flow::zenoh_flow_derive::ZFData;
 use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 use super::sensors::{BatteryState, JointState, MagneticField, IMU};
-
+use hls_lfcd_lds_driver::LaserReading;
 pub(crate) const LINEAR_SCALING_FACTOR: f64 = 0.20;
 pub(crate) const ANGULAR_SCALING_FACTOR: f64 = 2.60;
 
@@ -155,5 +155,25 @@ impl Deserializable for RobotInformation {
     {
         let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
         Ok(value)
+    }
+}
+
+
+
+#[derive(Debug, ZFData, Serialize, Deserialize, Clone)]
+pub struct LaserScan(pub LaserReading);
+
+impl ZFData for LaserScan {
+    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
+        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    }
+}
+
+impl Deserializable for LaserScan {
+    fn try_deserialize(bytes: &[u8]) -> ZFResult<LaserScan>
+    where
+        Self: Sized,
+    {
+        Ok(bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?)
     }
 }

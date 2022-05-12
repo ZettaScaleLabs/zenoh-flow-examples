@@ -35,3 +35,4 @@ serde-big-array = "0.4.1"
 typetag = "0.1"
 bincode = "1"
 cdr = "0.2.4"
+hls_lfcd_lds_driver = {version  = "0.1",  default-features = false,  features = ["async_smol", "ser_de"]}
