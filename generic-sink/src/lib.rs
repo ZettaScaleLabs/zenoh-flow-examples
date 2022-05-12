@@ -58,7 +58,6 @@ impl Sink for GenericSink {
                 println!("#######");
                 println!("Example Generic Sink Received -> {:?}", input);
                 println!("#######");
-                Ok(())
             }
             Some(f) => {
                 let mut guard = f.lock().await;
@@ -66,9 +65,9 @@ impl Sink for GenericSink {
                 writeln!(&mut guard, "Example Generic Sink Received -> {:?}", input).unwrap();
                 writeln!(&mut guard, "#######").unwrap();
                 guard.sync_all().unwrap();
-                Ok(())
             }
         }
+        Ok(())
     }
 }
 

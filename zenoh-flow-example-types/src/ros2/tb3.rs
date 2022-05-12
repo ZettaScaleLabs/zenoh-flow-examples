@@ -17,6 +17,9 @@ use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 use super::sensors::{BatteryState, JointState, MagneticField, IMU};
 
+pub(crate) const LINEAR_SCALING_FACTOR: f64 = 0.20;
+pub(crate) const ANGULAR_SCALING_FACTOR: f64 = 2.60;
+
 #[repr(u8)]
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum BumperState {

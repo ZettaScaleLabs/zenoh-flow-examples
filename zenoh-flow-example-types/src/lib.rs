@@ -13,6 +13,7 @@
 //
 
 use std::convert::TryInto;
+use zenoh_flow::serde::{Deserialize, Serialize};
 use zenoh_flow::zenoh_flow_derive::{ZFData, ZFState};
 use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 // We may want to provide some "built-in" types
@@ -88,5 +89,64 @@ impl Deserializable for ZFBytes {
         Self: Sized,
     {
         Ok(ZFBytes(bytes.into()))
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone, Copy, ZFData)]
+pub struct GamepadInput {
+    pub left_trigger: f32,
+    pub right_trigger: f32,
+    pub left_stick_x: f32,
+}
+
+impl Default for GamepadInput {
+    fn default() -> Self {
+        Self {
+            left_trigger: 0.0,
+            right_trigger: 0.0,
+            left_stick_x: 0.0,
+        }
+    }
+}
+
+impl ZFData for GamepadInput {
+    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
+        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    }
+}
+
+impl Deserializable for GamepadInput {
+    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    where
+        Self: Sized,
+    {
+        bincode::deserialize(bytes).map_err(|_| ZFError::DeseralizationError)
+    }
+}
+
+impl From<&GamepadInput> for crate::ros2::geometry::Twist {
+    fn from(gamepad_input: &GamepadInput) -> Self {
+        // left trigger indicates going backward
+        // right trigger indicates going forward
+        let linear_x = (gamepad_input.right_trigger as f64 - gamepad_input.left_trigger as f64)
+            * crate::ros2::tb3::LINEAR_SCALING_FACTOR;
+
+        // left stick x indicates going left / right.
+        // However, it feels more natural if the values are swapped, hence the minus in front.
+        let angular_z =
+            -gamepad_input.left_stick_x as f64 * crate::ros2::tb3::ANGULAR_SCALING_FACTOR;
+
+        Self {
+            linear: crate::ros2::geometry::Vector3 {
+                x: linear_x,
+                y: 0.0,
+                z: 0.0,
+            },
+            angular: crate::ros2::geometry::Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: angular_z,
+            },
+        }
     }
 }

@@ -33,7 +33,10 @@ members = [
   "video-file-source",
   "runtime",
   "run-record-replay",
-  "turtlebot3-source",
+  "source-tick",
+  "tb3",
+  "operator-twist",
+  "source-gamepad",
 ]
 
 [profile.dev]
