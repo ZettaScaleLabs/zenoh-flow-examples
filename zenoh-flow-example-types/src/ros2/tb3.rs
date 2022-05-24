@@ -158,8 +158,6 @@ impl Deserializable for RobotInformation {
     }
 }
 
-
-
 #[derive(Debug, ZFData, Serialize, Deserialize, Clone)]
 pub struct LaserScan(pub LaserReading);
 

@@ -21,9 +21,11 @@ use std::convert::TryFrom;
 use std::fs::{File, *};
 use std::io::Write;
 use std::path::Path;
+use zenoh::config::Config;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
+use zenoh_flow::ZFResult;
 
 #[derive(Debug, Parser)]
 #[clap(name = "dpn")]
@@ -36,6 +38,8 @@ struct Opt {
     loader_config: Option<String>,
     #[clap(short = 'r', long = "runtime")]
     runtime: String,
+    #[clap(short = 'z', long = "zenoh-config")]
+    zenoh_config: Option<String>,
 }
 
 fn _write_record_to_file(
@@ -62,7 +66,13 @@ async fn main() {
         None => LoaderConfig::new(),
     };
 
-    let session = Arc::new(zenoh::open(zenoh::config::Config::default()).await.unwrap());
+    let z_config = match opt.zenoh_config {
+        None => zenoh::config::Config::default(),
+        Some(z_config) => get_zenoh_config(&z_config).unwrap(),
+    };
+
+    let session = Arc::new(zenoh::open(z_config).await.unwrap());
+
     let hlc = async_std::sync::Arc::new(uhlc::HLC::default());
     let loader = Arc::new(Loader::new(loader_config));
 
@@ -166,4 +176,8 @@ async fn main() {
     }
 
     log::trace!("Bye!");
+}
+
+fn get_zenoh_config(path: &str) -> ZFResult<Config> {
+    Ok(zenoh::config::Config::from_file(path)?)
 }
