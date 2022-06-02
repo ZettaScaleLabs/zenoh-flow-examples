@@ -172,6 +172,6 @@ impl Deserializable for LaserScan {
     where
         Self: Sized,
     {
-        Ok(bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?)
+        bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)
     }
 }
