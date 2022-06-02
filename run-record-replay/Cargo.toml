@@ -14,12 +14,12 @@
 
 [package]
 name = "run-record-replay"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2018"
 
 [dependencies]
 async-std = { version = "=1.11.0", features = ["attributes"] }
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", tag = "v0.3.0" }
 zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master"}
 clap = { version = "3.1.1", features = ["derive"] }
 log = "0.4"

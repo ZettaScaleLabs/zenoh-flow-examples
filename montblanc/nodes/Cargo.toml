@@ -14,11 +14,11 @@
 
 [package]
 name = "nodes"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", tag = "v0.3.0" }
 env_logger = "0.9"
 serde = { version = "1.0.55", features = ["derive"] }
 async-std = { version = "=1.11.0", features = ["attributes"] }
