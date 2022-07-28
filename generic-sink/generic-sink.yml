@@ -1,0 +1,6 @@
+id: PrintSink
+uri: file://./target/debug/libgeneric_sink.dylib
+input:
+  id: Data
+  type: usize
+tags: []

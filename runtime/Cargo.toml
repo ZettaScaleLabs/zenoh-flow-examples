@@ -20,11 +20,11 @@ edition = "2018"
 [dependencies]
 async-ctrlc ={version = "1.2.0", features = ["stream"]}
 async-std = { version = "=1.11.0", features = ["attributes"] }
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", branch = "master"}
 clap = { version = "3.1.1", features = ["derive"] }
 log = "0.4"
 serde_yaml = "0.8.13"
-uhlc = "0.4"
+uhlc = "0.5"
 uuid = { version = "0.8", features = ["serde", "v4"] }
 env_logger = "0.9"

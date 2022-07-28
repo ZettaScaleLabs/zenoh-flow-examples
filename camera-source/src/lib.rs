@@ -11,14 +11,13 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
 use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
-use zenoh_flow::Configuration;
-use zenoh_flow::{
-    types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source, State,
-};
+use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source};
+use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 
 #[derive(Debug)]
 struct CameraSource;
@@ -93,29 +92,10 @@ impl CameraState {
             delay,
         }
     }
-}
 
-impl Node for CameraSource {
-    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(CameraState::new(configuration)))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
-#[async_trait]
-impl Source for CameraSource {
-    async fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-    ) -> ZFResult<Data> {
-        let state = dyn_state.try_get::<CameraState>()?;
-
-        let mut cam = zf_spin_lock!(state.camera);
-        let encode_options = zf_spin_lock!(state.encode_options);
+    pub fn get_frame(&self) -> Vec<u8> {
+        let mut cam = zf_spin_lock!(self.camera);
+        let encode_options = zf_spin_lock!(self.encode_options);
 
         let mut frame = core::Mat::default();
         cam.read(&mut frame).unwrap();
@@ -124,7 +104,7 @@ impl Source for CameraSource {
         opencv::imgproc::resize(
             &frame,
             &mut reduced,
-            opencv::core::Size::new(state.resolution.0, state.resolution.0),
+            opencv::core::Size::new(self.resolution.0, self.resolution.0),
             0.0,
             0.0,
             opencv::imgproc::INTER_LINEAR,
@@ -134,8 +114,34 @@ impl Source for CameraSource {
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &reduced, &mut buf, &encode_options).unwrap();
 
-        async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
-        Ok(Data::from_bytes(buf.into()))
+        buf.into()
+    }
+}
+
+#[async_trait]
+impl Node for CameraSource {
+    async fn finalize(&self) -> ZFResult<()> {
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Source for CameraSource {
+    async fn setup(
+        &self,
+        configuration: &Option<Configuration>,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = CameraState::new(configuration);
+
+        let output = outputs.get("Frame").unwrap()[0].clone();
+
+        Arc::new(async move || {
+            let buf = state.get_frame();
+            output.send(Data::from_bytes(buf), None).await.unwrap();
+            async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
+            Ok(())
+        })
     }
 }
 

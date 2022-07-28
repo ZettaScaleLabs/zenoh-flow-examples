@@ -1,0 +1,6 @@
+id : VideoSink
+uri: file://./target/release/libvideo_sink.so
+input:
+  id: Frame
+  type: image
+tags: []

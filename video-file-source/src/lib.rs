@@ -11,16 +11,16 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-
-use async_std::sync::{Arc, Mutex};
+#![feature(async_closure)]
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
-use zenoh_flow::Configuration;
+use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
     types::{ZFError, ZFResult},
     zenoh_flow_derive::ZFState,
-    zf_spin_lock, Data, Node, Source, State,
+    zf_spin_lock, Data, Node, Source,
 };
+use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 
 #[derive(Debug)]
 struct VideoSource;
@@ -70,35 +70,16 @@ impl VideoSourceState {
             delay,
         }
     }
-}
 
-impl Node for VideoSource {
-    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(VideoSourceState::new(configuration)))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
-#[async_trait]
-impl Source for VideoSource {
-    async fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-    ) -> ZFResult<Data> {
-        let state = dyn_state.try_get::<VideoSourceState>()?;
-
-        let mut cam = zf_spin_lock!(state.camera);
-        let encode_options = zf_spin_lock!(state.encode_options);
+    pub fn capture(&self) -> ZFResult<Vec<u8>> {
+        let mut cam = zf_spin_lock!(self.camera);
+        let encode_options = zf_spin_lock!(self.encode_options);
 
         let mut frame = core::Mat::default();
         match cam.read(&mut frame) {
             Ok(false) => {
                 *cam =
-                    videoio::VideoCapture::from_file(&state.source_file, videoio::CAP_ANY).unwrap(); // 0 is the default camera
+                    videoio::VideoCapture::from_file(&self.source_file, videoio::CAP_ANY).unwrap(); // 0 is the default camera
                 let opened = videoio::VideoCapture::is_opened(&cam).unwrap();
                 if !opened {
                     panic!("Unable to open default camera!");
@@ -109,7 +90,7 @@ impl Source for VideoSource {
             Ok(true) => (),
             Err(_) => {
                 *cam =
-                    videoio::VideoCapture::from_file(&state.source_file, videoio::CAP_ANY).unwrap(); // 0 is the default camera
+                    videoio::VideoCapture::from_file(&self.source_file, videoio::CAP_ANY).unwrap(); // 0 is the default camera
                 let opened = videoio::VideoCapture::is_opened(&cam).unwrap();
                 if !opened {
                     panic!("Unable to open default camera!");
@@ -121,14 +102,32 @@ impl Source for VideoSource {
 
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
+        Ok(buf.into())
+    }
+}
+#[async_trait]
+impl Node for VideoSource {
+    async fn finalize(&self) -> ZFResult<()> {
+        Ok(())
+    }
+}
 
-        drop(cam);
-        drop(encode_options);
-        drop(frame);
+#[async_trait]
+impl Source for VideoSource {
+    async fn setup(
+        &self,
+        configuration: &Option<Configuration>,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = VideoSourceState::new(configuration);
 
-        async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
+        let output = outputs.get("Frame").unwrap()[0].clone();
 
-        Ok(Data::from_bytes(buf.into()))
+        Arc::new(async move || {
+            zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
+            let frame = state.capture()?;
+            output.send(Data::from_bytes(frame), None).await
+        })
     }
 }
 

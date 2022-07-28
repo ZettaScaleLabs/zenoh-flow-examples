@@ -11,31 +11,39 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Configuration;
-use zenoh_flow::{types::ZFResult, zf_empty_state, Context, Data, Node, Source, State};
+use zenoh_flow::{types::ZFResult, Data, Node, Source};
+use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(Debug)]
 struct ExampleRandomSource;
 
+#[async_trait]
 impl Node for ExampleRandomSource {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
 
 #[async_trait]
 impl Source for ExampleRandomSource {
-    async fn run(&self, _context: &mut Context, _state: &mut State) -> ZFResult<Data> {
-        zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-        Ok(Data::from::<ZFUsize>(ZFUsize(rand::random::<usize>())))
+    async fn setup(
+        &self,
+        _configuration: &Option<Configuration>,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let output = outputs.get("Random").unwrap()[0].clone();
+
+        Arc::new(async move || {
+            zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+            output
+                .send(Data::from(ZFUsize(rand::random::<usize>())), None)
+                .await
+        })
     }
 }
 

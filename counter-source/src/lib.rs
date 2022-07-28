@@ -11,12 +11,13 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Configuration;
-use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, zf_empty_state, Data, State};
+use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Data};
+use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 use zenoh_flow::{Node, Source};
 use zenoh_flow_example_types::ZFUsize;
 
@@ -27,24 +28,31 @@ struct CountSource;
 
 #[async_trait]
 impl Source for CountSource {
-    async fn run(&self, _context: &mut zenoh_flow::Context, _state: &mut State) -> ZFResult<Data> {
-        let d = ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel));
-        zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-        Ok(Data::from::<ZFUsize>(d))
-    }
-}
-
-impl Node for CountSource {
-    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
+    async fn setup(
+        &self,
+        configuration: &Option<Configuration>,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
         if let Some(conf) = configuration {
             let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
         }
 
-        zf_empty_state!()
-    }
+        let output = outputs.get("Counter").unwrap()[0].clone();
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        Arc::new(async move || {
+            zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+            let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
+            output.send(d, Some(0u64)).await.unwrap();
+
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for CountSource {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }

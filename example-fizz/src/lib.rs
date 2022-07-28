@@ -11,18 +11,16 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
-use std::collections::HashMap;
+use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::runtime::message::DataMessage;
+use zenoh_flow::AsyncIteration;
 use zenoh_flow::Configuration;
-use zenoh_flow::InputToken;
-use zenoh_flow::LocalDeadlineMiss;
-use zenoh_flow::{
-    default_input_rule, default_output_rule, export_operator, types::ZFResult, zf_empty_state,
-    Node, NodeOutput, Operator, State, ZFError,
-};
-use zenoh_flow::{Context, Data, PortId};
+use zenoh_flow::Inputs;
+use zenoh_flow::Message;
+use zenoh_flow::Outputs;
+use zenoh_flow::{export_operator, types::ZFResult, Data, Node, Operator, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct FizzOperator;
@@ -31,64 +29,42 @@ static LINK_ID_INPUT_INT: &str = "Int";
 static LINK_ID_OUTPUT_INT: &str = "Int";
 static LINK_ID_OUTPUT_STR: &str = "Str";
 
+#[async_trait]
 impl Node for FizzOperator {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
 
+#[async_trait]
 impl Operator for FizzOperator {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, InputToken>,
-    ) -> ZFResult<bool> {
-        default_input_rule(state, inputs)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input_value = inputs.get(LINK_ID_INPUT_INT).unwrap()[0].clone();
+        let output_value = outputs.get(LINK_ID_OUTPUT_INT).unwrap()[0].clone();
+        let output_fizz = outputs.get(LINK_ID_OUTPUT_STR).unwrap()[0].clone();
 
-    fn run(
-        &self,
-        _context: &mut Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, DataMessage>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results = HashMap::<PortId, Data>::with_capacity(2);
+        Arc::new(async move || {
+            let mut fizz = ZFString::from("");
 
-        let mut fizz = ZFString::from("");
+            let value = match input_value.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
 
-        let mut input_value = inputs
-            .remove(LINK_ID_INPUT_INT)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
+            if value.0 % 2 == 0 {
+                fizz = ZFString::from("Fizz");
+            }
 
-        let zfusize = input_value.get_inner_data().try_get::<ZFUsize>()?;
-
-        if zfusize.0 % 2 == 0 {
-            fizz = ZFString::from("Fizz");
-        }
-
-        results.insert(
-            LINK_ID_OUTPUT_INT.into(),
-            Data::from::<ZFUsize>(zfusize.clone()),
-        );
-
-        results.insert(LINK_ID_OUTPUT_STR.into(), Data::from::<ZFString>(fizz));
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<LocalDeadlineMiss>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+            output_value.send(Data::from(value), None).await?;
+            output_fizz.send(Data::from(fizz), None).await
+        })
     }
 }
 

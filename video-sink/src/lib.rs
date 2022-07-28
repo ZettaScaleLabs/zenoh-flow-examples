@@ -11,11 +11,12 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
-use async_std::sync::Arc;
 use async_trait::async_trait;
-use zenoh_flow::Configuration;
-use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, State};
+use zenoh_flow::async_std::sync::Arc;
+use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, ZFError};
 
 use opencv::{highgui, prelude::*};
 
@@ -35,45 +36,52 @@ impl VideoState {
             window_name: window_name.to_string(),
         }
     }
+
+    pub fn show(&self, frame: Vec<u8>) {
+        let decoded = opencv::imgcodecs::imdecode(
+            &opencv::types::VectorOfu8::from_iter(frame),
+            opencv::imgcodecs::IMREAD_COLOR,
+        )
+        .unwrap();
+
+        if decoded.size().unwrap().width > 0 {
+            highgui::imshow(&self.window_name, &decoded).unwrap();
+        }
+
+        highgui::wait_key(10).unwrap();
+    }
 }
 
+#[async_trait]
 impl Node for VideoSink {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(VideoState::new()))
-    }
-
-    fn finalize(&self, state: &mut State) -> ZFResult<()> {
-        let state = state.try_get::<VideoState>()?;
-        highgui::destroy_window(&state.window_name).unwrap();
+    async fn finalize(&self) -> ZFResult<()> {
+        // let state = state.try_get::<VideoState>()?;
+        // highgui::destroy_window(&state.window_name).unwrap();
         Ok(())
     }
 }
 
 #[async_trait]
 impl Sink for VideoSink {
-    async fn run(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-        mut input: zenoh_flow::runtime::message::DataMessage,
-    ) -> zenoh_flow::ZFResult<()> {
-        // Downcasting to right type
-        let state = dyn_state.try_get::<VideoState>()?;
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = VideoState::new();
+        let input = inputs.get("Frame").unwrap()[0].clone();
 
-        let data = input.get_inner_data().try_as_bytes()?.as_ref().clone();
+        Arc::new(async move || {
+            let frame = match input.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
 
-        let decoded = opencv::imgcodecs::imdecode(
-            &opencv::types::VectorOfu8::from_iter(data),
-            opencv::imgcodecs::IMREAD_COLOR,
-        )
-        .unwrap();
-
-        if decoded.size().unwrap().width > 0 {
-            highgui::imshow(&state.window_name, &decoded).unwrap();
-        }
-
-        highgui::wait_key(10).unwrap();
-        Ok(())
+            state.show(frame);
+            Ok(())
+        })
     }
 }
 

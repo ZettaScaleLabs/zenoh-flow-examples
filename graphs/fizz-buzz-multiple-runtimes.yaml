@@ -2,81 +2,31 @@ flow: FizzBuzz
 
 operators:
   - id: FizzOperator
-    uri: file://./target/release/libexample_fizz.dylib
-    inputs:
-      - id: Int
-        type: u64
-    outputs:
-      - id: Int
-        type: u64
-      - id: Str
-        type: string
-
+    descriptor: ./example-fizz/fizz.yml
   - id: BuzzOperator
-    uri: file://./target/release/libexample_buzz.dylib
-    inputs:
-      - id: Int
-        type: u64
-      - id: Str
-        type: string
-    outputs:
-      - id: Str
-        type: string
-
+    descriptor: ./example-buzz/buzz.yml
   - id: BuzzOperator2
-    uri: file://./target/release/libexample_buzz.dylib
-    inputs:
-      - id: Int
-        type: u64
-      - id: Str
-        type: string
-    outputs:
-      - id: Str
-        type: string
+    descriptor: ./example-buzz/buzz.yml
     configuration:
       buzzword: BUZZ-2
-
   - id: BuzzOperator3
-    uri: file://./target/release/libexample_buzz.dylib
-    inputs:
-      - id: Int
-        type: u64
-      - id: Str
-        type: string
-    outputs:
-      - id: Str
-        type: string
+    descriptor: ./example-buzz/buzz.yml
     configuration:
       buzzword: BUZZ-3
 
 sources:
   - id: ManualSenderOperator
-    uri: file://./target/release/libmanual_source.dylib
-    period:
-      duration: 500
-      unit: ms
-    output:
-      id: Int
-      type: u64
+    descriptor: ./manual-source/manual-source.yml
 
 sinks:
   - id: ReceiverOperator
-    uri: file://./target/release/libgeneric_sink.dylib
-    input:
-      id: Str
-      type: string
+    descriptor: ./generic-sink/generic-sink.yml
 
   - id: ReceiverOperator2
-    uri: file://./target/release/libgeneric_sink.dylib
-    input:
-      id: Str
-      type: string
+    descriptor: ./generic-sink/generic-sink.yml
 
   - id: ReceiverOperator3
-    uri: file://./target/release/libgeneric_sink.dylib
-    input:
-      id: Str
-      type: string
+    descriptor: ./generic-sink/generic-sink.yml
 
 links:
   - from:

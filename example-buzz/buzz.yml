@@ -1,0 +1,11 @@
+id: BuzzOperator
+uri: file://./target/release/libexample_buzz.dylib
+inputs:
+  - id: Int
+    type: u64
+  - id: Str
+    type: string
+outputs:
+  - id: Str
+    type: string
+tags: []

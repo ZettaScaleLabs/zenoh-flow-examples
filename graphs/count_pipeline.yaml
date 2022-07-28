@@ -2,18 +2,12 @@ flow: CountingPipeline
 operators: []
 sources:
   - id : Counter
-    uri: file://./target/release/libcounter_source.so
-    output:
-      id: Counter
-      type: usize
+    descriptor: ./counter-source/counter-source.yml
 sinks:
   - id : PrintSink
-    uri: file://./target/release/libgeneric_sink.so
+    descriptor: ./generic-sink/generic-sink.yml
     configuration:
-      file: /tmp/generic-sink.txt
-    input:
-      id: Data
-      type: usize
+     file: /tmp/generic-sink.txt
 
 links:
 - from:

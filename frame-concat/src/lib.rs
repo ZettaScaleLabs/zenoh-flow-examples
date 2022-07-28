@@ -11,14 +11,14 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
-use async_std::sync::{Arc, Mutex};
-use std::collections::HashMap;
+use async_trait::async_trait;
+use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node,
-    Operator, State, ZFError, ZFResult,
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
 };
-use zenoh_flow::{Configuration, LocalDeadlineMiss};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
 
 use opencv::core;
 
@@ -44,68 +44,19 @@ impl FrameConcatState {
             encode_options: Arc::new(Mutex::new(opencv::types::VectorOfi32::new())),
         }
     }
-}
 
-struct FrameConcat;
-
-impl Node for FrameConcat {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(FrameConcatState::new()))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
-impl Operator for FrameConcat {
-    fn input_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::InputToken>,
-    ) -> ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-        inputs: &mut HashMap<zenoh_flow::PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
-
-        let state = dyn_state.try_get::<FrameConcatState>()?;
-        let encode_options = zf_spin_lock!(state.encode_options);
-
-        let mut input_frame1 = inputs
-            .remove(INPUT1)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame1 = input_frame1
-            .get_inner_data()
-            .try_as_bytes()?
-            .as_ref()
-            .clone();
-
-        let mut input_frame2 = inputs
-            .remove(INPUT2)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let frame2 = input_frame2
-            .get_inner_data()
-            .try_as_bytes()?
-            .as_ref()
-            .clone();
+    fn concat(&self, top: Vec<u8>, bottom: Vec<u8>) -> Vec<u8> {
+        let encode_options = zf_spin_lock!(self.encode_options);
 
         // Decode Image
         let frame1 = opencv::imgcodecs::imdecode(
-            &opencv::types::VectorOfu8::from_iter(frame1),
+            &opencv::types::VectorOfu8::from_iter(top),
             opencv::imgcodecs::IMREAD_COLOR,
         )
         .unwrap();
 
         let frame2 = opencv::imgcodecs::imdecode(
-            &opencv::types::VectorOfu8::from_iter(frame2),
+            &opencv::types::VectorOfu8::from_iter(bottom),
             opencv::imgcodecs::IMREAD_COLOR,
         )
         .unwrap();
@@ -118,19 +69,51 @@ impl Operator for FrameConcat {
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
 
-        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
-
-        Ok(results)
+        buf.into()
     }
+}
 
-    fn output_rule(
+struct FrameConcat;
+
+#[async_trait]
+impl Node for FrameConcat {
+    async fn finalize(&self) -> ZFResult<()> {
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Operator for FrameConcat {
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<zenoh_flow::PortId, Data>,
-        _deadlinemiss: Option<LocalDeadlineMiss>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
-        default_output_rule(state, outputs)
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = FrameConcatState::new();
+
+        let input_top = inputs.get(INPUT1).unwrap()[0].clone();
+        let input_bottom = inputs.get(INPUT2).unwrap()[0].clone();
+        let output_frame = outputs.get(OUTPUT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            let top = match input_top.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
+
+            let bottom = match input_bottom.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
+
+            let frame = state.concat(top, bottom);
+            output_frame.send(Data::from_bytes(frame), None).await
+        })
     }
 }
 

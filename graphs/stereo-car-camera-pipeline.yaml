@@ -1,38 +1,21 @@
 flow: CarVisionPipeline # it should have a id, from this we will have an Instance of the graph, UUID => flow
 operators:
   - id : Concatenation # this should be unique in the graph
-    uri: file://./target/release/libframe_concat.so
-    inputs:
-      - id: Frame1
-        type: image
-      - id: Frame2
-        type: image
-    outputs:
-      - id: Frame
-        type: image  #port id = String
+    descriptor: ./frame-concat/concat.yml
 sources: # sources can have only ONE output
   - id : Camera0
-    uri: file://./target/release/libvideo_file_source.so
-    output:
-        id: Frame
-        type: image
+    descriptor: ./video-file-source/video-file-source.yml
     configuration:
       file: /home/luca/Workspace/experiments/I2.mp4
       fps: 15
   - id : Camera1
-    uri: file://./target/release/libvideo_file_source.so
-    output:
-        id: Frame
-        type: image
+    descriptor: ./video-file-source/video-file-source.yml
     configuration:
       file: /home/luca/Workspace/experiments/I1.mp4
       fps: 15
 sinks: # sources can have only ONE input
   - id : Window
-    uri: file://./target/release/libvideo_sink.so
-    input:
-      id: Frame
-      type: image
+    descriptor: ./video-sink/video-sink.yml
 
 links:
 - from:

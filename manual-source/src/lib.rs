@@ -11,41 +11,45 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
 use async_trait::async_trait;
 use std::{sync::Arc, usize};
-use zenoh_flow::{
-    zf_empty_state, Configuration, Context, Data, Node, Source, State, ZFError, ZFResult,
-};
+use zenoh_flow::{AsyncIteration, Configuration, Data, Node, Outputs, Source, ZFError, ZFResult};
 use zenoh_flow_example_types::ZFUsize;
 
 struct ManualSource;
 
 #[async_trait]
 impl Source for ManualSource {
-    async fn run(&self, _context: &mut Context, _state: &mut State) -> ZFResult<Data> {
-        println!("> Please input a number: ");
-        let mut number = String::new();
-        zenoh_flow::async_std::io::stdin()
-            .read_line(&mut number)
-            .await
-            .expect("Could not read number.");
+    async fn setup(
+        &self,
+        _configuration: &Option<Configuration>,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let output = outputs.get("Int").unwrap()[0].clone();
 
-        let value: usize = match number.trim().parse() {
-            Ok(value) => value,
-            Err(_) => return Err(ZFError::GenericError),
-        };
+        Arc::new(async move || {
+            println!("> Please input a number: ");
+            let mut number = String::new();
+            zenoh_flow::async_std::io::stdin()
+                .read_line(&mut number)
+                .await
+                .expect("Could not read number.");
 
-        Ok(Data::from::<ZFUsize>(ZFUsize(value)))
+            let value: usize = match number.trim().parse() {
+                Ok(value) => value,
+                Err(_) => return Err(ZFError::GenericError),
+            };
+
+            output.send(Data::from(ZFUsize(value)), None).await
+        })
     }
 }
 
+#[async_trait]
 impl Node for ManualSource {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }

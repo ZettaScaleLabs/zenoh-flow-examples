@@ -88,6 +88,8 @@ async fn main() {
     let df =
         zenoh_flow::model::dataflow::descriptor::DataFlowDescriptor::from_yaml(&yaml_df).unwrap();
 
+    let df = df.flatten().await.unwrap();
+
     // mapping to infrastructure
     let mapped = zenoh_flow::runtime::map_to_infrastructure(df, &opt.runtime)
         .await
@@ -104,9 +106,11 @@ async fn main() {
     let dataflow = zenoh_flow::runtime::dataflow::Dataflow::try_new(ctx.clone(), dfr).unwrap();
 
     // instantiating
-    let mut instance =
-        zenoh_flow::runtime::dataflow::instance::DataflowInstance::try_instantiate(dataflow)
-            .unwrap();
+    let mut instance = zenoh_flow::runtime::dataflow::instance::DataflowInstance::try_instantiate(
+        dataflow,
+        ctx.hlc.clone(),
+    )
+    .unwrap();
 
     let mut sinks = instance.get_sinks();
     for id in sinks.drain(..) {

@@ -12,16 +12,14 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use std::collections::HashMap;
+#![feature(async_closure)]
+use async_trait::async_trait;
+use opencv::{core, imgproc, objdetect, prelude::*, types};
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    default_input_rule, default_output_rule, runtime::message::DataMessage,
-    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, PortId, State, ZFError,
-    ZFResult,
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
 };
-use zenoh_flow::{Configuration, LocalDeadlineMiss};
-
-use opencv::{core, imgproc, objdetect, prelude::*, types};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
 
 #[derive(Debug)]
 struct FaceDetection;
@@ -62,43 +60,14 @@ impl FDState {
             encode_options: Arc::new(Mutex::new(encode_options)),
         }
     }
-}
 
-impl Operator for FaceDetection {
-    fn input_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<zenoh_flow::PortId, zenoh_flow::InputToken>,
-    ) -> ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-        inputs: &mut HashMap<zenoh_flow::PortId, DataMessage>,
-    ) -> ZFResult<HashMap<PortId, Data>> {
-        let mut results: HashMap<zenoh_flow::PortId, Data> = HashMap::new();
-
-        let state = dyn_state.try_get::<FDState>()?;
-
-        let mut face = zf_spin_lock!(state.face);
-        let encode_options = zf_spin_lock!(state.encode_options);
-
-        let mut input_value = inputs
-            .remove(INPUT)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value
-            .get_inner_data()
-            .try_as_bytes()?
-            .as_ref()
-            .clone();
+    pub fn infer(&self, frame: Vec<u8>) -> Vec<u8> {
+        let mut face = zf_spin_lock!(self.face);
+        let encode_options = zf_spin_lock!(self.encode_options);
 
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
-            &opencv::types::VectorOfu8::from_iter(data),
+            &opencv::types::VectorOfu8::from_iter(frame),
             opencv::imgcodecs::IMREAD_COLOR,
         )
         .unwrap();
@@ -155,30 +124,41 @@ impl Operator for FaceDetection {
 
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
-
-        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
-        drop(face);
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<zenoh_flow::PortId, Data>,
-        _deadlinemiss: Option<LocalDeadlineMiss>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, zenoh_flow::NodeOutput>> {
-        default_output_rule(state, outputs)
+        buf.into()
     }
 }
 
-impl Node for FaceDetection {
-    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(FDState::new(configuration)))
-    }
+#[async_trait]
+impl Operator for FaceDetection {
+    async fn setup(
+        &self,
+        configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = FDState::new(configuration);
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_frame = inputs.get(INPUT).unwrap()[0].clone();
+        let output_frame = outputs.get(OUTPUT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            let data = match input_frame.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
+
+            let buf = state.infer(data);
+
+            output_frame.send(Data::from_bytes(buf), None).await
+        })
+    }
+}
+
+#[async_trait]
+impl Node for FaceDetection {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }

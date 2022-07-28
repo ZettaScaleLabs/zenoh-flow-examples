@@ -2,16 +2,10 @@ flow: VideoPipeline
 operators: []
 sources:
   - id : Camera
-    uri: file://./target/release/libcamera_source.so
-    output:
-      id: Frame
-      type: image
+    descriptor: ./face-detection/face-detection.yml
 sinks:
   - id : Window
-    uri: file://./target/release/libvideo_sink.so
-    input:
-      id: Frame
-      type: image
+    descriptor: ./video-sink/video-sink.yml
 
 links:
 - from:

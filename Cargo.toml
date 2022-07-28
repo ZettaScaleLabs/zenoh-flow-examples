@@ -16,8 +16,6 @@
 
 members = [
   "zenoh-flow-example-types",
-  "simple-pipeline",
-  "video-pipeline",
   "face-detection",
   "frame-concat",
   "object-detection-dnn",

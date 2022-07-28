@@ -11,19 +11,22 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
-use async_std::sync::{Arc, Mutex};
-use std::collections::HashMap;
+use async_trait::async_trait;
 use std::{
     fs::File,
     io::{prelude::*, BufReader},
     path::Path,
 };
+use zenoh_flow::Configuration;
 use zenoh_flow::{
-    default_input_rule, default_output_rule, zenoh_flow_derive::ZFState, zf_spin_lock, Context,
-    Data, InputToken, Node, NodeOutput, Operator, PortId, State, ZFError, ZFResult,
+    async_std::sync::{Arc, Mutex},
+    AsyncIteration, Inputs, Message, Outputs,
 };
-use zenoh_flow::{Configuration, LocalDeadlineMiss};
+use zenoh_flow::{
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
+};
 
 use opencv::core::prelude::MatTrait;
 use opencv::dnn::NetTrait;
@@ -86,47 +89,16 @@ impl ODState {
             outputs: Arc::new(Mutex::new(output_names)),
         }
     }
-}
 
-impl Node for ObjDetection {
-    fn initialize(&self, configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(ODState::new(configuration)))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
-impl Operator for ObjDetection {
-    fn input_rule(
-        &self,
-        _context: &mut Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, InputToken>,
-    ) -> ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
-
-    fn run(
-        &self,
-        _context: &mut Context,
-        dyn_state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, Data>> {
+    pub fn infer(&self, frame: Vec<u8>) -> Vec<u8> {
         let scale = 1.0 / 255.0;
         let mean = core::Scalar::new(0f64, 0f64, 0f64, 0f64);
-
-        let mut results: HashMap<PortId, Data> = HashMap::with_capacity(1);
-
         let mut detections: opencv::types::VectorOfMat = core::Vector::new();
 
-        let state = dyn_state.try_get::<ODState>()?;
-
-        let mut net = zf_spin_lock!(state.dnn);
-        let encode_options = zf_spin_lock!(state.encode_options);
-        let classes = zf_spin_lock!(state.classes);
-        let outputs = zf_spin_lock!(state.outputs);
+        let mut net = zf_spin_lock!(self.dnn);
+        let encode_options = zf_spin_lock!(self.encode_options);
+        let classes = zf_spin_lock!(self.classes);
+        let outputs = zf_spin_lock!(self.outputs);
 
         let mut boxes: Vec<core::Vector<core::Rect>> = vec![core::Vector::new(); classes.len()];
         let mut scores: Vec<core::Vector<f32>> = vec![core::Vector::new(); classes.len()];
@@ -139,18 +111,8 @@ impl Operator for ObjDetection {
             core::Scalar::new(255f64, 0f64, 0f64, -1f64),
         ];
 
-        let mut input_value = inputs
-            .remove(INPUT)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value
-            .get_inner_data()
-            .try_as_bytes()?
-            .as_ref()
-            .clone();
-
-        // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
-            &opencv::types::VectorOfu8::from_iter(data),
+            &opencv::types::VectorOfu8::from_iter(frame),
             opencv::imgcodecs::IMREAD_COLOR,
         )
         .unwrap();
@@ -303,20 +265,42 @@ impl Operator for ObjDetection {
         // encode and send
         let mut buf = opencv::types::VectorOfu8::new();
         opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
-
-        results.insert(OUTPUT.into(), Data::from_bytes(buf.into()));
-
-        Ok(results)
+        buf.into()
     }
+}
 
-    fn output_rule(
+#[async_trait]
+impl Node for ObjDetection {
+    async fn finalize(&self) -> ZFResult<()> {
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Operator for ObjDetection {
+    async fn setup(
         &self,
-        _context: &mut Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<LocalDeadlineMiss>,
-    ) -> ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+        configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let state = ODState::new(configuration);
+
+        let input_frame = inputs.get(INPUT).unwrap()[0].clone();
+        let output_frame = outputs.get(OUTPUT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            let frame = match input_frame.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
+
+            let res = state.infer(frame);
+
+            output_frame.send(Data::from_bytes(res), None).await
+        })
     }
 }
 

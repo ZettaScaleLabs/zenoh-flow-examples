@@ -2,16 +2,10 @@ flow: RandomGeneration
 operators: []
 sources:
   - id : RandomGenerator
-    uri: file://./target/release/librandom_source.dylib
-    output:
-        id: Random
-        type: usize
+    descriptor: ./random-source/random.yml
 sinks:
   - id : PrintSink
-    uri: file://./target/release/libgeneric_sink.dylib
-    input:
-        id: Data
-        type: usize
+    descriptor: ./generic-sink/generic-sink.yml
 links:
 - from:
     node : RandomGenerator

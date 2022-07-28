@@ -1,0 +1,6 @@
+id: Counter
+uri: file://./target/debug/libcounter_source.dylib
+output:
+  id: Counter
+  type: usize
+tags: []

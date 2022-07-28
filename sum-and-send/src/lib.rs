@@ -11,17 +11,13 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
-use std::collections::HashMap;
+use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::Configuration;
-use zenoh_flow::LocalDeadlineMiss;
-use zenoh_flow::PortId;
-use zenoh_flow::{
-    default_input_rule, default_output_rule, Data, Node, NodeOutput, Operator, State, ZFError,
-    ZFResult,
-};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
+use zenoh_flow::{Data, Node, Operator, ZFError, ZFResult};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(Debug)]
@@ -34,57 +30,38 @@ struct SumAndSendState {
 
 static INPUT: &str = "Number";
 static OUTPUT: &str = "Sum";
-
+#[async_trait]
 impl Operator for SumAndSend {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut state = SumAndSendState { x: ZFUsize(0) };
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        dyn_state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
+        let input_value = inputs.get(INPUT).unwrap()[0].clone();
+        let output_value = outputs.get(OUTPUT).unwrap()[0].clone();
 
-        // Downcasting state to right type
-        let mut state = dyn_state.try_get::<SumAndSendState>()?;
+        Arc::new(async move || {
+            let data = match input_value.recv().await.unwrap() {
+                (_, Message::Data(mut msg)) => {
+                    Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone())
+                }
+                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+            }?;
 
-        let mut input_value = inputs
-            .remove(INPUT)
-            .ok_or_else(|| ZFError::InvalidData("No data".to_string()))?;
-        let data = input_value.get_inner_data().try_get::<ZFUsize>()?;
+            let res = ZFUsize(state.x.0 + data.0);
+            state.x = res.clone();
 
-        let res = ZFUsize(state.x.0 + data.0);
-        state.x = res.clone();
-
-        results.insert(OUTPUT.into(), Data::from::<ZFUsize>(res));
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadlinemiss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+            output_value.send(Data::from(res), None).await
+        })
     }
 }
 
+#[async_trait]
 impl Node for SumAndSend {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        Ok(State::from(SumAndSendState { x: ZFUsize(0) }))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
