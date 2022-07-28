@@ -17,7 +17,7 @@ use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 use super::geometry::{Quaternion, Vector3};
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum PowerSupplyStatus {
     Unknown,
     Charging,
@@ -26,7 +26,7 @@ pub enum PowerSupplyStatus {
     Full,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum PowerSupplyHealth {
     Unknown,
     Good,
@@ -39,7 +39,7 @@ pub enum PowerSupplyHealth {
     SafetyTimerExpired,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum PowerSupplyTechnology {
     Unknown,
     NiHM,
@@ -50,7 +50,7 @@ pub enum PowerSupplyTechnology {
     LiMN,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct BatteryState {
     pub voltage: f32,
     pub temperature: f32,
@@ -85,7 +85,7 @@ impl Deserializable for BatteryState {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct MagneticField {
     pub magnetic_field: Vector3,
     pub magnetic_filed_covariance: [f64; 9],
@@ -107,7 +107,7 @@ impl Deserializable for MagneticField {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct IMU {
     pub orientation: Quaternion,
     pub orientation_covariance: [f64; 9],
@@ -133,7 +133,7 @@ impl Deserializable for IMU {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct JointState {
     pub name: Vec<String>,
     pub position: Vec<f64>,

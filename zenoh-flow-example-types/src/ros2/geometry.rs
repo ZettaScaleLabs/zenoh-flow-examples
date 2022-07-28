@@ -16,7 +16,7 @@ use zenoh_flow::serde::{Deserialize, Serialize};
 use zenoh_flow::zenoh_flow_derive::ZFData;
 use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
-#[derive(Serialize, Deserialize, PartialEq, Default, ZFData, Debug)]
+#[derive(Serialize, Deserialize, Default, ZFData, Debug)]
 pub struct Vector3 {
     pub x: f64,
     pub y: f64,
@@ -39,7 +39,7 @@ impl Deserializable for Vector3 {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct Twist {
     pub linear: Vector3,
     pub angular: Vector3,
@@ -61,7 +61,7 @@ impl Deserializable for Twist {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct TwistWithCovariance {
     pub twist: Twist,
     #[serde(with = "BigArray")]
@@ -84,7 +84,7 @@ impl Deserializable for TwistWithCovariance {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct Point {
     pub x: f64,
     pub y: f64,
@@ -107,7 +107,7 @@ impl Deserializable for Point {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct Quaternion {
     pub x: f64,
     pub y: f64,
@@ -131,7 +131,7 @@ impl Deserializable for Quaternion {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct Pose {
     pub position: Point,
     pub orientation: Quaternion,
@@ -153,7 +153,7 @@ impl Deserializable for Pose {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct PoseWithCovariance {
     pub pose: Pose,
     #[serde(with = "BigArray")]

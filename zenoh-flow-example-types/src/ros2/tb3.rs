@@ -21,34 +21,34 @@ pub(crate) const LINEAR_SCALING_FACTOR: f64 = 0.20;
 pub(crate) const ANGULAR_SCALING_FACTOR: f64 = 2.60;
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum BumperState {
     Forward = 1,
     Backward = 2,
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum ButtonState {
     Button0 = 1,
     Button1 = 2,
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum MotorErrors {
     LeftMotor = 1,
     RightMotor = 2,
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum MotorTorque {
     On = 1,
     Off = 2,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct SensorState {
     pub bumper: u8,
     pub cliff: f32,
@@ -79,7 +79,7 @@ impl Deserializable for SensorState {
 }
 
 #[repr(u8)]
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Sounds {
     Off = 0,
     On = 1,
@@ -89,7 +89,7 @@ pub enum Sounds {
     Button2 = 5,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct Sound {
     pub value: Sounds,
 }
@@ -110,7 +110,7 @@ impl Deserializable for Sound {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Default, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Default, Debug, ZFData)]
 pub struct VersionInfo {
     pub hardware: String, // <yyyy>.<mm>.<dd>        : hardware version of Turtlebot3 (ex. 2017.05.23)
     pub firmware: String, // <major>.<minor>.<patch> : firmware version of OpenCR
@@ -133,7 +133,7 @@ impl Deserializable for VersionInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, ZFData)]
+#[derive(Serialize, Deserialize, Debug, ZFData)]
 pub struct RobotInformation {
     pub battery: BatteryState,
     pub imu: IMU,
@@ -172,6 +172,6 @@ impl Deserializable for LaserScan {
     where
         Self: Sized,
     {
-        Ok(bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?)
+        bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)
     }
 }

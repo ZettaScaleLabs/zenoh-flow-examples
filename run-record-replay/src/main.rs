@@ -150,5 +150,5 @@ async fn main() {
     println!("############ Restaring source {:?}", recording_source);
     instance.start_node(recording_source).await.unwrap();
 
-    let () = std::future::pending().await;
+    std::future::pending::<()>().await;
 }
