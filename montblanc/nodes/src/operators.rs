@@ -547,7 +547,7 @@ impl Operator for Ponce {
                 },
                 msg = input_brazos.recv().fuse() => {
                     if let Ok((_, Message::Data(mut msg))) = msg {
-                        let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
+                        let _inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
 
                         let twist_data = Data::from::<data_types::Twist>(my_state.twist_data.clone());
 
@@ -690,6 +690,8 @@ impl Operator for Rotterdam {
         let input_mekong = inputs.get(MEKONG_PORT).unwrap()[0].clone();
         let output_murray = outputs.get(MURRAY_PORT).unwrap()[0].clone();
 
+        let header_data: data_types::Header = random();
+
         Arc::new(async move || {
             select! {
                 msg = input_mekong.recv().fuse() => {
@@ -697,16 +699,17 @@ impl Operator for Rotterdam {
                         let mekong_data = msg.get_inner_data().try_get::<data_types::TwistWithCovarianceStamped>()?;
 
                         let vec3s = data_types::Vector3Stamped {
-                            header: Some(mekong_data.header.as_ref().ok_or(ZFError::Empty)?.clone()),
-                            vector: mekong_data
-                                .twist
-                                .as_ref()
-                                .ok_or(ZFError::Empty)?
-                                .twist
-                                .as_ref()
-                                .ok_or(ZFError::Empty)?
-                                .linear
-                                .clone(),
+                            header: Some(header_data.clone()),
+                            vector: random(),
+                            // vector: mekong_data
+                            //     .twist
+                            //     .as_ref()
+                            //     .ok_or(ZFError::Empty)?
+                            //     .twist
+                            //     .as_ref()
+                            //     .ok_or(ZFError::Empty)?
+                            //     .linear
+                            //     .clone(),
                         };
 
                         let murray_data = Data::from::<data_types::Vector3Stamped>(vec3s);
