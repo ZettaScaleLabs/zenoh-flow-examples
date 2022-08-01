@@ -15,226 +15,69 @@
 flow: Montblanc
 operators:
   - id : Lyon
-    uri: file://./target/release/liblyon.so
-    inputs:
-      - id: Amazon
-        type: f32
-    outputs:
-      - id: Tigris
-        type: f32
+    descriptor: ./lyon/lyon.yml
+
   - id : Hamburg
-    uri: file://./target/release/libhamburg.so
-    inputs:
-      - id: Danube
-        type: str
-      - id: Ganges
-        type: i64
-      - id: Nile
-        type: i32
-      - id: Tigris
-        type: f32
-    outputs:
-      - id: Parana
-        type: str
+    descriptor: ./hamburg/hamburg.yml
+
   - id : Taipei
-    uri: file://./target/release/libtaipei.so
-    inputs:
-      - id: Columbia
-        type: img
-    outputs:
-      - id: Colorado
-        type: img
+    descriptor: ./taipei/taipei.yml
+
   - id : Osaka
-    uri: file://./target/release/libosaka.so
-    inputs:
-      - id: Parana
-        type: str
-      - id: Columbia
-        type: img
-      - id: Colorado
-        type: img
-    outputs:
-      - id: Salween
-        type: point-cloud2
-      - id: Godavari
-        type: laser-scan
+    descriptor: ./osaka/osaka.yml
+
   - id : Tripoli
-    uri: file://./target/release/libtripoli.so
-    inputs:
-      - id: Columbia
-        type: img
-      - id: Godavari
-        type: laser-scan
-    outputs:
-      - id: Loire
-        type: point-cloud2
+    descriptor: ./tripoli/tripoli.yml
+
   - id : Mandalay
-    uri: file://./target/release/libmandalay.so
-    # period:
-    #   length: 100
-    #   unit: ms
-    inputs:
-      - id: Danube
-        type: str
-      - id: Chanab
-        type: quaternion
-      - id: Salween
-        type: point-cloud2
-      - id: Godavari
-        type: laser-scan
-      - id: Loire
-        type: point-cloud2
-      - id: Yamuna
-        type: vector3
-    outputs:
-      - id: Brazos
-        type: point-cloud2
-      - id: Tagus
-        type: pose
-      - id: Missouri
-        type: img
-        # ohio : f32 - feedback
-        # volga : f64 - feedback
+    descriptor: ./mandalay/mandalay.yml
+
   - id : Ponce
-    uri: file://./target/release/libponce.so
-    inputs:
-      - id: Danube
-        type: str
-      - id: Brazos
-        type: point-cloud2
-      - id: Tagus
-        type: pose
-      - id: Missouri
-        type: img
-      - id: Loire
-        type: point-cloud2
-      - id: Yamuna
-        type: vector3
-      - id: Godavari
-        type: laser-scan
-    outputs:
-      - id: Congo
-        type: twist
-      - id: Mekong
-        type: twist-w-coovariance-ts
+    descriptor: ./ponce/ponce.yml
+
   - id : Geneva
-    uri: file://./target/release/libgevena.so
-    inputs:
-      - id: Danube
-        type: str
-      - id: Parana
-        type: str
-      - id: Tagus
-        type: pose
-      - id: Congo
-        type: twist
-    outputs:
-      - id: Arkansas
-        type: str
+    descriptor: ./geneva/geneva.yml
+
   - id : Monaco
-    uri: file://./target/release/libmonaco.so
-    inputs:
-      - id: Congo
-        type: twist
-    outputs: []
-      # - id: Ohio
-      #   type: f32
+    descriptor: ./monaco/monaco.yml
+
   - id : Rotterdam
-    uri: file://./target/release/librotterdam.so
-    inputs:
-      - id: Mekong
-        type: twist-w-coovariance-ts
-    outputs:
-      - id: Murray
-        type: vector3-ts
+    descriptor: ./rotterdam/rotterdam.yml
+
   - id : Barcelona
-    uri: file://./target/release/libbarcelona.so
-    inputs:
-      - id: Mekong
-        type: twist-w-coovariance-ts
-    outputs:
-      - id: Lena
-        type: wrench-ts
+    descriptor: ./barcelona/barcelona.yml
+
   - id : Georgetown
-    uri: file://./target/release/libgeorgetown.so
-    # period:
-    #   length: 50
-    #   unit: ms
-    inputs:
-      - id: Lena
-        type: wrench-ts
-      - id: Murray
-        type: vector3-ts
-    outputs: []
-      # - id: Volga
-      #   type: f64
+    descriptor: ./georgetown/georgetown.yml
+
 
 
 
 sources:
   - id : Cordoba
-    uri: file://./target/release/libcordoba.so
-    period:
-      length: 100
-      unit: ms
-    output:
-      id: Amazon
-      type: f32
+    descriptor: ./cordoba/cordoba.yml
+
   - id : Portsmouth
-    uri: file://./target/release/libportsmouth.so
-    period:
-      length: 500
-      unit: ms
-    output:
-      id: Danube
-      type: str
+    descriptor: ./portsmouth/portsmouth.yml
+
   - id : Freeport
-    uri: file://./target/release/libfreeport.so
-    period:
-      length: 50
-      unit: ms
-    output:
-      id: Ganges
-      type: i64
+    descriptor: ./freeport/freeport.yml
+
   - id : Madelin
-    uri: file://./target/release/libmadelin.so
-    period:
-      length: 10
-      unit: ms
-    output:
-      id: Nile
-      type: i32
+    descriptor: ./madelin/madelin.yml
+
   - id : Delhi
-    uri: file://./target/release/libdelhi.so
-    period:
-      length: 1
-      unit: s
-    output:
-      id: Columbia
-      type: img
+    descriptor: ./delhi/delhi.yml
+
   - id : Hebron
-    uri: file://./target/release/libhebron.so
-    period:
-      length: 100
-      unit: ms
-    output:
-      id: Chanab
-      type: quaternion
+    descriptor: ./hebron/hebron.yml
+
   - id : Kingston
-    period:
-      length: 100
-      unit: ms
-    uri: file://./target/release/libkingston.so
-    output:
-      id: Yamuna
-      type: vector3
+    descriptor: ./kingston/kingston.yml
 
 sinks:
   - id : Arequipa
-    uri: file://./target/release/libarequipa.so
-    input:
-      id: Arkansas
-      type: str
+    descriptor: ./arequipa/arequipa.yml
 
 links:
 - from:
@@ -317,10 +160,10 @@ links:
     input : Salween
 - from:
     node : Hebron
-    output : Chanab
+    output : Chenab
   to:
     node : Mandalay
-    input : Chanab
+    input : Chenab
 - from:
     node : Osaka
     output : Godavari
@@ -442,20 +285,19 @@ links:
     node : Georgetown
     input : Lena
 
-
 ### feedbacks
-loops:
-- ingress: Ponce
-  egress: Monaco
-  feedback_port: Ohio
-  is_infinite: true
-  port_type: f32
-- ingress: Ponce
-  egress: Georgetown
-  feedback_port: Volga
-  is_infinite: true
-  port_type: f64
-
+- from:
+    node: Monaco
+    output: Ohio
+  to:
+    node: Ponce
+    input: Ohio
+- from:
+    node: Georgetown
+    output: Volga
+  to:
+    node: Ponce
+    input: Volga
 
 # mapping:
 #   Cordoba: robot

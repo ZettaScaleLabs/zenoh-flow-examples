@@ -1,0 +1,11 @@
+id : Tripoli
+uri: file://./target/release/libtripoli.so
+inputs:
+  - id: Columbia
+    type: img
+  - id: Godavari
+    type: laser-scan
+outputs:
+  - id: Loire
+    type: point-cloud2
+tags: []

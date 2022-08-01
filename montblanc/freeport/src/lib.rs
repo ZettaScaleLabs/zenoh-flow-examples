@@ -12,11 +12,13 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
+use nodes::sources::Freeport;
+use zenoh_flow::async_std::sync::Arc;
+use zenoh_flow::Source;
+use zenoh_flow::{export_source, types::ZFResult};
+
+export_source!(register);
+
+fn register() -> ZFResult<Arc<dyn Source>> {
+    Ok(Arc::new(Freeport) as Arc<dyn Source>)
 }

@@ -1,0 +1,27 @@
+id : Ponce
+uri: file://./target/release/libponce.so
+inputs:
+  - id: Danube
+    type: str
+  - id: Brazos
+    type: point-cloud2
+  - id: Tagus
+    type: pose
+  - id: Missouri
+    type: img
+  - id: Loire
+    type: point-cloud2
+  - id: Yamuna
+    type: vector3
+  - id: Godavari
+    type: laser-scan
+  - id: Ohio
+    type: f32
+  - id: Volga
+    type: f64
+outputs:
+  - id: Congo
+    type: twist
+  - id: Mekong
+    type: twist-w-coovariance-ts
+tags: []

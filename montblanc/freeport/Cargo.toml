@@ -17,4 +17,12 @@ name = "freeport"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "freeport"
+crate-type=["cdylib"]
+path="src/lib.rs"
+
 [dependencies]
+# zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+nodes = {path = "../nodes"}

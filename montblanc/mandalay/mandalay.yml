@@ -1,0 +1,30 @@
+id : Mandalay
+uri: file://./target/release/libmandalay.so
+# period:
+#   length: 100
+#   unit: ms
+inputs:
+  - id: Danube
+    type: str
+  - id: Chenab
+    type: quaternion
+  - id: Salween
+    type: point-cloud2
+  - id: Godavari
+    type: laser-scan
+  - id: Loire
+    type: point-cloud2
+  - id: Yamuna
+    type: vector3
+outputs:
+  - id: Brazos
+    type: point-cloud2
+  - id: Tagus
+    type: pose
+  - id: Missouri
+    type: img
+  - id:  Ohio
+    type: f32
+  - id: Volga
+    type: f64
+tags: []

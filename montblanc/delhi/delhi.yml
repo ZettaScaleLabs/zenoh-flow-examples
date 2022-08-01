@@ -1,0 +1,9 @@
+id : Delhi
+uri: file://./target/release/libdelhi.so
+# period:
+#   length: 1
+#   unit: s
+output:
+  id: Columbia
+  type: img
+tags: []

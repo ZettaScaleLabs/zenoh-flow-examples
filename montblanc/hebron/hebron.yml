@@ -1,0 +1,9 @@
+id : Hebron
+uri: file://./target/release/libhebron.so
+period:
+  length: 100
+  unit: ms
+output:
+  id: Chenab
+  type: quaternion
+tags: []

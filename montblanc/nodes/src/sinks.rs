@@ -12,34 +12,40 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use std::sync::Arc;
+
 use async_trait::async_trait;
-use zenoh_flow::{Configuration, Context, Node, Sink, State, ZFResult};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Node, Sink, ZFResult};
+
+use crate::ARKANSAS_PORT;
 
 // Latency SINK
 pub struct Arequipa;
 
 #[async_trait]
 impl Sink for Arequipa {
-    async fn run(
+    async fn setup(
         &self,
-        _context: &mut Context,
-        _state: &mut State,
-        mut input: zenoh_flow::runtime::message::DataMessage,
-    ) -> zenoh_flow::ZFResult<()> {
-        let data = input
-            .get_inner_data()
-            .try_get::<datatypes::data_types::String>()?;
-        println!("Arequipa: Received data {}", data.value);
-        Ok(())
+        configuration: &Option<Configuration>,
+        inputs: Inputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input_arkansas = inputs.get(ARKANSAS_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            if let Ok((_, Message::Data(mut msg))) = input_arkansas.recv().await {
+                let data = msg
+                    .get_inner_data()
+                    .try_get::<datatypes::data_types::String>()?;
+                println!("Arequipa: Received data {}", data.value);
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Arequipa {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zenoh_flow::zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }

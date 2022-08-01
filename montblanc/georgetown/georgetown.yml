@@ -1,0 +1,11 @@
+id : Georgetown
+uri: file://./target/release/libgeorgetown.so
+inputs:
+  - id: Lena
+    type: wrench-ts
+  - id: Murray
+    type: vector3-ts
+outputs:
+  - id: Volga
+    type: f64
+tags: []

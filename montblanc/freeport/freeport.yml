@@ -1,0 +1,9 @@
+id : Freeport
+uri: file://./target/release/libfreeport.so
+# period:
+#   length: 50
+#   unit: ms
+output:
+  id: Ganges
+  type: i64
+tags: []

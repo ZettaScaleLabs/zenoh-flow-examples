@@ -12,65 +12,75 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use async_trait::async_trait;
 use datatypes::data_types;
+use futures::prelude::*;
+use futures::select;
 use rand::random;
-use std::collections::HashMap;
+use std::sync::Arc;
+use std::time::Duration;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{
-    default_input_rule, default_output_rule, zf_empty_state, Configuration, Data, InputToken,
-    LocalDeadlineMiss, Node, NodeOutput, Operator, PortId, State, ZFError, ZFResult,
-};
+use zenoh_flow::AsyncIteration;
+use zenoh_flow::Inputs;
+use zenoh_flow::Message;
+use zenoh_flow::Outputs;
+use zenoh_flow::{Configuration, Data, Node, Operator, ZFError, ZFResult};
+
+use crate::AMAZON_PORT;
+use crate::ARKANSAS_PORT;
+use crate::BRAZOS_PORT;
+use crate::CHENAB_PORT;
+use crate::COLORADO_PORT;
+use crate::COLUMBIA_PORT;
+use crate::CONGO_PORT;
+use crate::DANUBE_PORT;
+use crate::GANGES_PORT;
+use crate::GODAVARI_PORT;
+use crate::LENA_PORT;
+use crate::LOIRE_PORT;
+use crate::MEKONG_PORT;
+use crate::MISSOURI_PORT;
+use crate::MURRAY_PORT;
+use crate::NILE_PORT;
+use crate::OHIO_PORT;
+use crate::PARANA_PORT;
+use crate::SALWEEN_PORT;
+use crate::TAGUS_PORT;
+use crate::TIGRIS_PORT;
+use crate::VOLGA_PORT;
+use crate::YAMUNA_PORT;
 
 // Lyon OPERATOR
 
 #[derive(Debug)]
 pub struct Lyon;
 
+#[async_trait]
 impl Operator for Lyon {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input = inputs.get(AMAZON_PORT).unwrap()[0].clone();
+        let output = outputs.get(TIGRIS_PORT).unwrap()[0].clone();
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let data = inputs
-            .get_mut(crate::AMAZON_PORT)
-            .ok_or(ZFError::Empty)?
-            .get_inner_data()
-            .clone();
-
-        results.insert(crate::TIGRIS_PORT.into(), data);
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+        Arc::new(async move || {
+            if let Ok((_, Message::Data(mut msg))) = input.recv().await {
+                output
+                    .send(msg.get_inner_data().clone(), None)
+                    .await
+                    .unwrap();
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Lyon {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -87,88 +97,71 @@ struct HamburgState {
     tigris_last_val: f32,
 }
 
+#[async_trait]
 impl Operator for Hamburg {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<HamburgState>()?;
-
-        if let Some(tigris_value) = inputs.get_mut(crate::TIGRIS_PORT) {
-            let inner_value = tigris_value
-                .get_inner_data()
-                .try_get::<data_types::Float32>()?;
-            my_state.tigris_last_val = inner_value.value;
-        }
-
-        if let Some(ganges_value) = inputs.get_mut(crate::GANGES_PORT) {
-            let inner_value = ganges_value
-                .get_inner_data()
-                .try_get::<data_types::Int64>()?;
-            my_state.ganges_last_val = inner_value.value;
-        }
-
-        if let Some(nile_value) = inputs.get_mut(crate::NILE_PORT) {
-            let inner_value = nile_value.get_inner_data().try_get::<data_types::Int32>()?;
-            my_state.nile_last_val = inner_value.value;
-        }
-
-        if let Some(danube_value) = inputs.get_mut(crate::DANUBE_PORT) {
-            let inner_value = danube_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            let new_value = data_types::String {
-                value: format!(
-                    "{}-{}-{}-{}",
-                    inner_value.value,
-                    my_state.tigris_last_val,
-                    my_state.ganges_last_val,
-                    my_state.nile_last_val
-                ),
-            };
-
-            let data = Data::from::<data_types::String>(new_value);
-            results.insert(crate::PARANA_PORT.into(), data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Hamburg {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = HamburgState {
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = HamburgState {
             ganges_last_val: 0i64,
             nile_last_val: 0i32,
             tigris_last_val: 0.0f32,
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_tigris = inputs.get(TIGRIS_PORT).unwrap()[0].clone();
+        let input_ganges = inputs.get(GANGES_PORT).unwrap()[0].clone();
+        let input_nile = inputs.get(NILE_PORT).unwrap()[0].clone();
+        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
+        let output_parana = outputs.get(PARANA_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+                msg = input_tigris.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Float32>()?;
+                        my_state.tigris_last_val = inner_data.value;
+                    }
+                },
+                msg = input_ganges.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Int64>()?;
+                        my_state.ganges_last_val = inner_data.value;
+                    }
+                },
+                msg = input_nile.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Int32>()?;
+                        my_state.nile_last_val = inner_data.value;
+                    }
+                },
+                msg = input_danube.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        let new_value = data_types::String {
+                            value: format!(
+                                "{}-{}-{}-{}",
+                                inner_data.value,
+                                my_state.tigris_last_val,
+                                my_state.ganges_last_val,
+                                my_state.nile_last_val
+                            ),
+                        };
+
+                        let data = Data::from::<data_types::String>(new_value);
+                        output_parana.send(data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
+}
+#[async_trait]
+impl Node for Hamburg {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -178,58 +171,32 @@ impl Node for Hamburg {
 #[derive(Debug)]
 pub struct Taipei;
 
+#[async_trait]
 impl Operator for Taipei {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        // being triggered each time you receive a value
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
+        let output = outputs.get(COLORADO_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            if let Ok((_, Message::Data(mut msg))) = input.recv().await {
+                output
+                    .send(msg.get_inner_data().clone(), None)
+                    .await
+                    .unwrap();
             }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let data = inputs
-            .get_mut(crate::COLUMBIA_PORT)
-            .ok_or(ZFError::Empty)?
-            .get_inner_data()
-            .clone();
-
-        results.insert(crate::COLORADO_PORT.into(), data);
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Taipei {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -243,91 +210,68 @@ pub struct Osaka;
 struct OsakaState {
     parana_last_val: data_types::String,
     columbia_last_val: data_types::Image,
+    colorado_last_val: data_types::Image,
     pointcloud2_data: data_types::PointCloud2,
     laserscan_data: data_types::LaserScan,
 }
 
+#[async_trait]
 impl Operator for Osaka {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
-            }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<OsakaState>()?;
-
-        if let Some(parana_value) = inputs.get_mut(crate::PARANA_PORT) {
-            let inner_value = parana_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            my_state.parana_last_val = inner_value.clone();
-        }
-
-        if let Some(columbia_value) = inputs.get_mut(crate::COLUMBIA_PORT) {
-            let inner_value = columbia_value
-                .get_inner_data()
-                .try_get::<data_types::Image>()?;
-            my_state.columbia_last_val = inner_value.clone();
-        }
-
-        if let Some(colorado_value) = inputs.get_mut(crate::DANUBE_PORT) {
-            let _inner_value = colorado_value
-                .get_inner_data()
-                .try_get::<data_types::Image>()?;
-            let salween_data =
-                Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
-            let godavari_data =
-                Data::from::<data_types::LaserScan>(my_state.laserscan_data.clone());
-
-            results.insert(crate::SALWEEN_PORT.into(), salween_data);
-            results.insert(crate::GODAVARI_PORT.into(), godavari_data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Osaka {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = OsakaState {
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = OsakaState {
             parana_last_val: data_types::String {
                 value: datatypes::random_string(1),
             },
             columbia_last_val: random(),
+            colorado_last_val: random(),
             pointcloud2_data: random(),
             laserscan_data: random(),
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_parana = inputs.get(PARANA_PORT).unwrap()[0].clone();
+        let input_columbia = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
+        let input_colorado = inputs.get(COLORADO_PORT).unwrap()[0].clone();
+        let output_salween = outputs.get(SALWEEN_PORT).unwrap()[0].clone();
+        let output_godavari = outputs.get(GODAVARI_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+                msg = input_parana.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        my_state.parana_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_columbia.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
+                        my_state.columbia_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_colorado.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let _inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
+                        let salween_data = Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
+                        let godavari_data = Data::from::<data_types::LaserScan>(my_state.laserscan_data.clone());
+
+                        output_salween.send(salween_data, None).await?;
+                        output_godavari.send(godavari_data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for Osaka {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -340,61 +284,51 @@ pub struct Tripoli;
 #[derive(ZFState, Debug, Clone)]
 struct TripoliState {
     pointcloud2_data: data_types::PointCloud2,
+    columbia_last_val: data_types::Image,
 }
 
+#[async_trait]
 impl Operator for Tripoli {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = TripoliState {
+            pointcloud2_data: random(),
+            columbia_last_val: random(),
+        };
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
+        let input_columbia = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
+        let input_godavari = inputs.get(GODAVARI_PORT).unwrap()[0].clone();
+        let output_loire = outputs.get(LOIRE_PORT).unwrap()[0].clone();
 
-        let my_state = state.try_get::<TripoliState>()?;
+        Arc::new(async move || {
+            select! {
+                msg = input_columbia.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
+                        my_state.columbia_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_godavari.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let _inner_data = msg.get_inner_data().try_get::<data_types::LaserScan>()?;
+                        let loire_data = Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
 
-        if let Some(godavari_value) = inputs.get_mut(crate::GODAVARI_PORT) {
-            let _inner_value = godavari_value
-                .get_inner_data()
-                .try_get::<data_types::LaserScan>()?;
-            let loire_data =
-                Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
-
-            results.insert(crate::LOIRE_PORT.into(), loire_data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+                        output_loire.send(loire_data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Tripoli {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = TripoliState {
-            pointcloud2_data: random(),
-        };
-        Ok(State::from(my_state))
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -407,7 +341,7 @@ pub struct Mandalay;
 #[derive(ZFState, Debug, Clone)]
 struct MandalayState {
     danube_last_val: data_types::String,
-    chanab_last_val: data_types::Quaternion,
+    chenab_last_val: data_types::Quaternion,
     salween_last_val: data_types::PointCloud2,
     godavari_last_val: data_types::LaserScan,
     loire_last_val: data_types::PointCloud2,
@@ -417,108 +351,19 @@ struct MandalayState {
     img_data: data_types::Image,
 }
 
+#[async_trait]
 impl Operator for Mandalay {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
-            }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<MandalayState>()?;
-
-        if let Some(danube_value) = inputs.get_mut(crate::DANUBE_PORT) {
-            let inner_value = danube_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            my_state.danube_last_val = inner_value.clone();
-        }
-
-        if let Some(chanab_value) = inputs.get_mut(crate::CHANAB_PORT) {
-            let inner_value = chanab_value
-                .get_inner_data()
-                .try_get::<data_types::Quaternion>()?;
-            my_state.chanab_last_val = inner_value.clone();
-        }
-
-        if let Some(salween_value) = inputs.get_mut(crate::SALWEEN_PORT) {
-            let inner_value = salween_value
-                .get_inner_data()
-                .try_get::<data_types::PointCloud2>()?;
-            my_state.salween_last_val = inner_value.clone();
-        }
-
-        if let Some(godavari_value) = inputs.get_mut(crate::GODAVARI_PORT) {
-            let inner_value = godavari_value
-                .get_inner_data()
-                .try_get::<data_types::LaserScan>()?;
-            my_state.godavari_last_val = inner_value.clone();
-        }
-
-        if let Some(loire_value) = inputs.get_mut(crate::LOIRE_PORT) {
-            let inner_value = loire_value
-                .get_inner_data()
-                .try_get::<data_types::PointCloud2>()?;
-            my_state.loire_last_val = inner_value.clone();
-        }
-
-        if let Some(yamuna_value) = inputs.get_mut(crate::YAMUNA_PORT) {
-            let inner_value = yamuna_value
-                .get_inner_data()
-                .try_get::<data_types::Vector3>()?;
-            my_state.yamuna_last_val = inner_value.clone();
-        }
-
-        if false {
-            let brazos_data =
-                Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
-
-            let tagus_data = Data::from::<data_types::Pose>(my_state.pose_data.clone());
-
-            let missouri_data = Data::from::<data_types::Image>(my_state.img_data.clone());
-
-            results.insert(crate::BRAZOS_PORT.into(), brazos_data);
-            results.insert(crate::TAGUS_PORT.into(), tagus_data);
-            results.insert(crate::MISSOURI_PORT.into(), missouri_data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Mandalay {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = MandalayState {
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = MandalayState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
             },
-            chanab_last_val: random(),
+            chenab_last_val: random(),
             salween_last_val: random(),
             godavari_last_val: random(),
             loire_last_val: random(),
@@ -527,10 +372,75 @@ impl Node for Mandalay {
             pose_data: random(),
             img_data: random(),
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
+        let input_chenab = inputs.get(CHENAB_PORT).unwrap()[0].clone();
+        let input_salween = inputs.get(SALWEEN_PORT).unwrap()[0].clone();
+        let input_godavari = inputs.get(GODAVARI_PORT).unwrap()[0].clone();
+        let input_loire = inputs.get(LOIRE_PORT).unwrap()[0].clone();
+        let input_yamuna = inputs.get(YAMUNA_PORT).unwrap()[0].clone();
+
+        let output_brazos = outputs.get(BRAZOS_PORT).unwrap()[0].clone();
+        let output_tagus = outputs.get(TAGUS_PORT).unwrap()[0].clone();
+        let output_missouri = outputs.get(MISSOURI_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+                msg = input_danube.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        my_state.danube_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_chenab.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Quaternion>()?;
+                        my_state.chenab_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_salween.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
+                        my_state.salween_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_godavari.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::LaserScan>()?;
+                        my_state.godavari_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_loire.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
+                        my_state.loire_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_yamuna.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Vector3>()?;
+                        my_state.yamuna_last_val = inner_data.clone();
+                    }
+                },
+                // Output every 100ms
+                _ = zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).fuse() => {
+                    let brazos_data = Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
+                    let tagus_data = Data::from::<data_types::Pose>(my_state.pose_data.clone());
+                    let missouri_data = Data::from::<data_types::Image>(my_state.img_data.clone());
+
+                    output_brazos.send(brazos_data, None).await?;
+                    output_tagus.send(tagus_data, None).await?;
+                    output_missouri.send(missouri_data, None).await?;
+                }
+            }
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for Mandalay {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -555,111 +465,15 @@ struct PonceState {
     twist_w_cov_data: data_types::TwistWithCovarianceStamped,
 }
 
+#[async_trait]
 impl Operator for Ponce {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
-            }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<PonceState>()?;
-
-        if let Some(danube_value) = inputs.get_mut(crate::DANUBE_PORT) {
-            let inner_value = danube_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            my_state.danube_last_val = inner_value.clone();
-        }
-
-        if let Some(tagus_value) = inputs.get_mut(crate::TAGUS_PORT) {
-            let inner_value = tagus_value.get_inner_data().try_get::<data_types::Pose>()?;
-            my_state.tagus_last_val = inner_value.clone();
-        }
-
-        if let Some(missouri_value) = inputs.get_mut(crate::MISSOURI_PORT) {
-            let inner_value = missouri_value
-                .get_inner_data()
-                .try_get::<data_types::Image>()?;
-            my_state.missouri_last_val = inner_value.clone();
-        }
-
-        if let Some(loire_value) = inputs.get_mut(crate::LOIRE_PORT) {
-            let inner_value = loire_value
-                .get_inner_data()
-                .try_get::<data_types::PointCloud2>()?;
-            my_state.loire_last_val = inner_value.clone();
-        }
-
-        if let Some(yamuna_value) = inputs.get_mut(crate::YAMUNA_PORT) {
-            let inner_value = yamuna_value
-                .get_inner_data()
-                .try_get::<data_types::Vector3>()?;
-            my_state.yamuna_last_val = inner_value.clone();
-        }
-
-        if let Some(ohio_value) = inputs.get_mut(crate::OHIO_PORT) {
-            let inner_value = ohio_value
-                .get_inner_data()
-                .try_get::<data_types::Float32>()?;
-            my_state.ohio_last_val = inner_value.clone();
-        }
-
-        if let Some(volga_value) = inputs.get_mut(crate::VOLGA_PORT) {
-            let inner_value = volga_value
-                .get_inner_data()
-                .try_get::<data_types::Float64>()?;
-            my_state.volga_last_val = inner_value.clone();
-        }
-
-        if let Some(brazos_value) = inputs.get_mut(crate::BRAZOS_PORT) {
-            let _inner_value = brazos_value
-                .get_inner_data()
-                .try_get::<data_types::PointCloud2>()?;
-
-            let twist_data = Data::from::<data_types::Twist>(my_state.twist_data.clone());
-
-            let twist_w_cov_data = Data::from::<data_types::TwistWithCovarianceStamped>(
-                my_state.twist_w_cov_data.clone(),
-            );
-
-            results.insert(crate::CONGO_PORT.into(), twist_data);
-            results.insert(crate::MEKONG_PORT.into(), twist_w_cov_data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Ponce {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = PonceState {
+        configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = PonceState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
             },
@@ -674,10 +488,87 @@ impl Node for Ponce {
             twist_data: random(),
             twist_w_cov_data: random(),
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
+        let input_tagus = inputs.get(TAGUS_PORT).unwrap()[0].clone();
+        let input_missouri = inputs.get(MISSOURI_PORT).unwrap()[0].clone();
+        let input_loire = inputs.get(LOIRE_PORT).unwrap()[0].clone();
+        let input_yamuna = inputs.get(YAMUNA_PORT).unwrap()[0].clone();
+        let input_ohio = inputs.get(OHIO_PORT).unwrap()[0].clone();
+        let input_volga = inputs.get(VOLGA_PORT).unwrap()[0].clone();
+        let input_brazos = inputs.get(BRAZOS_PORT).unwrap()[0].clone();
+
+        let output_congo = outputs.get(CONGO_PORT).unwrap()[0].clone();
+        let output_mekong = outputs.get(MEKONG_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+                msg = input_danube.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        my_state.danube_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_tagus.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Pose>()?;
+                        my_state.tagus_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_missouri.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
+                        my_state.missouri_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_loire.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
+                        my_state.loire_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_yamuna.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Vector3>()?;
+                        my_state.yamuna_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_ohio.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Float32>()?;
+                        my_state.ohio_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_volga.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Float64>()?;
+                        my_state.volga_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_brazos.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
+
+                        let twist_data = Data::from::<data_types::Twist>(my_state.twist_data.clone());
+
+                        let twist_w_cov_data = Data::from::<data_types::TwistWithCovarianceStamped>(
+                            my_state.twist_w_cov_data.clone(),
+                        );
+
+                        output_congo.send(twist_data, None).await?;
+                        output_mekong.send(twist_w_cov_data, None).await?;
+
+                    }
+                },
+            }
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for Ponce {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -687,53 +578,35 @@ impl Node for Ponce {
 #[derive(Debug)]
 pub struct Monaco;
 
+#[async_trait]
 impl Operator for Monaco {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input_congo = inputs.get(CONGO_PORT).unwrap()[0].clone();
+        let output_ohio = outputs.get(OHIO_PORT).unwrap()[0].clone();
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let _data = inputs
-            .get_mut(crate::CONGO_PORT)
-            .ok_or(ZFError::Empty)?
-            .get_inner_data()
-            .try_get::<data_types::Twist>()?;
-
-        let ohio_data = Data::from::<data_types::Float32>(data_types::Float32 { value: random() });
-
-        results.insert(crate::OHIO_PORT.into(), ohio_data);
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+        Arc::new(async move || {
+            select! {
+                msg = input_congo.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Twist>()?;
+                        let ohio_data = Data::from::<data_types::Float32>(data_types::Float32 { value: random() });
+                        output_ohio.send(ohio_data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Monaco {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -743,77 +616,60 @@ impl Node for Monaco {
 #[derive(Debug)]
 pub struct Barcelona;
 
+#[async_trait]
 impl Operator for Barcelona {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input_mekong = inputs.get(MEKONG_PORT).unwrap()[0].clone();
+        let output_lena = outputs.get(LENA_PORT).unwrap()[0].clone();
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
+        Arc::new(async move || {
+            select! {
+                msg = input_mekong.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let mekong_data = msg.get_inner_data().try_get::<data_types::TwistWithCovarianceStamped>()?;
 
-        let mekong_data = inputs
-            .get_mut(crate::MEKONG_PORT)
-            .ok_or(ZFError::Empty)?
-            .get_inner_data()
-            .try_get::<data_types::TwistWithCovarianceStamped>()?;
+                        let wrench = data_types::WrenchStamped {
+                            header: Some(mekong_data.header.as_ref().ok_or(ZFError::Empty)?.clone()),
+                            wrench: Some(data_types::Wrench {
+                                force: mekong_data
+                                    .twist
+                                    .as_ref()
+                                    .ok_or(ZFError::Empty)?
+                                    .twist
+                                    .as_ref()
+                                    .ok_or(ZFError::Empty)?
+                                    .linear
+                                    .clone(),
+                                torque: mekong_data
+                                    .twist
+                                    .as_ref()
+                                    .ok_or(ZFError::Empty)?
+                                    .twist
+                                    .as_ref()
+                                    .ok_or(ZFError::Empty)?
+                                    .angular
+                                    .clone(),
+                            }),
+                        };
 
-        let wrench = data_types::WrenchStamped {
-            header: Some(mekong_data.header.as_ref().ok_or(ZFError::Empty)?.clone()),
-            wrench: Some(data_types::Wrench {
-                force: mekong_data
-                    .twist
-                    .as_ref()
-                    .ok_or(ZFError::Empty)?
-                    .twist
-                    .as_ref()
-                    .ok_or(ZFError::Empty)?
-                    .linear
-                    .clone(),
-                torque: mekong_data
-                    .twist
-                    .as_ref()
-                    .ok_or(ZFError::Empty)?
-                    .twist
-                    .as_ref()
-                    .ok_or(ZFError::Empty)?
-                    .angular
-                    .clone(),
-            }),
-        };
-
-        let lena_data = Data::from::<data_types::WrenchStamped>(wrench);
-
-        results.insert(crate::LENA_PORT.into(), lena_data);
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+                        let lena_data = Data::from::<data_types::WrenchStamped>(wrench);
+                        output_lena.send(lena_data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Barcelona {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -823,66 +679,49 @@ impl Node for Barcelona {
 #[derive(Debug)]
 pub struct Rotterdam;
 
+#[async_trait]
 impl Operator for Rotterdam {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        default_input_rule(state, tokens)
-    }
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let input_mekong = inputs.get(MEKONG_PORT).unwrap()[0].clone();
+        let output_murray = outputs.get(MURRAY_PORT).unwrap()[0].clone();
 
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
+        Arc::new(async move || {
+            select! {
+                msg = input_mekong.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let mekong_data = msg.get_inner_data().try_get::<data_types::TwistWithCovarianceStamped>()?;
 
-        let mekong_data = inputs
-            .get_mut(crate::MEKONG_PORT)
-            .ok_or(ZFError::Empty)?
-            .get_inner_data()
-            .try_get::<data_types::TwistWithCovarianceStamped>()?;
+                        let vec3s = data_types::Vector3Stamped {
+                            header: Some(mekong_data.header.as_ref().ok_or(ZFError::Empty)?.clone()),
+                            vector: mekong_data
+                                .twist
+                                .as_ref()
+                                .ok_or(ZFError::Empty)?
+                                .twist
+                                .as_ref()
+                                .ok_or(ZFError::Empty)?
+                                .linear
+                                .clone(),
+                        };
 
-        let vec3s = data_types::Vector3Stamped {
-            header: Some(mekong_data.header.as_ref().ok_or(ZFError::Empty)?.clone()),
-            vector: mekong_data
-                .twist
-                .as_ref()
-                .ok_or(ZFError::Empty)?
-                .twist
-                .as_ref()
-                .ok_or(ZFError::Empty)?
-                .linear
-                .clone(),
-        };
-
-        let murray_data = Data::from::<data_types::Vector3Stamped>(vec3s);
-
-        results.insert(crate::MURRAY_PORT.into(), murray_data);
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
+                        let murray_data = Data::from::<data_types::Vector3Stamped>(vec3s);
+                        output_murray.send(murray_data, None).await?;
+                    }
+                }
+            }
+            Ok(())
+        })
     }
 }
 
+#[async_trait]
 impl Node for Rotterdam {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        zf_empty_state!()
-    }
-
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -899,78 +738,52 @@ struct GeorgetownState {
 
     f64_data: data_types::Float64,
 }
-
+#[async_trait]
 impl Operator for Georgetown {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
-            }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<GeorgetownState>()?;
-
-        if let Some(murray_value) = inputs.get_mut(crate::MURRAY_PORT) {
-            let inner_value = murray_value
-                .get_inner_data()
-                .try_get::<data_types::Vector3Stamped>()?;
-            my_state.murray_last_val = inner_value.clone();
-        }
-
-        if let Some(lena_value) = inputs.get_mut(crate::LENA_PORT) {
-            let inner_value = lena_value
-                .get_inner_data()
-                .try_get::<data_types::WrenchStamped>()?;
-            my_state.lena_last_val = inner_value.clone();
-        }
-
-        if false {
-            let volga_data = Data::from::<data_types::Float64>(my_state.f64_data.clone());
-
-            results.insert(crate::VOLGA_PORT.into(), volga_data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Georgetown {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = GeorgetownState {
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = GeorgetownState {
             murray_last_val: random(),
             lena_last_val: random(),
             f64_data: data_types::Float64 { value: random() },
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_murray = inputs.get(MURRAY_PORT).unwrap()[0].clone();
+        let input_lena = inputs.get(LENA_PORT).unwrap()[0].clone();
+        let output_volga = outputs.get(VOLGA_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+            msg = input_murray.recv().fuse() => {
+                if let Ok((_, Message::Data(mut msg))) = msg {
+                    let inner_data = msg.get_inner_data().try_get::<data_types::Vector3Stamped>()?;
+                    my_state.murray_last_val = inner_data.clone();
+                }
+            },
+            msg = input_lena.recv().fuse() => {
+                if let Ok((_, Message::Data(mut msg))) = msg {
+                    let inner_data = msg.get_inner_data().try_get::<data_types::WrenchStamped>()?;
+                    my_state.lena_last_val = inner_data.clone();
+                }
+            },
+            // Output every 50ms
+            _ = zenoh_flow::async_std::task::sleep(Duration::from_millis(50)).fuse() => {
+                    let volga_data = Data::from::<data_types::Float64>(my_state.f64_data.clone());
+                    output_volga.send(volga_data, None).await?;
+                }
+            }
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for Georgetown {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }
@@ -986,85 +799,15 @@ struct GenevaState {
     congo_last_val: data_types::Twist,
 }
 
+#[async_trait]
 impl Operator for Geneva {
-    fn input_rule(
+    async fn setup(
         &self,
-        _context: &mut zenoh_flow::Context,
-        _state: &mut State,
-        tokens: &mut HashMap<PortId, zenoh_flow::InputToken>,
-    ) -> zenoh_flow::ZFResult<bool> {
-        for token in tokens.values() {
-            match token {
-                InputToken::Ready(_) => return Ok(true),
-                InputToken::Pending => continue,
-            }
-        }
-        Ok(true)
-    }
-
-    fn run(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        inputs: &mut HashMap<PortId, zenoh_flow::runtime::message::DataMessage>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, Data>> {
-        let mut results: HashMap<PortId, Data> = HashMap::new();
-
-        let my_state = state.try_get::<GenevaState>()?;
-
-        if let Some(danube_value) = inputs.get_mut(crate::DANUBE_PORT) {
-            let inner_value = danube_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            my_state.danube_last_val = inner_value.clone();
-        }
-
-        if let Some(togus_value) = inputs.get_mut(crate::TAGUS_PORT) {
-            let inner_value = togus_value.get_inner_data().try_get::<data_types::Pose>()?;
-            my_state.tagus_last_val = inner_value.clone();
-        }
-
-        if let Some(congo_value) = inputs.get_mut(crate::CONGO_PORT) {
-            let inner_value = congo_value
-                .get_inner_data()
-                .try_get::<data_types::Twist>()?;
-            my_state.congo_last_val = inner_value.clone();
-        }
-
-        if let Some(parana_value) = inputs.get_mut(crate::PARANA_PORT) {
-            let inner_value = parana_value
-                .get_inner_data()
-                .try_get::<data_types::String>()?;
-            my_state.parana_last_val = inner_value.clone();
-
-            let new_value = data_types::String {
-                value: format!(
-                    "{}-{}",
-                    my_state.parana_last_val.value, my_state.danube_last_val.value
-                ),
-            };
-
-            let data = Data::from::<data_types::String>(new_value);
-            results.insert(crate::ARKANSAS_PORT.into(), data);
-        }
-
-        Ok(results)
-    }
-
-    fn output_rule(
-        &self,
-        _context: &mut zenoh_flow::Context,
-        state: &mut State,
-        outputs: HashMap<PortId, Data>,
-        _deadline_miss: Option<LocalDeadlineMiss>,
-    ) -> zenoh_flow::ZFResult<HashMap<zenoh_flow::PortId, NodeOutput>> {
-        default_output_rule(state, outputs)
-    }
-}
-
-impl Node for Geneva {
-    fn initialize(&self, _configuration: &Option<Configuration>) -> ZFResult<State> {
-        let my_state = GenevaState {
+        _configuration: &Option<Configuration>,
+        inputs: Inputs,
+        outputs: Outputs,
+    ) -> Arc<dyn AsyncIteration> {
+        let mut my_state = GenevaState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
             },
@@ -1074,10 +817,61 @@ impl Node for Geneva {
             tagus_last_val: random(),
             congo_last_val: random(),
         };
-        Ok(State::from(my_state))
-    }
 
-    fn finalize(&self, _state: &mut State) -> ZFResult<()> {
+        let input_parana = inputs.get(PARANA_PORT).unwrap()[0].clone();
+        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
+        let input_tagus = inputs.get(TAGUS_PORT).unwrap()[0].clone();
+        let input_congo = inputs.get(CONGO_PORT).unwrap()[0].clone();
+
+        let output_arkansas = outputs.get(ARKANSAS_PORT).unwrap()[0].clone();
+
+        Arc::new(async move || {
+            select! {
+
+                msg = input_danube.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        my_state.danube_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_tagus.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Pose>()?;
+                        my_state.tagus_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_congo.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::Twist>()?;
+                        my_state.congo_last_val = inner_data.clone();
+                    }
+                },
+                msg = input_parana.recv().fuse() => {
+                    if let Ok((_, Message::Data(mut msg))) = msg {
+                        let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
+                        my_state.parana_last_val = inner_data.clone();
+
+                        let new_value = data_types::String {
+                            value: format!(
+                                "{}-{}",
+                                my_state.parana_last_val.value, my_state.danube_last_val.value
+                            ),
+                        };
+
+                        let arkansas_data = Data::from::<data_types::String>(new_value);
+                        output_arkansas.send(arkansas_data, None).await?;
+
+                    }
+                },
+            }
+            Ok(())
+        })
+    }
+}
+
+#[async_trait]
+impl Node for Geneva {
+    async fn finalize(&self) -> ZFResult<()> {
         Ok(())
     }
 }

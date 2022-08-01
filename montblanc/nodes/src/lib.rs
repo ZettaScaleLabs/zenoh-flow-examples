@@ -11,31 +11,32 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+#![feature(async_closure)]
 
 pub mod operators;
 pub mod sinks;
 pub mod sources;
 
-pub static AMAZON_PORT: &str = "amazon";
-pub static DANUBE_PORT: &str = "danube";
-pub static GANGES_PORT: &str = "ganges";
-pub static NILE_PORT: &str = "nile";
-pub static TIGRIS_PORT: &str = "tigris";
-pub static PARANA_PORT: &str = "parana";
-pub static COLUMBIA_PORT: &str = "columbia";
-pub static COLORADO_PORT: &str = "colorado";
-pub static SALWEEN_PORT: &str = "salween";
-pub static GODAVARI_PORT: &str = "godavari";
-pub static CHANAB_PORT: &str = "chanab";
-pub static LOIRE_PORT: &str = "loire";
-pub static YAMUNA_PORT: &str = "yamuna";
-pub static BRAZOS_PORT: &str = "brazos";
-pub static TAGUS_PORT: &str = "tagus";
-pub static MISSOURI_PORT: &str = "missouri";
-pub static CONGO_PORT: &str = "congo";
-pub static MEKONG_PORT: &str = "mekong";
-pub static ARKANSAS_PORT: &str = "arkansas";
-pub static OHIO_PORT: &str = "ohio";
-pub static VOLGA_PORT: &str = "volga";
-pub static MURRAY_PORT: &str = "murray";
-pub static LENA_PORT: &str = "lena";
+pub static AMAZON_PORT: &str = "Amazon";
+pub static DANUBE_PORT: &str = "Danube";
+pub static GANGES_PORT: &str = "Ganges";
+pub static NILE_PORT: &str = "Nile";
+pub static TIGRIS_PORT: &str = "Tigris";
+pub static PARANA_PORT: &str = "Parana";
+pub static COLUMBIA_PORT: &str = "Columbia";
+pub static COLORADO_PORT: &str = "Colorado";
+pub static SALWEEN_PORT: &str = "Salween";
+pub static GODAVARI_PORT: &str = "Godavari";
+pub static CHENAB_PORT: &str = "Chenab";
+pub static LOIRE_PORT: &str = "Loire";
+pub static YAMUNA_PORT: &str = "Yamuna";
+pub static BRAZOS_PORT: &str = "Brazos";
+pub static TAGUS_PORT: &str = "Tagus";
+pub static MISSOURI_PORT: &str = "Missouri";
+pub static CONGO_PORT: &str = "Congo";
+pub static MEKONG_PORT: &str = "Mekong";
+pub static ARKANSAS_PORT: &str = "Arkansas";
+pub static OHIO_PORT: &str = "Ohio";
+pub static VOLGA_PORT: &str = "Volga";
+pub static MURRAY_PORT: &str = "Murray";
+pub static LENA_PORT: &str = "Lena";
