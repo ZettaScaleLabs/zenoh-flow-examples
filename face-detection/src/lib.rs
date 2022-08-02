@@ -133,13 +133,13 @@ impl Operator for FaceDetection {
     async fn setup(
         &self,
         configuration: &Option<Configuration>,
-        inputs: Inputs,
-        outputs: Outputs,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = FDState::new(configuration);
 
-        let input_frame = inputs.get(INPUT).unwrap()[0].clone();
-        let output_frame = outputs.get(OUTPUT).unwrap()[0].clone();
+        let input_frame = inputs.remove(INPUT).unwrap();
+        let output_frame = outputs.remove(OUTPUT).unwrap();
 
         Arc::new(async move || {
             let data = match input_frame.recv().await.unwrap() {

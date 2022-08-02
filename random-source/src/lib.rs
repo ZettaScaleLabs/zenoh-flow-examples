@@ -34,9 +34,9 @@ impl Source for ExampleRandomSource {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output = outputs.get("Random").unwrap()[0].clone();
+        let output = outputs.remove("Random").unwrap();
 
         Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;

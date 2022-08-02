@@ -29,7 +29,7 @@ impl Sink for Arequipa {
         configuration: &Option<Configuration>,
         inputs: Inputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input_arkansas = inputs.get(ARKANSAS_PORT).unwrap()[0].clone();
+        let input_arkansas = inputs.remove(ARKANSAS_PORT).unwrap();
 
         Arc::new(async move || {
             if let Ok((_, Message::Data(mut msg))) = input_arkansas.recv().await {

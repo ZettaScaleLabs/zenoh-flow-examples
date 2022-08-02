@@ -25,9 +25,9 @@ impl Source for ManualSource {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output = outputs.get("Int").unwrap()[0].clone();
+        let output = outputs.remove("Int").unwrap();
 
         Arc::new(async move || {
             println!("> Please input a number: ");

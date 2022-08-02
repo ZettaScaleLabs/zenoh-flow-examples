@@ -37,8 +37,8 @@ impl Operator for BuzzOperator {
     async fn setup(
         &self,
         configuration: &Option<Configuration>,
-        inputs: Inputs,
-        outputs: Outputs,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = match configuration {
             Some(config) => match config["buzzword"].as_str() {
@@ -54,9 +54,9 @@ impl Operator for BuzzOperator {
             },
         };
 
-        let input_fizz = inputs.get(LINK_ID_INPUT_STR).unwrap()[0].clone();
-        let input_value = inputs.get(LINK_ID_INPUT_INT).unwrap()[0].clone();
-        let output_buzz = outputs.get(LINK_ID_OUTPUT_STR).unwrap()[0].clone();
+        let input_fizz = inputs.remove(LINK_ID_INPUT_STR).unwrap();
+        let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
+        let output_buzz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
 
         Arc::new(async move || {
             let value = match input_value.recv().await.unwrap() {

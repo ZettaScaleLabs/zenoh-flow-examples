@@ -48,10 +48,10 @@ impl Sink for GenericSink {
     async fn setup(
         &self,
         configuration: &Option<Configuration>,
-        inputs: Inputs,
+        mut inputs: Inputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = SinkState::new(configuration);
-        let input = inputs.get("Data").unwrap()[0].clone();
+        let input = inputs.remove("Data").unwrap();
         Arc::new(async move || {
             if let Ok(data) = input.recv().await {
                 match &state.file {

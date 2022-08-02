@@ -35,13 +35,13 @@ impl Operator for SumAndSend {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        inputs: Inputs,
-        outputs: Outputs,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         let mut state = SumAndSendState { x: ZFUsize(0) };
 
-        let input_value = inputs.get(INPUT).unwrap()[0].clone();
-        let output_value = outputs.get(OUTPUT).unwrap()[0].clone();
+        let input_value = inputs.remove(INPUT).unwrap();
+        let output_value = outputs.remove(OUTPUT).unwrap();
 
         Arc::new(async move || {
             let data = match input_value.recv().await.unwrap() {

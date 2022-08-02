@@ -66,10 +66,10 @@ impl Sink for VideoSink {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        inputs: Inputs,
+        mut inputs: Inputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = VideoState::new();
-        let input = inputs.get("Frame").unwrap()[0].clone();
+        let input = inputs.remove("Frame").unwrap();
 
         Arc::new(async move || {
             let frame = match input.recv().await.unwrap() {

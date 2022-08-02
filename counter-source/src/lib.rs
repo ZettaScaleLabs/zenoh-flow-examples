@@ -31,14 +31,14 @@ impl Source for CountSource {
     async fn setup(
         &self,
         configuration: &Option<Configuration>,
-        outputs: Outputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         if let Some(conf) = configuration {
             let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
         }
 
-        let output = outputs.get("Counter").unwrap()[0].clone();
+        let output = outputs.remove("Counter").unwrap();
 
         Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;

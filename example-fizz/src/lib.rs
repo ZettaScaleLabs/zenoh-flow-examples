@@ -41,12 +41,12 @@ impl Operator for FizzOperator {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        inputs: Inputs,
-        outputs: Outputs,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input_value = inputs.get(LINK_ID_INPUT_INT).unwrap()[0].clone();
-        let output_value = outputs.get(LINK_ID_OUTPUT_INT).unwrap()[0].clone();
-        let output_fizz = outputs.get(LINK_ID_OUTPUT_STR).unwrap()[0].clone();
+        let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
+        let output_value = outputs.remove(LINK_ID_OUTPUT_INT).unwrap();
+        let output_fizz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
 
         Arc::new(async move || {
             let mut fizz = ZFString::from("");

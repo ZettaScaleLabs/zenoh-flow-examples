@@ -130,11 +130,11 @@ impl Source for CameraSource {
     async fn setup(
         &self,
         configuration: &Option<Configuration>,
-        outputs: Outputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = CameraState::new(configuration);
 
-        let output = outputs.get("Frame").unwrap()[0].clone();
+        let output = outputs.remove("Frame").unwrap();
 
         Arc::new(async move || {
             let buf = state.get_frame();

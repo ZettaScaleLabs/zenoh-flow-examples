@@ -87,14 +87,14 @@ impl Operator for FrameConcat {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        inputs: Inputs,
-        outputs: Outputs,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
         let state = FrameConcatState::new();
 
-        let input_top = inputs.get(INPUT1).unwrap()[0].clone();
-        let input_bottom = inputs.get(INPUT2).unwrap()[0].clone();
-        let output_frame = outputs.get(OUTPUT).unwrap()[0].clone();
+        let input_top = inputs.remove(INPUT1).unwrap();
+        let input_bottom = inputs.remove(INPUT2).unwrap();
+        let output_frame = outputs.remove(OUTPUT).unwrap();
 
         Arc::new(async move || {
             let top = match input_top.recv().await.unwrap() {
