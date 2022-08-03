@@ -89,31 +89,27 @@ impl Operator for FrameConcat {
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = FrameConcatState::new();
 
         let input_top = inputs.remove(INPUT1).unwrap();
         let input_bottom = inputs.remove(INPUT2).unwrap();
         let output_frame = outputs.remove(OUTPUT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             let top = match input_top.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             let bottom = match input_bottom.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             let frame = state.concat(top, bottom);
             output_frame.send(Data::from_bytes(frame), None).await
-        })
+        }))
     }
 }
 

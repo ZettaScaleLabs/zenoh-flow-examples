@@ -67,21 +67,19 @@ impl Sink for VideoSink {
         &self,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = VideoState::new();
         let input = inputs.remove("Frame").unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             let frame = match input.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             state.show(frame);
             Ok(())
-        })
+        }))
     }
 }
 

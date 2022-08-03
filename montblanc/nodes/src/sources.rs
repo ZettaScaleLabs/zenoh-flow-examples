@@ -32,11 +32,11 @@ impl Source for Cordoba {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_amazon = outputs.remove(AMAZON_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
 
@@ -44,7 +44,7 @@ impl Source for Cordoba {
             let value = datatypes::data_types::Float32 { value: data };
             let amazon_data = Data::from::<datatypes::data_types::Float32>(value);
             output_amazon.send(amazon_data, None).await
-        })
+        }))
     }
 }
 
@@ -64,11 +64,11 @@ impl Source for Portsmouth {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_danube = outputs.remove(DANUBE_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 200ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(200)).await;
 
@@ -77,7 +77,7 @@ impl Source for Portsmouth {
             };
             let danube_data = Data::from(value);
             output_danube.send(danube_data, None).await
-        })
+        }))
     }
 }
 
@@ -97,11 +97,11 @@ impl Source for Freeport {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_ganges = outputs.remove(GANGES_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 50ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(50)).await;
 
@@ -109,7 +109,7 @@ impl Source for Freeport {
             let value = datatypes::data_types::Int64 { value: data };
             let ganges_data = Data::from(value);
             output_ganges.send(ganges_data, None).await
-        })
+        }))
     }
 }
 #[async_trait]
@@ -128,11 +128,11 @@ impl Source for Madelin {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_nile = outputs.remove(NILE_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 10ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(10)).await;
 
@@ -140,7 +140,7 @@ impl Source for Madelin {
             let value = datatypes::data_types::Int32 { value: data };
             let nile_data = Data::from(value);
             output_nile.send(nile_data, None).await
-        })
+        }))
     }
 }
 #[async_trait]
@@ -159,17 +159,17 @@ impl Source for Delhi {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_columbia = outputs.remove(COLUMBIA_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 1s
             zenoh_flow::async_std::task::sleep(Duration::from_millis(1000)).await;
             let value: datatypes::data_types::Image = random();
             let columbia_data = Data::from(value);
             output_columbia.send(columbia_data, None).await
-        })
+        }))
     }
 }
 
@@ -189,17 +189,17 @@ impl Source for Hebron {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_chenab = outputs.remove(CHENAB_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Quaternion = random();
             let chenab_data = Data::from(value);
             output_chenab.send(chenab_data, None).await
-        })
+        }))
     }
 }
 #[async_trait]
@@ -218,19 +218,20 @@ impl Source for Kingston {
     async fn setup(
         &self,
         _configuration: &Option<Configuration>,
-        outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+        mut outputs: Outputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output_yamuna = outputs.remove(YAMUNA_PORT).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Vector3 = random();
             let yamuna_data = Data::from(value);
             output_yamuna.send(yamuna_data, None).await
-        })
+        }))
     }
 }
+
 #[async_trait]
 impl Node for Kingston {
     async fn finalize(&self) -> ZFResult<()> {

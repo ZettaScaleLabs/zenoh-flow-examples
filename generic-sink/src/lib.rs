@@ -49,10 +49,10 @@ impl Sink for GenericSink {
         &self,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = SinkState::new(configuration);
         let input = inputs.remove("Data").unwrap();
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             if let Ok(data) = input.recv().await {
                 match &state.file {
                     None => {
@@ -71,7 +71,7 @@ impl Sink for GenericSink {
                 }
             }
             Ok(())
-        })
+        }))
     }
 }
 

@@ -17,7 +17,7 @@ use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Source};
-use zenoh_flow::{AsyncIteration, Configuration, Outputs};
+use zenoh_flow::{AsyncIteration, Configuration, Outputs, ZFError};
 
 #[derive(Debug)]
 struct CameraSource;
@@ -131,17 +131,17 @@ impl Source for CameraSource {
         &self,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = CameraState::new(configuration);
 
-        let output = outputs.remove("Frame").unwrap();
+        let output = outputs.remove("Frame").ok_or(ZFError::NotFound)?;
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             let buf = state.get_frame();
             output.send(Data::from_bytes(buf), None).await.unwrap();
             async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             Ok(())
-        })
+        }))
     }
 }
 

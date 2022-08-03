@@ -26,20 +26,20 @@ pub struct Arequipa;
 impl Sink for Arequipa {
     async fn setup(
         &self,
-        configuration: &Option<Configuration>,
-        inputs: Inputs,
-    ) -> Arc<dyn AsyncIteration> {
+        _configuration: &Option<Configuration>,
+        mut inputs: Inputs,
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let input_arkansas = inputs.remove(ARKANSAS_PORT).unwrap();
 
-        Arc::new(async move || {
-            if let Ok((_, Message::Data(mut msg))) = input_arkansas.recv().await {
+        Ok(Arc::new(async move || {
+            if let Ok(Message::Data(mut msg)) = input_arkansas.recv().await {
                 let data = msg
                     .get_inner_data()
                     .try_get::<datatypes::data_types::String>()?;
                 println!("Arequipa: Received data {}", data.value);
             }
             Ok(())
-        })
+        }))
     }
 }
 

@@ -43,19 +43,17 @@ impl Operator for FizzOperator {
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
         let output_value = outputs.remove(LINK_ID_OUTPUT_INT).unwrap();
         let output_fizz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             let mut fizz = ZFString::from("");
 
             let value = match input_value.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             if value.0 % 2 == 0 {
@@ -64,7 +62,7 @@ impl Operator for FizzOperator {
 
             output_value.send(Data::from(value), None).await?;
             output_fizz.send(Data::from(fizz), None).await
-        })
+        }))
     }
 }
 

@@ -118,16 +118,16 @@ impl Source for VideoSource {
         &self,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = VideoSourceState::new(configuration);
 
         let output = outputs.remove("Frame").unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             let frame = state.capture()?;
             output.send(Data::from_bytes(frame), None).await
-        })
+        }))
     }
 }
 

@@ -35,15 +35,15 @@ impl Source for ExampleRandomSource {
         &self,
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output = outputs.remove("Random").unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
             output
                 .send(Data::from(ZFUsize(rand::random::<usize>())), None)
                 .await
-        })
+        }))
     }
 }
 

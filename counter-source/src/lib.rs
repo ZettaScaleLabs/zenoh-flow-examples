@@ -32,7 +32,7 @@ impl Source for CountSource {
         &self,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         if let Some(conf) = configuration {
             let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
@@ -40,13 +40,13 @@ impl Source for CountSource {
 
         let output = outputs.remove("Counter").unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
             let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
             output.send(d, Some(0u64)).await.unwrap();
 
             Ok(())
-        })
+        }))
     }
 }
 

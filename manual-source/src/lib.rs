@@ -26,10 +26,10 @@ impl Source for ManualSource {
         &self,
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let output = outputs.remove("Int").unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             println!("> Please input a number: ");
             let mut number = String::new();
             zenoh_flow::async_std::io::stdin()
@@ -43,7 +43,7 @@ impl Source for ManualSource {
             };
 
             output.send(Data::from(ZFUsize(value)), None).await
-        })
+        }))
     }
 }
 

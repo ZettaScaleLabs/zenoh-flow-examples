@@ -39,7 +39,7 @@ impl Operator for BuzzOperator {
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> Arc<dyn AsyncIteration> {
+    ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = match configuration {
             Some(config) => match config["buzzword"].as_str() {
                 Some(buzzword) => BuzzState {
@@ -58,19 +58,15 @@ impl Operator for BuzzOperator {
         let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
         let output_buzz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
 
-        Arc::new(async move || {
+        Ok(Arc::new(async move || {
             let value = match input_value.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             let fizz = match input_fizz.recv().await.unwrap() {
-                (_, Message::Data(mut msg)) => {
-                    Ok(msg.get_inner_data().try_get::<ZFString>()?.clone())
-                }
-                (_, _) => Err(ZFError::InvalidData("No data".to_string())),
+                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFString>()?.clone()),
+                _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             let mut buzz = fizz.clone();
@@ -79,7 +75,7 @@ impl Operator for BuzzOperator {
             }
 
             output_buzz.send(Data::from(buzz), None).await
-        })
+        }))
     }
 }
 
