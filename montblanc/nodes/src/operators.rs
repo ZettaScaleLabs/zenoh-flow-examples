@@ -63,8 +63,8 @@ impl Operator for Lyon {
         inputs: Inputs,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input = inputs.get(AMAZON_PORT).unwrap()[0].clone();
-        let output = outputs.get(TIGRIS_PORT).unwrap()[0].clone();
+        let input = inputs.remove(AMAZON_PORT).unwrap();
+        let output = outputs.remove(TIGRIS_PORT).unwrap();
 
         Arc::new(async move || {
             if let Ok((_, Message::Data(mut msg))) = input.recv().await {
@@ -111,11 +111,11 @@ impl Operator for Hamburg {
             tigris_last_val: 0.0f32,
         };
 
-        let input_tigris = inputs.get(TIGRIS_PORT).unwrap()[0].clone();
-        let input_ganges = inputs.get(GANGES_PORT).unwrap()[0].clone();
-        let input_nile = inputs.get(NILE_PORT).unwrap()[0].clone();
-        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
-        let output_parana = outputs.get(PARANA_PORT).unwrap()[0].clone();
+        let input_tigris = inputs.remove(TIGRIS_PORT).unwrap();
+        let input_ganges = inputs.remove(GANGES_PORT).unwrap();
+        let input_nile = inputs.remove(NILE_PORT).unwrap();
+        let input_danube = inputs.remove(DANUBE_PORT).unwrap();
+        let output_parana = outputs.remove(PARANA_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -179,8 +179,8 @@ impl Operator for Taipei {
         inputs: Inputs,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
-        let output = outputs.get(COLORADO_PORT).unwrap()[0].clone();
+        let input = inputs.remove(COLUMBIA_PORT).unwrap();
+        let output = outputs.remove(COLORADO_PORT).unwrap();
 
         Arc::new(async move || {
             if let Ok((_, Message::Data(mut msg))) = input.recv().await {
@@ -233,11 +233,11 @@ impl Operator for Osaka {
             laserscan_data: random(),
         };
 
-        let input_parana = inputs.get(PARANA_PORT).unwrap()[0].clone();
-        let input_columbia = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
-        let input_colorado = inputs.get(COLORADO_PORT).unwrap()[0].clone();
-        let output_salween = outputs.get(SALWEEN_PORT).unwrap()[0].clone();
-        let output_godavari = outputs.get(GODAVARI_PORT).unwrap()[0].clone();
+        let input_parana = inputs.remove(PARANA_PORT).unwrap();
+        let input_columbia = inputs.remove(COLUMBIA_PORT).unwrap();
+        let input_colorado = inputs.remove(COLORADO_PORT).unwrap();
+        let output_salween = outputs.remove(SALWEEN_PORT).unwrap();
+        let output_godavari = outputs.remove(GODAVARI_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -300,9 +300,9 @@ impl Operator for Tripoli {
             columbia_last_val: random(),
         };
 
-        let input_columbia = inputs.get(COLUMBIA_PORT).unwrap()[0].clone();
-        let input_godavari = inputs.get(GODAVARI_PORT).unwrap()[0].clone();
-        let output_loire = outputs.get(LOIRE_PORT).unwrap()[0].clone();
+        let input_columbia = inputs.remove(COLUMBIA_PORT).unwrap();
+        let input_godavari = inputs.remove(GODAVARI_PORT).unwrap();
+        let output_loire = outputs.remove(LOIRE_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -373,16 +373,16 @@ impl Operator for Mandalay {
             img_data: random(),
         };
 
-        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
-        let input_chenab = inputs.get(CHENAB_PORT).unwrap()[0].clone();
-        let input_salween = inputs.get(SALWEEN_PORT).unwrap()[0].clone();
-        let input_godavari = inputs.get(GODAVARI_PORT).unwrap()[0].clone();
-        let input_loire = inputs.get(LOIRE_PORT).unwrap()[0].clone();
-        let input_yamuna = inputs.get(YAMUNA_PORT).unwrap()[0].clone();
+        let input_danube = inputs.remove(DANUBE_PORT).unwrap();
+        let input_chenab = inputs.remove(CHENAB_PORT).unwrap();
+        let input_salween = inputs.remove(SALWEEN_PORT).unwrap();
+        let input_godavari = inputs.remove(GODAVARI_PORT).unwrap();
+        let input_loire = inputs.remove(LOIRE_PORT).unwrap();
+        let input_yamuna = inputs.remove(YAMUNA_PORT).unwrap();
 
-        let output_brazos = outputs.get(BRAZOS_PORT).unwrap()[0].clone();
-        let output_tagus = outputs.get(TAGUS_PORT).unwrap()[0].clone();
-        let output_missouri = outputs.get(MISSOURI_PORT).unwrap()[0].clone();
+        let output_brazos = outputs.remove(BRAZOS_PORT).unwrap();
+        let output_tagus = outputs.remove(TAGUS_PORT).unwrap();
+        let output_missouri = outputs.remove(MISSOURI_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -489,17 +489,17 @@ impl Operator for Ponce {
             twist_w_cov_data: random(),
         };
 
-        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
-        let input_tagus = inputs.get(TAGUS_PORT).unwrap()[0].clone();
-        let input_missouri = inputs.get(MISSOURI_PORT).unwrap()[0].clone();
-        let input_loire = inputs.get(LOIRE_PORT).unwrap()[0].clone();
-        let input_yamuna = inputs.get(YAMUNA_PORT).unwrap()[0].clone();
-        let input_ohio = inputs.get(OHIO_PORT).unwrap()[0].clone();
-        let input_volga = inputs.get(VOLGA_PORT).unwrap()[0].clone();
-        let input_brazos = inputs.get(BRAZOS_PORT).unwrap()[0].clone();
+        let input_danube = inputs.remove(DANUBE_PORT).unwrap();
+        let input_tagus = inputs.remove(TAGUS_PORT).unwrap();
+        let input_missouri = inputs.remove(MISSOURI_PORT).unwrap();
+        let input_loire = inputs.remove(LOIRE_PORT).unwrap();
+        let input_yamuna = inputs.remove(YAMUNA_PORT).unwrap();
+        let input_ohio = inputs.remove(OHIO_PORT).unwrap();
+        let input_volga = inputs.remove(VOLGA_PORT).unwrap();
+        let input_brazos = inputs.remove(BRAZOS_PORT).unwrap();
 
-        let output_congo = outputs.get(CONGO_PORT).unwrap()[0].clone();
-        let output_mekong = outputs.get(MEKONG_PORT).unwrap()[0].clone();
+        let output_congo = outputs.remove(CONGO_PORT).unwrap();
+        let output_mekong = outputs.remove(MEKONG_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -586,8 +586,8 @@ impl Operator for Monaco {
         inputs: Inputs,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input_congo = inputs.get(CONGO_PORT).unwrap()[0].clone();
-        let output_ohio = outputs.get(OHIO_PORT).unwrap()[0].clone();
+        let input_congo = inputs.remove(CONGO_PORT).unwrap();
+        let output_ohio = outputs.remove(OHIO_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -624,8 +624,8 @@ impl Operator for Barcelona {
         inputs: Inputs,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input_mekong = inputs.get(MEKONG_PORT).unwrap()[0].clone();
-        let output_lena = outputs.get(LENA_PORT).unwrap()[0].clone();
+        let input_mekong = inputs.remove(MEKONG_PORT).unwrap();
+        let output_lena = outputs.remove(LENA_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -687,8 +687,8 @@ impl Operator for Rotterdam {
         inputs: Inputs,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let input_mekong = inputs.get(MEKONG_PORT).unwrap()[0].clone();
-        let output_murray = outputs.get(MURRAY_PORT).unwrap()[0].clone();
+        let input_mekong = inputs.remove(MEKONG_PORT).unwrap();
+        let output_murray = outputs.remove(MURRAY_PORT).unwrap();
 
         let header_data: data_types::Header = random();
 
@@ -755,9 +755,9 @@ impl Operator for Georgetown {
             f64_data: data_types::Float64 { value: random() },
         };
 
-        let input_murray = inputs.get(MURRAY_PORT).unwrap()[0].clone();
-        let input_lena = inputs.get(LENA_PORT).unwrap()[0].clone();
-        let output_volga = outputs.get(VOLGA_PORT).unwrap()[0].clone();
+        let input_murray = inputs.remove(MURRAY_PORT).unwrap();
+        let input_lena = inputs.remove(LENA_PORT).unwrap();
+        let output_volga = outputs.remove(VOLGA_PORT).unwrap();
 
         Arc::new(async move || {
             select! {
@@ -821,12 +821,12 @@ impl Operator for Geneva {
             congo_last_val: random(),
         };
 
-        let input_parana = inputs.get(PARANA_PORT).unwrap()[0].clone();
-        let input_danube = inputs.get(DANUBE_PORT).unwrap()[0].clone();
-        let input_tagus = inputs.get(TAGUS_PORT).unwrap()[0].clone();
-        let input_congo = inputs.get(CONGO_PORT).unwrap()[0].clone();
+        let input_parana = inputs.remove(PARANA_PORT).unwrap();
+        let input_danube = inputs.remove(DANUBE_PORT).unwrap();
+        let input_tagus = inputs.remove(TAGUS_PORT).unwrap();
+        let input_congo = inputs.remove(CONGO_PORT).unwrap();
 
-        let output_arkansas = outputs.get(ARKANSAS_PORT).unwrap()[0].clone();
+        let output_arkansas = outputs.remove(ARKANSAS_PORT).unwrap();
 
         Arc::new(async move || {
             select! {

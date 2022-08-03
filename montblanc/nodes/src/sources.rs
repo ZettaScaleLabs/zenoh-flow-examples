@@ -34,7 +34,7 @@ impl Source for Cordoba {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_amazon = outputs.get(AMAZON_PORT).unwrap()[0].clone();
+        let output_amazon = outputs.remove(AMAZON_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 100ms
@@ -66,7 +66,7 @@ impl Source for Portsmouth {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_danube = outputs.get(DANUBE_PORT).unwrap()[0].clone();
+        let output_danube = outputs.remove(DANUBE_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 200ms
@@ -99,7 +99,7 @@ impl Source for Freeport {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_ganges = outputs.get(GANGES_PORT).unwrap()[0].clone();
+        let output_ganges = outputs.remove(GANGES_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 50ms
@@ -130,7 +130,7 @@ impl Source for Madelin {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_nile = outputs.get(NILE_PORT).unwrap()[0].clone();
+        let output_nile = outputs.remove(NILE_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 10ms
@@ -161,7 +161,7 @@ impl Source for Delhi {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_columbia = outputs.get(COLUMBIA_PORT).unwrap()[0].clone();
+        let output_columbia = outputs.remove(COLUMBIA_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 1s
@@ -191,7 +191,7 @@ impl Source for Hebron {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_chenab = outputs.get(CHENAB_PORT).unwrap()[0].clone();
+        let output_chenab = outputs.remove(CHENAB_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 100ms
@@ -220,7 +220,7 @@ impl Source for Kingston {
         _configuration: &Option<Configuration>,
         outputs: Outputs,
     ) -> Arc<dyn AsyncIteration> {
-        let output_yamuna = outputs.get(YAMUNA_PORT).unwrap()[0].clone();
+        let output_yamuna = outputs.remove(YAMUNA_PORT).unwrap();
 
         Arc::new(async move || {
             // Send every 100ms
