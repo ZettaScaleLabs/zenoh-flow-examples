@@ -32,7 +32,7 @@ impl Sink for Arequipa {
         let input_arkansas = inputs.remove(ARKANSAS_PORT).unwrap();
 
         Ok(Arc::new(async move || {
-            if let Ok(Message::Data(mut msg)) = input_arkansas.recv().await {
+            if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
                 let data = msg
                     .get_inner_data()
                     .try_get::<datatypes::data_types::String>()?;

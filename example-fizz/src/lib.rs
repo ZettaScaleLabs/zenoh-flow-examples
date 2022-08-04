@@ -51,7 +51,7 @@ impl Operator for FizzOperator {
         Ok(Arc::new(async move || {
             let mut fizz = ZFString::from("");
 
-            let value = match input_value.recv().await.unwrap() {
+            let value = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
@@ -60,8 +60,8 @@ impl Operator for FizzOperator {
                 fizz = ZFString::from("Fizz");
             }
 
-            output_value.send(Data::from(value), None).await?;
-            output_fizz.send(Data::from(fizz), None).await
+            output_value.send_async(Data::from(value), None).await?;
+            output_fizz.send_async(Data::from(fizz), None).await
         }))
     }
 }

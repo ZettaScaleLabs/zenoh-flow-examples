@@ -44,7 +44,7 @@ impl Operator for SumAndSend {
         let output_value = outputs.remove(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
-            let data = match input_value.recv().await.unwrap() {
+            let data = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
@@ -52,7 +52,7 @@ impl Operator for SumAndSend {
             let res = ZFUsize(state.x.0 + data.0);
             state.x = res.clone();
 
-            output_value.send(Data::from(res), None).await
+            output_value.send_async(Data::from(res), None).await
         }))
     }
 }

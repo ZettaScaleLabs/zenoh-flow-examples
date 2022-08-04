@@ -53,7 +53,7 @@ impl Sink for GenericSink {
         let state = SinkState::new(configuration);
         let input = inputs.remove("Data").unwrap();
         Ok(Arc::new(async move || {
-            if let Ok(data) = input.recv().await {
+            if let Ok(data) = input.recv_async().await {
                 match &state.file {
                     None => {
                         println!("#######");

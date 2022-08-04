@@ -67,9 +67,9 @@ impl Operator for Lyon {
         let output = outputs.remove(TIGRIS_PORT).unwrap();
 
         Ok(Arc::new(async move || {
-            if let Ok(Message::Data(mut msg)) = input.recv().await {
+            if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
-                    .send(msg.get_inner_data().clone(), None)
+                    .send_async(msg.get_inner_data().clone(), None)
                     .await
                     .unwrap();
             }
@@ -119,25 +119,25 @@ impl Operator for Hamburg {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_tigris.recv().fuse() => {
+                msg = input_tigris.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Float32>()?;
                         my_state.tigris_last_val = inner_data.value;
                     }
                 },
-                msg = input_ganges.recv().fuse() => {
+                msg = input_ganges.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Int64>()?;
                         my_state.ganges_last_val = inner_data.value;
                     }
                 },
-                msg = input_nile.recv().fuse() => {
+                msg = input_nile.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Int32>()?;
                         my_state.nile_last_val = inner_data.value;
                     }
                 },
-                msg = input_danube.recv().fuse() => {
+                msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         let new_value = data_types::String {
@@ -151,7 +151,7 @@ impl Operator for Hamburg {
                         };
 
                         let data = Data::from::<data_types::String>(new_value);
-                        output_parana.send(data, None).await?;
+                        output_parana.send_async(data, None).await?;
                     }
                 }
             }
@@ -183,9 +183,9 @@ impl Operator for Taipei {
         let output = outputs.remove(COLORADO_PORT).unwrap();
 
         Ok(Arc::new(async move || {
-            if let Ok(Message::Data(mut msg)) = input.recv().await {
+            if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
-                    .send(msg.get_inner_data().clone(), None)
+                    .send_async(msg.get_inner_data().clone(), None)
                     .await
                     .unwrap();
             }
@@ -241,26 +241,26 @@ impl Operator for Osaka {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_parana.recv().fuse() => {
+                msg = input_parana.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         my_state.parana_last_val = inner_data.clone();
                     }
                 },
-                msg = input_columbia.recv().fuse() => {
+                msg = input_columbia.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
                         my_state.columbia_last_val = inner_data.clone();
                     }
                 },
-                msg = input_colorado.recv().fuse() => {
+                msg = input_colorado.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let _inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
                         let salween_data = Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
                         let godavari_data = Data::from::<data_types::LaserScan>(my_state.laserscan_data.clone());
 
-                        output_salween.send(salween_data, None).await?;
-                        output_godavari.send(godavari_data, None).await?;
+                        output_salween.send_async(salween_data, None).await?;
+                        output_godavari.send_async(godavari_data, None).await?;
                     }
                 }
             }
@@ -306,18 +306,18 @@ impl Operator for Tripoli {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_columbia.recv().fuse() => {
+                msg = input_columbia.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
                         my_state.columbia_last_val = inner_data.clone();
                     }
                 },
-                msg = input_godavari.recv().fuse() => {
+                msg = input_godavari.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let _inner_data = msg.get_inner_data().try_get::<data_types::LaserScan>()?;
                         let loire_data = Data::from::<data_types::PointCloud2>(my_state.pointcloud2_data.clone());
 
-                        output_loire.send(loire_data, None).await?;
+                        output_loire.send_async(loire_data, None).await?;
                     }
                 }
             }
@@ -386,37 +386,37 @@ impl Operator for Mandalay {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_danube.recv().fuse() => {
+                msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         my_state.danube_last_val = inner_data.clone();
                     }
                 },
-                msg = input_chenab.recv().fuse() => {
+                msg = input_chenab.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Quaternion>()?;
                         my_state.chenab_last_val = inner_data.clone();
                     }
                 },
-                msg = input_salween.recv().fuse() => {
+                msg = input_salween.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
                         my_state.salween_last_val = inner_data.clone();
                     }
                 },
-                msg = input_godavari.recv().fuse() => {
+                msg = input_godavari.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::LaserScan>()?;
                         my_state.godavari_last_val = inner_data.clone();
                     }
                 },
-                msg = input_loire.recv().fuse() => {
+                msg = input_loire.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
                         my_state.loire_last_val = inner_data.clone();
                     }
                 },
-                msg = input_yamuna.recv().fuse() => {
+                msg = input_yamuna.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Vector3>()?;
                         my_state.yamuna_last_val = inner_data.clone();
@@ -428,9 +428,9 @@ impl Operator for Mandalay {
                     let tagus_data = Data::from::<data_types::Pose>(my_state.pose_data.clone());
                     let missouri_data = Data::from::<data_types::Image>(my_state.img_data.clone());
 
-                    output_brazos.send(brazos_data, None).await?;
-                    output_tagus.send(tagus_data, None).await?;
-                    output_missouri.send(missouri_data, None).await?;
+                    output_brazos.send_async(brazos_data, None).await?;
+                    output_tagus.send_async(tagus_data, None).await?;
+                    output_missouri.send_async(missouri_data, None).await?;
                 }
             }
             Ok(())
@@ -503,49 +503,49 @@ impl Operator for Ponce {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_danube.recv().fuse() => {
+                msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         my_state.danube_last_val = inner_data.clone();
                     }
                 },
-                msg = input_tagus.recv().fuse() => {
+                msg = input_tagus.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Pose>()?;
                         my_state.tagus_last_val = inner_data.clone();
                     }
                 },
-                msg = input_missouri.recv().fuse() => {
+                msg = input_missouri.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Image>()?;
                         my_state.missouri_last_val = inner_data.clone();
                     }
                 },
-                msg = input_loire.recv().fuse() => {
+                msg = input_loire.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
                         my_state.loire_last_val = inner_data.clone();
                     }
                 },
-                msg = input_yamuna.recv().fuse() => {
+                msg = input_yamuna.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Vector3>()?;
                         my_state.yamuna_last_val = inner_data.clone();
                     }
                 },
-                msg = input_ohio.recv().fuse() => {
+                msg = input_ohio.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Float32>()?;
                         my_state.ohio_last_val = inner_data.clone();
                     }
                 },
-                msg = input_volga.recv().fuse() => {
+                msg = input_volga.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Float64>()?;
                         my_state.volga_last_val = inner_data.clone();
                     }
                 },
-                msg = input_brazos.recv().fuse() => {
+                msg = input_brazos.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let _inner_data = msg.get_inner_data().try_get::<data_types::PointCloud2>()?;
 
@@ -555,8 +555,8 @@ impl Operator for Ponce {
                             my_state.twist_w_cov_data.clone(),
                         );
 
-                        output_congo.send(twist_data, None).await?;
-                        output_mekong.send(twist_w_cov_data, None).await?;
+                        output_congo.send_async(twist_data, None).await?;
+                        output_mekong.send_async(twist_w_cov_data, None).await?;
 
                     }
                 },
@@ -591,11 +591,11 @@ impl Operator for Monaco {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_congo.recv().fuse() => {
+                msg = input_congo.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let _inner_data = msg.get_inner_data().try_get::<data_types::Twist>()?;
                         let ohio_data = Data::from::<data_types::Float32>(data_types::Float32 { value: random() });
-                        output_ohio.send(ohio_data, None).await?;
+                        output_ohio.send_async(ohio_data, None).await?;
                     }
                 }
             }
@@ -629,7 +629,7 @@ impl Operator for Barcelona {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_mekong.recv().fuse() => {
+                msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let mekong_data = msg.get_inner_data().try_get::<data_types::TwistWithCovarianceStamped>()?;
 
@@ -658,7 +658,7 @@ impl Operator for Barcelona {
                         };
 
                         let lena_data = Data::from::<data_types::WrenchStamped>(wrench);
-                        output_lena.send(lena_data, None).await?;
+                        output_lena.send_async(lena_data, None).await?;
                     }
                 }
             }
@@ -694,7 +694,7 @@ impl Operator for Rotterdam {
 
         Ok(Arc::new(async move || {
             select! {
-                msg = input_mekong.recv().fuse() => {
+                msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let _mekong_data = msg.get_inner_data().try_get::<data_types::TwistWithCovarianceStamped>()?;
 
@@ -713,7 +713,7 @@ impl Operator for Rotterdam {
                         };
 
                         let murray_data = Data::from::<data_types::Vector3Stamped>(vec3s);
-                        output_murray.send(murray_data, None).await?;
+                        output_murray.send_async(murray_data, None).await?;
                     }
                 }
             }
@@ -761,13 +761,13 @@ impl Operator for Georgetown {
 
         Ok(Arc::new(async move || {
             select! {
-            msg = input_murray.recv().fuse() => {
+            msg = input_murray.recv_async().fuse() => {
                 if let Ok(Message::Data(mut msg)) = msg {
                     let inner_data = msg.get_inner_data().try_get::<data_types::Vector3Stamped>()?;
                     my_state.murray_last_val = inner_data.clone();
                 }
             },
-            msg = input_lena.recv().fuse() => {
+            msg = input_lena.recv_async().fuse() => {
                 if let Ok(Message::Data(mut msg)) = msg {
                     let inner_data = msg.get_inner_data().try_get::<data_types::WrenchStamped>()?;
                     my_state.lena_last_val = inner_data.clone();
@@ -776,7 +776,7 @@ impl Operator for Georgetown {
             // Output every 50ms
             _ = zenoh_flow::async_std::task::sleep(Duration::from_millis(50)).fuse() => {
                     let volga_data = Data::from::<data_types::Float64>(my_state.f64_data.clone());
-                    output_volga.send(volga_data, None).await?;
+                    output_volga.send_async(volga_data, None).await?;
                 }
             }
             Ok(())
@@ -831,25 +831,25 @@ impl Operator for Geneva {
         Ok(Arc::new(async move || {
             select! {
 
-                msg = input_danube.recv().fuse() => {
+                msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         my_state.danube_last_val = inner_data.clone();
                     }
                 },
-                msg = input_tagus.recv().fuse() => {
+                msg = input_tagus.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Pose>()?;
                         my_state.tagus_last_val = inner_data.clone();
                     }
                 },
-                msg = input_congo.recv().fuse() => {
+                msg = input_congo.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::Twist>()?;
                         my_state.congo_last_val = inner_data.clone();
                     }
                 },
-                msg = input_parana.recv().fuse() => {
+                msg = input_parana.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
                         let inner_data = msg.get_inner_data().try_get::<data_types::String>()?;
                         my_state.parana_last_val = inner_data.clone();
@@ -862,7 +862,7 @@ impl Operator for Geneva {
                         };
 
                         let arkansas_data = Data::from::<data_types::String>(new_value);
-                        output_arkansas.send(arkansas_data, None).await?;
+                        output_arkansas.send_async(arkansas_data, None).await?;
 
                     }
                 },

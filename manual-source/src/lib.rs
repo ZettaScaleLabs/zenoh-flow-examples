@@ -42,7 +42,7 @@ impl Source for ManualSource {
                 Err(_) => return Err(ZFError::GenericError),
             };
 
-            output.send(Data::from(ZFUsize(value)), None).await
+            output.send_async(Data::from(ZFUsize(value)), None).await
         }))
     }
 }

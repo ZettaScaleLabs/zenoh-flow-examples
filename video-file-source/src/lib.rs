@@ -126,7 +126,7 @@ impl Source for VideoSource {
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             let frame = state.capture()?;
-            output.send(Data::from_bytes(frame), None).await
+            output.send_async(Data::from_bytes(frame), None).await
         }))
     }
 }

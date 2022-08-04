@@ -138,7 +138,10 @@ impl Source for CameraSource {
 
         Ok(Arc::new(async move || {
             let buf = state.get_frame();
-            output.send(Data::from_bytes(buf), None).await.unwrap();
+            output
+                .send_async(Data::from_bytes(buf), None)
+                .await
+                .unwrap();
             async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             Ok(())
         }))

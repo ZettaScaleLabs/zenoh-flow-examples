@@ -290,14 +290,14 @@ impl Operator for ObjDetection {
         let output_frame = outputs.remove(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
-            let frame = match input_frame.recv().await.unwrap() {
+            let frame = match input_frame.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
             let res = state.infer(frame);
 
-            output_frame.send(Data::from_bytes(res), None).await
+            output_frame.send_async(Data::from_bytes(res), None).await
         }))
     }
 }

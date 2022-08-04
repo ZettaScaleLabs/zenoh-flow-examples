@@ -43,7 +43,7 @@ impl Source for Cordoba {
             let data: f32 = random::<f32>() * 1000000.0;
             let value = datatypes::data_types::Float32 { value: data };
             let amazon_data = Data::from::<datatypes::data_types::Float32>(value);
-            output_amazon.send(amazon_data, None).await
+            output_amazon.send_async(amazon_data, None).await
         }))
     }
 }
@@ -76,7 +76,7 @@ impl Source for Portsmouth {
                 value: datatypes::random_string(256),
             };
             let danube_data = Data::from(value);
-            output_danube.send(danube_data, None).await
+            output_danube.send_async(danube_data, None).await
         }))
     }
 }
@@ -108,7 +108,7 @@ impl Source for Freeport {
             let data: i64 = random::<i64>();
             let value = datatypes::data_types::Int64 { value: data };
             let ganges_data = Data::from(value);
-            output_ganges.send(ganges_data, None).await
+            output_ganges.send_async(ganges_data, None).await
         }))
     }
 }
@@ -139,7 +139,7 @@ impl Source for Madelin {
             let data: i32 = random::<i32>();
             let value = datatypes::data_types::Int32 { value: data };
             let nile_data = Data::from(value);
-            output_nile.send(nile_data, None).await
+            output_nile.send_async(nile_data, None).await
         }))
     }
 }
@@ -168,7 +168,7 @@ impl Source for Delhi {
             zenoh_flow::async_std::task::sleep(Duration::from_millis(1000)).await;
             let value: datatypes::data_types::Image = random();
             let columbia_data = Data::from(value);
-            output_columbia.send(columbia_data, None).await
+            output_columbia.send_async(columbia_data, None).await
         }))
     }
 }
@@ -198,7 +198,7 @@ impl Source for Hebron {
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Quaternion = random();
             let chenab_data = Data::from(value);
-            output_chenab.send(chenab_data, None).await
+            output_chenab.send_async(chenab_data, None).await
         }))
     }
 }
@@ -227,7 +227,7 @@ impl Source for Kingston {
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Vector3 = random();
             let yamuna_data = Data::from(value);
-            output_yamuna.send(yamuna_data, None).await
+            output_yamuna.send_async(yamuna_data, None).await
         }))
     }
 }

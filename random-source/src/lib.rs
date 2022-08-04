@@ -41,7 +41,7 @@ impl Source for ExampleRandomSource {
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
             output
-                .send(Data::from(ZFUsize(rand::random::<usize>())), None)
+                .send_async(Data::from(ZFUsize(rand::random::<usize>())), None)
                 .await
         }))
     }

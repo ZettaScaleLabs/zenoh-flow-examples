@@ -43,7 +43,7 @@ impl Source for CountSource {
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
             let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
-            output.send(d, Some(0u64)).await.unwrap();
+            output.send_async(d, Some(0u64)).await.unwrap();
 
             Ok(())
         }))

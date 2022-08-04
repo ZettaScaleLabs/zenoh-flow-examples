@@ -59,12 +59,12 @@ impl Operator for BuzzOperator {
         let output_buzz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
 
         Ok(Arc::new(async move || {
-            let value = match input_value.recv().await.unwrap() {
+            let value = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
 
-            let fizz = match input_fizz.recv().await.unwrap() {
+            let fizz = match input_fizz.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFString>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
             }?;
@@ -74,7 +74,7 @@ impl Operator for BuzzOperator {
                 buzz.0.push_str(&state.buzzword);
             }
 
-            output_buzz.send(Data::from(buzz), None).await
+            output_buzz.send_async(Data::from(buzz), None).await
         }))
     }
 }
