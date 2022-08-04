@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
+    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, Streams, ZFError, ZFResult,
 };
 use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
 
@@ -92,9 +92,9 @@ impl Operator for FrameConcat {
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = FrameConcatState::new();
 
-        let input_top = inputs.remove(INPUT1).unwrap();
-        let input_bottom = inputs.remove(INPUT2).unwrap();
-        let output_frame = outputs.remove(OUTPUT).unwrap();
+        let input_top = inputs.take(INPUT1).unwrap();
+        let input_bottom = inputs.take(INPUT2).unwrap();
+        let output_frame = outputs.take(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
             let top = match input_top.recv_async().await.unwrap() {

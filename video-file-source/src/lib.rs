@@ -18,7 +18,7 @@ use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
     types::{ZFError, ZFResult},
     zenoh_flow_derive::ZFState,
-    zf_spin_lock, Data, Node, Source,
+    zf_spin_lock, Data, Node, Source, Streams,
 };
 use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 
@@ -121,7 +121,7 @@ impl Source for VideoSource {
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = VideoSourceState::new(configuration);
 
-        let output = outputs.remove("Frame").unwrap();
+        let output = outputs.take("Frame").unwrap();
 
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;

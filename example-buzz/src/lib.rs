@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{export_operator, types::ZFResult, Node, Operator};
+use zenoh_flow::{export_operator, types::ZFResult, Node, Operator, Streams};
 use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
 use zenoh_flow::{Data, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
@@ -54,9 +54,9 @@ impl Operator for BuzzOperator {
             },
         };
 
-        let input_fizz = inputs.remove(LINK_ID_INPUT_STR).unwrap();
-        let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
-        let output_buzz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
+        let input_fizz = inputs.take(LINK_ID_INPUT_STR).unwrap();
+        let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
+        let output_buzz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
 
         Ok(Arc::new(async move || {
             let value = match input_value.recv_async().await.unwrap() {

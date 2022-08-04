@@ -18,7 +18,7 @@ use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::Sink;
 use zenoh_flow::{export_sink, types::ZFResult, Node};
-use zenoh_flow::{AsyncIteration, Configuration, Inputs};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Streams};
 
 use std::fs::File;
 use std::io::Write;
@@ -51,7 +51,7 @@ impl Sink for GenericSink {
         mut inputs: Inputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = SinkState::new(configuration);
-        let input = inputs.remove("Data").unwrap();
+        let input = inputs.take("Data").unwrap();
         Ok(Arc::new(async move || {
             if let Ok(data) = input.recv_async().await {
                 match &state.file {

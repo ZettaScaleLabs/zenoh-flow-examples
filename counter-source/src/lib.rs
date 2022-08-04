@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Data};
+use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Data, Streams};
 use zenoh_flow::{AsyncIteration, Configuration, Outputs};
 use zenoh_flow::{Node, Source};
 use zenoh_flow_example_types::ZFUsize;
@@ -38,7 +38,7 @@ impl Source for CountSource {
             COUNTER.store(initial, Ordering::SeqCst);
         }
 
-        let output = outputs.remove("Counter").unwrap();
+        let output = outputs.take("Counter").unwrap();
 
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;

@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs, Streams};
 use zenoh_flow::{Data, Node, Operator, ZFError, ZFResult};
 use zenoh_flow_example_types::ZFUsize;
 
@@ -40,8 +40,8 @@ impl Operator for SumAndSend {
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let mut state = SumAndSendState { x: ZFUsize(0) };
 
-        let input_value = inputs.remove(INPUT).unwrap();
-        let output_value = outputs.remove(OUTPUT).unwrap();
+        let input_value = inputs.take(INPUT).unwrap();
+        let output_value = outputs.take(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
             let data = match input_value.recv_async().await.unwrap() {

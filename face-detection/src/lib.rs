@@ -17,9 +17,9 @@ use async_trait::async_trait;
 use opencv::{core, imgproc, objdetect, prelude::*, types};
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
+    zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration, Data, Inputs, Message,
+    Node, Operator, Outputs, Streams, ZFError, ZFResult,
 };
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
 
 #[derive(Debug)]
 struct FaceDetection;
@@ -138,8 +138,8 @@ impl Operator for FaceDetection {
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = FDState::new(configuration);
 
-        let input_frame = inputs.remove(INPUT).unwrap();
-        let output_frame = outputs.remove(OUTPUT).unwrap();
+        let input_frame = inputs.take(INPUT).unwrap();
+        let output_frame = outputs.take(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
             let data = match input_frame.recv_async().await.unwrap() {

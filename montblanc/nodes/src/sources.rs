@@ -15,7 +15,7 @@
 use std::{sync::Arc, time::Duration};
 
 use async_trait::async_trait;
-use zenoh_flow::{AsyncIteration, Configuration, Data, Node, Outputs, Source, ZFResult};
+use zenoh_flow::{AsyncIteration, Configuration, Data, Node, Outputs, Source, ZFResult, Streams};
 
 use rand::random;
 
@@ -34,7 +34,7 @@ impl Source for Cordoba {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_amazon = outputs.remove(AMAZON_PORT).unwrap();
+        let output_amazon = outputs.take(AMAZON_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 100ms
@@ -66,7 +66,7 @@ impl Source for Portsmouth {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_danube = outputs.remove(DANUBE_PORT).unwrap();
+        let output_danube = outputs.take(DANUBE_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 200ms
@@ -99,7 +99,7 @@ impl Source for Freeport {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_ganges = outputs.remove(GANGES_PORT).unwrap();
+        let output_ganges = outputs.take(GANGES_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 50ms
@@ -130,7 +130,7 @@ impl Source for Madelin {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_nile = outputs.remove(NILE_PORT).unwrap();
+        let output_nile = outputs.take(NILE_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 10ms
@@ -161,7 +161,7 @@ impl Source for Delhi {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_columbia = outputs.remove(COLUMBIA_PORT).unwrap();
+        let output_columbia = outputs.take(COLUMBIA_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 1s
@@ -191,7 +191,7 @@ impl Source for Hebron {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_chenab = outputs.remove(CHENAB_PORT).unwrap();
+        let output_chenab = outputs.take(CHENAB_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 100ms
@@ -220,7 +220,7 @@ impl Source for Kingston {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output_yamuna = outputs.remove(YAMUNA_PORT).unwrap();
+        let output_yamuna = outputs.take(YAMUNA_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             // Send every 100ms

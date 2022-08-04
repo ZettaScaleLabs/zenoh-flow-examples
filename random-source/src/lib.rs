@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::{types::ZFResult, Data, Node, Source};
-use zenoh_flow::{AsyncIteration, Configuration, Outputs};
+use zenoh_flow::{AsyncIteration, Configuration, Outputs, Streams};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(Debug)]
@@ -36,7 +36,7 @@ impl Source for ExampleRandomSource {
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let output = outputs.remove("Random").unwrap();
+        let output = outputs.take("Random").unwrap();
 
         Ok(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;

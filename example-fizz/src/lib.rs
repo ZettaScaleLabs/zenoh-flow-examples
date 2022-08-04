@@ -20,7 +20,7 @@ use zenoh_flow::Configuration;
 use zenoh_flow::Inputs;
 use zenoh_flow::Message;
 use zenoh_flow::Outputs;
-use zenoh_flow::{export_operator, types::ZFResult, Data, Node, Operator, ZFError};
+use zenoh_flow::{export_operator, types::ZFResult, Data, Node, Operator, Streams, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct FizzOperator;
@@ -44,9 +44,9 @@ impl Operator for FizzOperator {
         mut inputs: Inputs,
         mut outputs: Outputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let input_value = inputs.remove(LINK_ID_INPUT_INT).unwrap();
-        let output_value = outputs.remove(LINK_ID_OUTPUT_INT).unwrap();
-        let output_fizz = outputs.remove(LINK_ID_OUTPUT_STR).unwrap();
+        let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
+        let output_value = outputs.take(LINK_ID_OUTPUT_INT).unwrap();
+        let output_fizz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
 
         Ok(Arc::new(async move || {
             let mut fizz = ZFString::from("");

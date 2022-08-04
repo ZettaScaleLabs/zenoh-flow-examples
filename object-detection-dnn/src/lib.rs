@@ -22,7 +22,7 @@ use std::{
 use zenoh_flow::Configuration;
 use zenoh_flow::{
     async_std::sync::{Arc, Mutex},
-    AsyncIteration, Inputs, Message, Outputs,
+    AsyncIteration, Inputs, Message, Outputs, Streams,
 };
 use zenoh_flow::{
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
@@ -286,8 +286,8 @@ impl Operator for ObjDetection {
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
         let state = ODState::new(configuration);
 
-        let input_frame = inputs.remove(INPUT).unwrap();
-        let output_frame = outputs.remove(OUTPUT).unwrap();
+        let input_frame = inputs.take(INPUT).unwrap();
+        let output_frame = outputs.take(OUTPUT).unwrap();
 
         Ok(Arc::new(async move || {
             let frame = match input_frame.recv_async().await.unwrap() {

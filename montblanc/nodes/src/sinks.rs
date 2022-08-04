@@ -15,7 +15,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Node, Sink, ZFResult};
+use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Node, Sink, ZFResult, Streams};
 
 use crate::ARKANSAS_PORT;
 
@@ -29,7 +29,7 @@ impl Sink for Arequipa {
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
     ) -> ZFResult<Arc<dyn AsyncIteration>> {
-        let input_arkansas = inputs.remove(ARKANSAS_PORT).unwrap();
+        let input_arkansas = inputs.take(ARKANSAS_PORT).unwrap();
 
         Ok(Arc::new(async move || {
             if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
