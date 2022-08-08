@@ -28,7 +28,6 @@ readme = "README.md"
 
 [dependencies]
 opencv = "0.53.0"
-# zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master"}
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1"
 

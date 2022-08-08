@@ -3,11 +3,13 @@ operators: []
 sources:
   - id : Counter
     descriptor: ./counter-source/counter-source.yml
+    configuration:
+      initial: 5
 sinks:
   - id : PrintSink
     descriptor: ./generic-sink/generic-sink.yml
-    configuration:
-     file: /tmp/generic-sink.txt
+    # configuration:
+    #  file: /tmp/generic-sink.txt
 
 links:
 - from:

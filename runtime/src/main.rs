@@ -51,6 +51,15 @@ fn _write_record_to_file(
     write!(write_file, "{}", record.to_yaml().unwrap()).unwrap();
 }
 
+fn _write_flatten_to_file(
+    descriptor: zenoh_flow::model::dataflow::descriptor::FlattenDataFlowDescriptor,
+    filename: &str,
+) {
+    let path = Path::new(filename);
+    let mut write_file = File::create(path).unwrap();
+    write!(write_file, "{}", descriptor.to_yaml().unwrap()).unwrap();
+}
+
 #[async_std::main]
 async fn main() {
     env_logger::init();
@@ -89,6 +98,8 @@ async fn main() {
         zenoh_flow::model::dataflow::descriptor::DataFlowDescriptor::from_yaml(&yaml_df).unwrap();
 
     let df = df.flatten().await.unwrap();
+
+    _write_flatten_to_file(df.clone(), "flattened.yaml");
 
     // mapping to infrastructure
     let mapped = zenoh_flow::runtime::map_to_infrastructure(df, &opt.runtime)
