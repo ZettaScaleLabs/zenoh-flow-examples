@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs, Streams};
+use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Message, Outputs, Streams};
 use zenoh_flow::{Data, Node, Operator, ZFError, ZFResult};
 use zenoh_flow_example_types::ZFUsize;
 
@@ -34,16 +34,17 @@ static OUTPUT: &str = "Sum";
 impl Operator for SumAndSend {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut state = SumAndSendState { x: ZFUsize(0) };
 
         let input_value = inputs.take(INPUT).unwrap();
         let output_value = outputs.take(OUTPUT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let data = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -53,7 +54,7 @@ impl Operator for SumAndSend {
             state.x = res.clone();
 
             output_value.send_async(Data::from(res), None).await
-        }))
+        })))
     }
 }
 

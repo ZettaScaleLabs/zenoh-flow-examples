@@ -14,14 +14,13 @@
 #![feature(async_closure)]
 
 use async_trait::async_trait;
+use std::fs::File;
+use std::io::Write;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::Sink;
 use zenoh_flow::{export_sink, types::ZFResult, Node};
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Streams};
-
-use std::fs::File;
-use std::io::Write;
+use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Streams};
 
 struct GenericSink;
 
@@ -47,12 +46,13 @@ impl SinkState {
 impl Sink for GenericSink {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = SinkState::new(configuration);
         let input = inputs.take("Data").unwrap();
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             if let Ok(data) = input.recv_async().await {
                 match &state.file {
                     None => {
@@ -71,7 +71,7 @@ impl Sink for GenericSink {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 

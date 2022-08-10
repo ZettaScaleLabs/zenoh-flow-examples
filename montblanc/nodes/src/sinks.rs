@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use std::sync::Arc;
-
 use async_trait::async_trait;
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Node, Sink, ZFResult, Streams};
+use std::sync::Arc;
+use zenoh_flow::{
+    AsyncIteration, Configuration, Context, Inputs, Message, Node, Sink, Streams, ZFResult,
+};
 
 use crate::ARKANSAS_PORT;
 
@@ -26,12 +27,13 @@ pub struct Arequipa;
 impl Sink for Arequipa {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input_arkansas = inputs.take(ARKANSAS_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
                 let data = msg
                     .get_inner_data()
@@ -39,7 +41,7 @@ impl Sink for Arequipa {
                 println!("Arequipa: Received data {}", data.value);
             }
             Ok(())
-        }))
+        })))
     }
 }
 

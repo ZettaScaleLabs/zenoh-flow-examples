@@ -24,7 +24,7 @@ use zenoh_flow::AsyncIteration;
 use zenoh_flow::Inputs;
 use zenoh_flow::Message;
 use zenoh_flow::Outputs;
-use zenoh_flow::{Configuration, Data, Node, Operator, ZFError, ZFResult, Streams};
+use zenoh_flow::{Configuration, Context, Data, Node, Operator, Streams, ZFError, ZFResult};
 
 use crate::AMAZON_PORT;
 use crate::ARKANSAS_PORT;
@@ -59,14 +59,15 @@ pub struct Lyon;
 impl Operator for Lyon {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input = inputs.take(AMAZON_PORT).unwrap();
         let output = outputs.take(TIGRIS_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
                     .send_async(msg.get_inner_data().clone(), None)
@@ -74,7 +75,7 @@ impl Operator for Lyon {
                     .unwrap();
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -101,10 +102,11 @@ struct HamburgState {
 impl Operator for Hamburg {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = HamburgState {
             ganges_last_val: 0i64,
             nile_last_val: 0i32,
@@ -117,7 +119,7 @@ impl Operator for Hamburg {
         let input_danube = inputs.take(DANUBE_PORT).unwrap();
         let output_parana = outputs.take(PARANA_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_tigris.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -156,7 +158,7 @@ impl Operator for Hamburg {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 #[async_trait]
@@ -175,14 +177,15 @@ pub struct Taipei;
 impl Operator for Taipei {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input = inputs.take(COLUMBIA_PORT).unwrap();
         let output = outputs.take(COLORADO_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
                     .send_async(msg.get_inner_data().clone(), None)
@@ -190,7 +193,7 @@ impl Operator for Taipei {
                     .unwrap();
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -219,10 +222,11 @@ struct OsakaState {
 impl Operator for Osaka {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = OsakaState {
             parana_last_val: data_types::String {
                 value: datatypes::random_string(1),
@@ -239,7 +243,7 @@ impl Operator for Osaka {
         let output_salween = outputs.take(SALWEEN_PORT).unwrap();
         let output_godavari = outputs.take(GODAVARI_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_parana.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -265,7 +269,7 @@ impl Operator for Osaka {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -291,10 +295,11 @@ struct TripoliState {
 impl Operator for Tripoli {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = TripoliState {
             pointcloud2_data: random(),
             columbia_last_val: random(),
@@ -304,7 +309,7 @@ impl Operator for Tripoli {
         let input_godavari = inputs.take(GODAVARI_PORT).unwrap();
         let output_loire = outputs.take(LOIRE_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_columbia.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -322,7 +327,7 @@ impl Operator for Tripoli {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -355,10 +360,11 @@ struct MandalayState {
 impl Operator for Mandalay {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = MandalayState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
@@ -384,7 +390,7 @@ impl Operator for Mandalay {
         let output_tagus = outputs.take(TAGUS_PORT).unwrap();
         let output_missouri = outputs.take(MISSOURI_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -434,7 +440,7 @@ impl Operator for Mandalay {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -469,10 +475,11 @@ struct PonceState {
 impl Operator for Ponce {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = PonceState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
@@ -501,7 +508,7 @@ impl Operator for Ponce {
         let output_congo = outputs.take(CONGO_PORT).unwrap();
         let output_mekong = outputs.take(MEKONG_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -562,7 +569,7 @@ impl Operator for Ponce {
                 },
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -582,14 +589,15 @@ pub struct Monaco;
 impl Operator for Monaco {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input_congo = inputs.take(CONGO_PORT).unwrap();
         let output_ohio = outputs.take(OHIO_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_congo.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -600,7 +608,7 @@ impl Operator for Monaco {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -620,14 +628,15 @@ pub struct Barcelona;
 impl Operator for Barcelona {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input_mekong = inputs.take(MEKONG_PORT).unwrap();
         let output_lena = outputs.take(LENA_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -663,7 +672,7 @@ impl Operator for Barcelona {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -683,16 +692,17 @@ pub struct Rotterdam;
 impl Operator for Rotterdam {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input_mekong = inputs.take(MEKONG_PORT).unwrap();
         let output_murray = outputs.take(MURRAY_PORT).unwrap();
 
         let header_data: data_types::Header = random();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
                 msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -718,7 +728,7 @@ impl Operator for Rotterdam {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -745,10 +755,11 @@ struct GeorgetownState {
 impl Operator for Georgetown {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = GeorgetownState {
             murray_last_val: random(),
             lena_last_val: random(),
@@ -759,7 +770,7 @@ impl Operator for Georgetown {
         let input_lena = inputs.take(LENA_PORT).unwrap();
         let output_volga = outputs.take(VOLGA_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
             msg = input_murray.recv_async().fuse() => {
                 if let Ok(Message::Data(mut msg)) = msg {
@@ -780,7 +791,7 @@ impl Operator for Georgetown {
                 }
             }
             Ok(())
-        }))
+        })))
     }
 }
 
@@ -806,10 +817,11 @@ struct GenevaState {
 impl Operator for Geneva {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let mut my_state = GenevaState {
             danube_last_val: data_types::String {
                 value: datatypes::random_string(1),
@@ -828,7 +840,7 @@ impl Operator for Geneva {
 
         let output_arkansas = outputs.take(ARKANSAS_PORT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             select! {
 
                 msg = input_danube.recv_async().fuse() => {
@@ -868,7 +880,7 @@ impl Operator for Geneva {
                 },
             }
             Ok(())
-        }))
+        })))
     }
 }
 

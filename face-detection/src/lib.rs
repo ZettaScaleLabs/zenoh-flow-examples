@@ -17,8 +17,8 @@ use async_trait::async_trait;
 use opencv::{core, imgproc, objdetect, prelude::*, types};
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
-    zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration, Data, Inputs, Message,
-    Node, Operator, Outputs, Streams, ZFError, ZFResult,
+    zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration, Context, Data, Inputs,
+    Message, Node, Operator, Outputs, Streams, ZFError, ZFResult,
 };
 
 #[derive(Debug)]
@@ -132,16 +132,17 @@ impl FDState {
 impl Operator for FaceDetection {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = FDState::new(configuration);
 
         let input_frame = inputs.take(INPUT).unwrap();
         let output_frame = outputs.take(OUTPUT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let data = match input_frame.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -150,7 +151,7 @@ impl Operator for FaceDetection {
             let buf = state.infer(data);
 
             output_frame.send_async(Data::from_bytes(buf), None).await
-        }))
+        })))
     }
 }
 

@@ -18,7 +18,7 @@ use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::{export_operator, types::ZFResult, Node, Operator, Streams};
 use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
-use zenoh_flow::{Data, ZFError};
+use zenoh_flow::{Context, Data, ZFError};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct BuzzOperator;
@@ -36,10 +36,11 @@ static LINK_ID_OUTPUT_STR: &str = "Str";
 impl Operator for BuzzOperator {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = match configuration {
             Some(config) => match config["buzzword"].as_str() {
                 Some(buzzword) => BuzzState {
@@ -58,7 +59,7 @@ impl Operator for BuzzOperator {
         let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
         let output_buzz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let value = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -75,7 +76,7 @@ impl Operator for BuzzOperator {
             }
 
             output_buzz.send_async(Data::from(buzz), None).await
-        }))
+        })))
     }
 }
 

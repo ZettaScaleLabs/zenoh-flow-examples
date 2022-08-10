@@ -20,7 +20,7 @@ use zenoh_flow::{
     zenoh_flow_derive::ZFState,
     zf_spin_lock, Data, Node, Source, Streams,
 };
-use zenoh_flow::{AsyncIteration, Configuration, Outputs};
+use zenoh_flow::{AsyncIteration, Configuration, Context, Outputs};
 
 #[derive(Debug)]
 struct VideoSource;
@@ -116,18 +116,19 @@ impl Node for VideoSource {
 impl Source for VideoSource {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = VideoSourceState::new(configuration);
 
         let output = outputs.take("Frame").unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             let frame = state.capture()?;
             output.send_async(Data::from_bytes(frame), None).await
-        }))
+        })))
     }
 }
 

@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use std::{sync::Arc, usize};
 use zenoh_flow::{
-    AsyncIteration, Configuration, Data, Node, Outputs, Source, Streams, ZFError, ZFResult,
+    AsyncIteration, Configuration, Context, Data, Node, Outputs, Source, Streams, ZFError, ZFResult,
 };
 use zenoh_flow_example_types::ZFUsize;
 
@@ -26,12 +26,13 @@ struct ManualSource;
 impl Source for ManualSource {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output = outputs.take("Int").unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             println!("> Please input a number: ");
             let mut number = String::new();
             zenoh_flow::async_std::io::stdin()
@@ -45,7 +46,7 @@ impl Source for ManualSource {
             };
 
             output.send_async(Data::from(ZFUsize(value)), None).await
-        }))
+        })))
     }
 }
 

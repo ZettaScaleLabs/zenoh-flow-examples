@@ -16,7 +16,7 @@
 use async_trait::async_trait;
 use zenoh_flow::async_std::sync::Arc;
 use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, Streams};
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, ZFError};
+use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Message, ZFError};
 
 use opencv::{highgui, prelude::*};
 
@@ -65,13 +65,14 @@ impl Node for VideoSink {
 impl Sink for VideoSink {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = VideoState::new();
         let input = inputs.take("Frame").unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let frame = match input.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -79,7 +80,7 @@ impl Sink for VideoSink {
 
             state.show(frame);
             Ok(())
-        }))
+        })))
     }
 }
 

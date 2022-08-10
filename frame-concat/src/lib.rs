@@ -14,13 +14,12 @@
 #![feature(async_closure)]
 
 use async_trait::async_trait;
+use opencv::core;
 use zenoh_flow::async_std::sync::{Arc, Mutex};
 use zenoh_flow::{
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, Streams, ZFError, ZFResult,
 };
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
-
-use opencv::core;
+use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Message, Outputs};
 
 static INPUT1: &str = "Frame1";
 static INPUT2: &str = "Frame2";
@@ -86,17 +85,18 @@ impl Node for FrameConcat {
 impl Operator for FrameConcat {
     async fn setup(
         &self,
+        _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = FrameConcatState::new();
 
         let input_top = inputs.take(INPUT1).unwrap();
         let input_bottom = inputs.take(INPUT2).unwrap();
         let output_frame = outputs.take(OUTPUT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let top = match input_top.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -109,7 +109,7 @@ impl Operator for FrameConcat {
 
             let frame = state.concat(top, bottom);
             output_frame.send_async(Data::from_bytes(frame), None).await
-        }))
+        })))
     }
 }
 

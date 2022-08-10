@@ -17,8 +17,8 @@ use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use zenoh_flow::{
-    types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration, Data,
-    Node, Outputs, Source, Streams, ZFError,
+    types::ZFResult, zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration,
+    Context, Data, Node, Outputs, Source, Streams, ZFError,
 };
 
 #[derive(Debug)]
@@ -131,14 +131,15 @@ impl Node for CameraSource {
 impl Source for CameraSource {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = CameraState::new(configuration);
 
         let output = outputs.take("Frame").ok_or(ZFError::NotFound)?;
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let buf = state.get_frame();
             output
                 .send_async(Data::from_bytes(buf), None)
@@ -146,7 +147,7 @@ impl Source for CameraSource {
                 .unwrap();
             async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             Ok(())
-        }))
+        })))
     }
 }
 

@@ -19,7 +19,6 @@ use std::{
     io::{prelude::*, BufReader},
     path::Path,
 };
-use zenoh_flow::Configuration;
 use zenoh_flow::{
     async_std::sync::{Arc, Mutex},
     AsyncIteration, Inputs, Message, Outputs, Streams,
@@ -27,6 +26,7 @@ use zenoh_flow::{
 use zenoh_flow::{
     zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
 };
+use zenoh_flow::{Configuration, Context};
 
 use opencv::core::prelude::MatTrait;
 use opencv::dnn::NetTrait;
@@ -280,16 +280,17 @@ impl Node for ObjDetection {
 impl Operator for ObjDetection {
     async fn setup(
         &self,
+        _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Arc<dyn AsyncIteration>> {
+    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let state = ODState::new(configuration);
 
         let input_frame = inputs.take(INPUT).unwrap();
         let output_frame = outputs.take(OUTPUT).unwrap();
 
-        Ok(Arc::new(async move || {
+        Ok(Some(Arc::new(async move || {
             let frame = match input_frame.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),
@@ -298,7 +299,7 @@ impl Operator for ObjDetection {
             let res = state.infer(frame);
 
             output_frame.send_async(Data::from_bytes(res), None).await
-        }))
+        })))
     }
 }
 
