@@ -11,10 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_trait::async_trait;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::AsyncIteration;
 use zenoh_flow::Configuration;
 use zenoh_flow::Inputs;
@@ -51,7 +51,7 @@ impl Operator for FizzOperator {
         let output_value = outputs.take(LINK_ID_OUTPUT_INT).unwrap();
         let output_fizz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             let mut fizz = ZFString::from("");
 
             let value = match input_value.recv_async().await.unwrap() {

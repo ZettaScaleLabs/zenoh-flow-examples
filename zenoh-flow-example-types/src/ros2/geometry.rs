@@ -11,10 +11,10 @@
 //   ZettaScale zenoh team, <zenoh@zettascale.tech>
 //
 
+use serde::{Deserialize, Serialize};
 use serde_big_array::BigArray;
-use zenoh_flow::serde::{Deserialize, Serialize};
+use zenoh_flow::prelude::*;
 use zenoh_flow::zenoh_flow_derive::ZFData;
-use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 #[derive(Serialize, Deserialize, Default, ZFData, Debug)]
 pub struct Vector3 {
@@ -24,17 +24,19 @@ pub struct Vector3 {
 }
 
 impl ZFData for Vector3 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Vector3 {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -46,17 +48,19 @@ pub struct Twist {
 }
 
 impl ZFData for Twist {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Twist {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -69,17 +73,19 @@ pub struct TwistWithCovariance {
 }
 
 impl ZFData for TwistWithCovariance {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for TwistWithCovariance {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -92,17 +98,19 @@ pub struct Point {
 }
 
 impl ZFData for Point {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Point {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -116,17 +124,19 @@ pub struct Quaternion {
 }
 
 impl ZFData for Quaternion {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Quaternion {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -138,17 +148,19 @@ pub struct Pose {
 }
 
 impl ZFData for Pose {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Pose {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -161,17 +173,19 @@ pub struct PoseWithCovariance {
 }
 
 impl ZFData for PoseWithCovariance {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for PoseWithCovariance {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }

@@ -11,7 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 pub mod operators;
 pub mod sinks;

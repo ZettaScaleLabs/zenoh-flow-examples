@@ -11,10 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_trait::async_trait;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::zenoh_flow_derive::ZFState;
 use zenoh_flow::{export_operator, types::ZFResult, Node, Operator, Streams};
 use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
@@ -59,7 +59,7 @@ impl Operator for BuzzOperator {
         let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
         let output_buzz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             let value = match input_value.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),

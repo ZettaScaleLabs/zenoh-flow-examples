@@ -11,10 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_trait::async_trait;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::{types::ZFResult, Context, Data, Node, Source};
 use zenoh_flow::{AsyncIteration, Configuration, Outputs, Streams};
 use zenoh_flow_example_types::ZFUsize;
@@ -39,7 +39,7 @@ impl Source for ExampleRandomSource {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output = outputs.take("Random").unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_secs(1)).await;
             output
                 .send_async(Data::from(ZFUsize(rand::random::<usize>())), None)

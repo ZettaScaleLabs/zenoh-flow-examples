@@ -12,7 +12,7 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::{export_operator, types::ZFResult, Operator};
 
 use nodes::operators::Rotterdam;

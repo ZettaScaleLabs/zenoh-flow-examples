@@ -33,7 +33,7 @@ impl Sink for Arequipa {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let input_arkansas = inputs.take(ARKANSAS_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
                 let data = msg
                     .get_inner_data()

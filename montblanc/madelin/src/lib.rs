@@ -13,7 +13,7 @@
 //
 
 use nodes::sources::Madelin;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::Source;
 use zenoh_flow::{export_source, types::ZFResult};
 

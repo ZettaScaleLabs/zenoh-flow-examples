@@ -36,7 +36,7 @@ impl Source for Cordoba {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_amazon = outputs.take(AMAZON_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
 
@@ -69,7 +69,7 @@ impl Source for Portsmouth {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_danube = outputs.take(DANUBE_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 200ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(200)).await;
 
@@ -103,7 +103,7 @@ impl Source for Freeport {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_ganges = outputs.take(GANGES_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 50ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(50)).await;
 
@@ -135,7 +135,7 @@ impl Source for Madelin {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_nile = outputs.take(NILE_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 10ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(10)).await;
 
@@ -167,7 +167,7 @@ impl Source for Delhi {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_columbia = outputs.take(COLUMBIA_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 1s
             zenoh_flow::async_std::task::sleep(Duration::from_millis(1000)).await;
             let value: datatypes::data_types::Image = random();
@@ -198,7 +198,7 @@ impl Source for Hebron {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_chenab = outputs.take(CHENAB_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Quaternion = random();
@@ -228,7 +228,7 @@ impl Source for Kingston {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output_yamuna = outputs.take(YAMUNA_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             // Send every 100ms
             zenoh_flow::async_std::task::sleep(Duration::from_millis(100)).await;
             let value: datatypes::data_types::Vector3 = random();

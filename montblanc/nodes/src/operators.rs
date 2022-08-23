@@ -67,7 +67,7 @@ impl Operator for Lyon {
         let input = inputs.take(AMAZON_PORT).unwrap();
         let output = outputs.take(TIGRIS_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
                     .send_async(msg.get_inner_data().clone(), None)
@@ -119,7 +119,7 @@ impl Operator for Hamburg {
         let input_danube = inputs.take(DANUBE_PORT).unwrap();
         let output_parana = outputs.take(PARANA_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_tigris.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -185,7 +185,7 @@ impl Operator for Taipei {
         let input = inputs.take(COLUMBIA_PORT).unwrap();
         let output = outputs.take(COLORADO_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             if let Ok(Message::Data(mut msg)) = input.recv_async().await {
                 output
                     .send_async(msg.get_inner_data().clone(), None)
@@ -243,7 +243,7 @@ impl Operator for Osaka {
         let output_salween = outputs.take(SALWEEN_PORT).unwrap();
         let output_godavari = outputs.take(GODAVARI_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_parana.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -309,7 +309,7 @@ impl Operator for Tripoli {
         let input_godavari = inputs.take(GODAVARI_PORT).unwrap();
         let output_loire = outputs.take(LOIRE_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_columbia.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -390,7 +390,7 @@ impl Operator for Mandalay {
         let output_tagus = outputs.take(TAGUS_PORT).unwrap();
         let output_missouri = outputs.take(MISSOURI_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -508,7 +508,7 @@ impl Operator for Ponce {
         let output_congo = outputs.take(CONGO_PORT).unwrap();
         let output_mekong = outputs.take(MEKONG_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_danube.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -597,7 +597,7 @@ impl Operator for Monaco {
         let input_congo = inputs.take(CONGO_PORT).unwrap();
         let output_ohio = outputs.take(OHIO_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_congo.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -636,7 +636,7 @@ impl Operator for Barcelona {
         let input_mekong = inputs.take(MEKONG_PORT).unwrap();
         let output_lena = outputs.take(LENA_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -702,7 +702,7 @@ impl Operator for Rotterdam {
 
         let header_data: data_types::Header = random();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
                 msg = input_mekong.recv_async().fuse() => {
                     if let Ok(Message::Data(mut msg)) = msg {
@@ -770,7 +770,7 @@ impl Operator for Georgetown {
         let input_lena = inputs.take(LENA_PORT).unwrap();
         let output_volga = outputs.take(VOLGA_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
             msg = input_murray.recv_async().fuse() => {
                 if let Ok(Message::Data(mut msg)) = msg {
@@ -840,7 +840,7 @@ impl Operator for Geneva {
 
         let output_arkansas = outputs.take(ARKANSAS_PORT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             select! {
 
                 msg = input_danube.recv_async().fuse() => {

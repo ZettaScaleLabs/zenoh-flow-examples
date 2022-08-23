@@ -11,9 +11,9 @@
 //   ZettaScale zenoh team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
+use zenoh_flow::prelude::*;
 use zenoh_flow::zenoh_flow_derive::ZFData;
-use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 use super::sensors::{BatteryState, JointState, MagneticField, IMU};
 use hls_lfcd_lds_driver::LaserReading;
@@ -63,17 +63,19 @@ pub struct SensorState {
 }
 
 impl ZFData for SensorState {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for SensorState {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -95,17 +97,19 @@ pub struct Sound {
 }
 
 impl ZFData for Sound {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for Sound {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -118,17 +122,19 @@ pub struct VersionInfo {
 }
 
 impl ZFData for VersionInfo {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for VersionInfo {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -143,17 +149,19 @@ pub struct RobotInformation {
 }
 
 impl ZFData for RobotInformation {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for RobotInformation {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -162,16 +170,19 @@ impl Deserializable for RobotInformation {
 pub struct LaserScan(pub LaserReading);
 
 impl ZFData for LaserScan {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for LaserScan {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<LaserScan>
+    fn try_deserialize(bytes: &[u8]) -> Result<LaserScan>
     where
         Self: Sized,
     {
-        bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
+        Ok(value)
     }
 }

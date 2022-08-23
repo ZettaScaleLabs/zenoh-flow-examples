@@ -32,6 +32,8 @@ readme = "README.md"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1"
+async-std = { version = "=1.11.0", features = ["attributes"] }
+
 
 [lib]
 name = "counter_source"

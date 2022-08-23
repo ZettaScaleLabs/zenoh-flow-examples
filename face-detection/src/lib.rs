@@ -12,7 +12,7 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-#![feature(async_closure)]
+//#![feature(async_closure)]
 use async_trait::async_trait;
 use opencv::{core, imgproc, objdetect, prelude::*, types};
 use zenoh_flow::async_std::sync::{Arc, Mutex};
@@ -142,7 +142,7 @@ impl Operator for FaceDetection {
         let input_frame = inputs.take(INPUT).unwrap();
         let output_frame = outputs.take(OUTPUT).unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             let data = match input_frame.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),

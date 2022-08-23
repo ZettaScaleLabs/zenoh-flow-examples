@@ -11,20 +11,18 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
+use async_std::sync::Mutex;
 use async_trait::async_trait;
 use std::fs::File;
 use std::io::Write;
-use zenoh_flow::async_std::sync::{Arc, Mutex};
-use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::Sink;
-use zenoh_flow::{export_sink, types::ZFResult, Node};
-use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Streams};
+use std::sync::Arc;
+use zenoh_flow::prelude::*;
 
 struct GenericSink;
 
-#[derive(ZFState, Clone, Debug)]
+#[derive(Clone, Debug)]
 struct SinkState {
     pub file: Option<Arc<Mutex<File>>>,
 }
@@ -49,10 +47,10 @@ impl Sink for GenericSink {
         _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
+    ) -> Result<Option<Arc<dyn AsyncIteration>>> {
         let state = SinkState::new(configuration);
         let input = inputs.take("Data").unwrap();
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             if let Ok(data) = input.recv_async().await {
                 match &state.file {
                     None => {
@@ -75,15 +73,8 @@ impl Sink for GenericSink {
     }
 }
 
-#[async_trait]
-impl Node for GenericSink {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
 export_sink!(register);
 
-fn register() -> ZFResult<Arc<dyn Sink>> {
+fn register() -> Result<Arc<dyn Sink>> {
     Ok(Arc::new(GenericSink) as Arc<dyn Sink>)
 }

@@ -11,9 +11,9 @@
 //   ZettaScale zenoh team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
+use zenoh_flow::prelude::*;
 use zenoh_flow::zenoh_flow_derive::ZFData;
-use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
 
 use super::geometry::{Quaternion, Vector3};
 
@@ -70,17 +70,19 @@ pub struct BatteryState {
 }
 
 impl ZFData for BatteryState {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for BatteryState {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -92,17 +94,19 @@ pub struct MagneticField {
 }
 
 impl ZFData for MagneticField {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for MagneticField {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -118,17 +122,19 @@ pub struct IMU {
 }
 
 impl ZFData for IMU {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for IMU {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }
@@ -142,17 +148,19 @@ pub struct JointState {
 }
 
 impl ZFData for JointState {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for JointState {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value = bincode::deserialize::<Self>(bytes).map_err(|_| ZFError::SerializationError)?;
+        let value = bincode::deserialize::<Self>(bytes)
+            .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
         Ok(value)
     }
 }

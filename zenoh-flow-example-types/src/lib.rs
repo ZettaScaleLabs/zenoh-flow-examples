@@ -12,10 +12,10 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
-use zenoh_flow::serde::{Deserialize, Serialize};
-use zenoh_flow::zenoh_flow_derive::{ZFData, ZFState};
-use zenoh_flow::{Deserializable, ZFData, ZFError, ZFResult};
+use zenoh_flow::prelude::*;
+use zenoh_flow::zenoh_flow_derive::ZFData;
 // We may want to provide some "built-in" types
 pub mod ros2;
 
@@ -23,7 +23,7 @@ pub mod ros2;
 pub struct ZFString(pub String);
 
 impl ZFData for ZFString {
-    fn try_serialize(&self) -> zenoh_flow::ZFResult<Vec<u8>> {
+    fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.as_bytes().to_vec())
     }
 }
@@ -41,13 +41,13 @@ impl From<&str> for ZFString {
 }
 
 impl Deserializable for ZFString {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<ZFString>
+    fn try_deserialize(bytes: &[u8]) -> Result<ZFString>
     where
         Self: Sized,
     {
-        Ok(ZFString(
-            String::from_utf8(bytes.to_vec()).map_err(|_| ZFError::DeseralizationError)?,
-        ))
+        Ok(ZFString(String::from_utf8(bytes.to_vec()).map_err(
+            |e| zferror!(ErrorKind::DeseralizationError, e),
+        )?))
     }
 }
 
@@ -55,36 +55,39 @@ impl Deserializable for ZFString {
 pub struct ZFUsize(pub usize);
 
 impl ZFData for ZFUsize {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
+    fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.to_ne_bytes().to_vec())
     }
 }
 
 impl Deserializable for ZFUsize {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        let value =
-            usize::from_ne_bytes(bytes.try_into().map_err(|_| ZFError::DeseralizationError)?);
+        let value = usize::from_ne_bytes(
+            bytes
+                .try_into()
+                .map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?,
+        );
         Ok(ZFUsize(value))
     }
 }
 
-#[derive(Debug, Clone, ZFState)]
+#[derive(Debug, Clone)]
 pub struct ZFEmptyState;
 
 #[derive(Debug, Clone, ZFData)]
 pub struct ZFBytes(pub Vec<u8>);
 
 impl ZFData for ZFBytes {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
+    fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.clone())
     }
 }
 
 impl Deserializable for ZFBytes {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
@@ -110,17 +113,20 @@ impl Default for GamepadInput {
 }
 
 impl ZFData for GamepadInput {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        bincode::serialize(self).map_err(|_| ZFError::SerializationError)
+    fn try_serialize(&self) -> Result<Vec<u8>> {
+        Ok(bincode::serialize(self)
+            .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
 }
 
 impl Deserializable for GamepadInput {
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<Self>
+    fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
     {
-        bincode::deserialize(bytes).map_err(|_| ZFError::DeseralizationError)
+        let value =
+            bincode::deserialize(bytes).map_err(|e| zferror!(ErrorKind::DeseralizationError, e))?;
+        Ok(value)
     }
 }
 

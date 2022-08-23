@@ -11,7 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_trait::async_trait;
 use std::{sync::Arc, usize};
@@ -32,7 +32,7 @@ impl Source for ManualSource {
     ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
         let output = outputs.take("Int").unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             println!("> Please input a number: ");
             let mut number = String::new();
             zenoh_flow::async_std::io::stdin()

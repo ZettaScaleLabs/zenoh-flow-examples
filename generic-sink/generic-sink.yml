@@ -1,6 +1,6 @@
 id: PrintSink
-uri: file://./target/debug/libgeneric_sink.dylib
-input:
-  id: Data
-  type: usize
+uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libgeneric_sink.so
+inputs:
+  - id: Data
+    type: usize
 tags: []

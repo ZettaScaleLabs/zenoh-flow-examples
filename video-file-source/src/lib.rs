@@ -11,7 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 use async_trait::async_trait;
 use opencv::{core, prelude::*, videoio};
 use zenoh_flow::async_std::sync::{Arc, Mutex};
@@ -124,7 +124,7 @@ impl Source for VideoSource {
 
         let output = outputs.take("Frame").unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             zenoh_flow::async_std::task::sleep(std::time::Duration::from_millis(state.delay)).await;
             let frame = state.capture()?;
             output.send_async(Data::from_bytes(frame), None).await

@@ -11,7 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_std::sync::{Arc, Mutex};
 use async_trait::async_trait;
@@ -139,7 +139,7 @@ impl Source for CameraSource {
 
         let output = outputs.take("Frame").ok_or(ZFError::NotFound)?;
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             let buf = state.get_frame();
             output
                 .send_async(Data::from_bytes(buf), None)

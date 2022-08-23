@@ -11,10 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-#![feature(async_closure)]
+//#![feature(async_closure)]
 
 use async_trait::async_trait;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::{types::ZFResult, zenoh_flow_derive::ZFState, Node, Sink, Streams};
 use zenoh_flow::{AsyncIteration, Configuration, Context, Inputs, Message, ZFError};
 
@@ -72,7 +72,7 @@ impl Sink for VideoSink {
         let state = VideoState::new();
         let input = inputs.take("Frame").unwrap();
 
-        Ok(Some(Arc::new(async move || {
+        Ok(Some(Arc::new(move || async move {
             let frame = match input.recv_async().await.unwrap() {
                 Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
                 _ => Err(ZFError::InvalidData("No data".to_string())),

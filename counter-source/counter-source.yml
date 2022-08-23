@@ -1,6 +1,6 @@
 id: Counter
-uri: file://./target/debug/libcounter_source.dylib
-output:
-  id: Counter
-  type: usize
+uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libcounter_source.so
+outputs:
+  - id: Counter
+    type: usize
 tags: []

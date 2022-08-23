@@ -1,5 +1,5 @@
 id : SumOperator
-uri: file:///Users/julien/dev/zenoh-flow-examples/target/debug/libsum_and_send.dylib
+uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libsum_and_send.so
 inputs:
   - id: Number
     type: usize

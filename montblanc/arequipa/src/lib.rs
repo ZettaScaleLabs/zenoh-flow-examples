@@ -13,7 +13,7 @@
 //
 
 use nodes::sinks::Arequipa;
-use zenoh_flow::async_std::sync::Arc;
+use std::sync::Arc;
 use zenoh_flow::Sink;
 use zenoh_flow::{export_sink, types::ZFResult};
 
