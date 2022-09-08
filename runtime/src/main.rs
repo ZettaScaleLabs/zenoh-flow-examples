@@ -25,7 +25,7 @@ use std::sync::Arc;
 use zenoh::config::Config;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
-use zenoh_flow::ZFResult;
+use zenoh_flow::Result;
 
 #[derive(Debug, Parser)]
 #[clap(name = "dpn")]
@@ -169,30 +169,9 @@ async fn main() {
         instance.stop_node(&id).await.unwrap()
     }
 
-    //  cleaning nodes
-    let sources = instance.get_sources();
-    for id in &sources {
-        instance.clean_node(id).await.unwrap()
-    }
-
-    let mut sinks = instance.get_sinks();
-    for id in sinks.drain(..) {
-        instance.clean_node(&id).await.unwrap()
-    }
-
-    let mut operators = instance.get_operators();
-    for id in operators.drain(..) {
-        instance.clean_node(&id).await.unwrap()
-    }
-
-    let mut connectors = instance.get_connectors();
-    for id in connectors.drain(..) {
-        instance.clean_node(&id).await.unwrap()
-    }
-
     log::trace!("Bye!");
 }
 
-fn get_zenoh_config(path: &str) -> ZFResult<Config> {
+fn get_zenoh_config(path: &str) -> Result<Config> {
     Ok(zenoh::config::Config::from_file(path)?)
 }
