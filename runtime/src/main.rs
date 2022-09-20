@@ -42,17 +42,14 @@ struct Opt {
     zenoh_config: Option<String>,
 }
 
-fn _write_record_to_file(
-    record: zenoh_flow::model::dataflow::record::DataFlowRecord,
-    filename: &str,
-) {
+fn _write_record_to_file(record: zenoh_flow::model::record::DataFlowRecord, filename: &str) {
     let path = Path::new(filename);
     let mut write_file = File::create(path).unwrap();
     write!(write_file, "{}", record.to_yaml().unwrap()).unwrap();
 }
 
 fn _write_flatten_to_file(
-    descriptor: zenoh_flow::model::dataflow::descriptor::FlattenDataFlowDescriptor,
+    descriptor: zenoh_flow::model::descriptor::FlattenDataFlowDescriptor,
     filename: &str,
 ) {
     let path = Path::new(filename);
@@ -94,8 +91,7 @@ async fn main() {
     };
 
     // loading the descriptor
-    let df =
-        zenoh_flow::model::dataflow::descriptor::DataFlowDescriptor::from_yaml(&yaml_df).unwrap();
+    let df = zenoh_flow::model::descriptor::DataFlowDescriptor::from_yaml(&yaml_df).unwrap();
 
     let df = df.flatten().await.unwrap();
 
@@ -108,8 +104,7 @@ async fn main() {
 
     // creating record
     let dfr =
-        zenoh_flow::model::dataflow::record::DataFlowRecord::try_from((mapped, uuid::Uuid::nil()))
-            .unwrap();
+        zenoh_flow::model::record::DataFlowRecord::try_from((mapped, uuid::Uuid::nil())).unwrap();
 
     _write_record_to_file(dfr.clone(), "computed-record.yaml");
 
@@ -173,5 +168,5 @@ async fn main() {
 }
 
 fn get_zenoh_config(path: &str) -> Result<Config> {
-    Ok(zenoh::config::Config::from_file(path)?)
+    zenoh::config::Config::from_file(path)
 }
