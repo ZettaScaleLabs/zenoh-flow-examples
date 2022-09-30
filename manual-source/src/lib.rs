@@ -11,13 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-//#![feature(async_closure)]
 
 use async_trait::async_trait;
 use std::{sync::Arc, usize};
-use zenoh_flow::{
-    AsyncIteration, Configuration, Context, Data, Node, Outputs, Source, Streams, ZFError, ZFResult,
-};
+use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::ZFUsize;
 
 struct ManualSource;
@@ -29,36 +26,34 @@ impl Source for ManualSource {
         _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let output = outputs.take("Int").unwrap();
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        let output = outputs.take_into_arc("Int").unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            println!("> Please input a number: ");
-            let mut number = String::new();
-            zenoh_flow::async_std::io::stdin()
-                .read_line(&mut number)
-                .await
-                .expect("Could not read number.");
+        Ok(Some(Box::new(move || {
+            let output = Arc::clone(&output);
+            async move {
+                println!("> Please input a number: ");
+                let mut number = String::new();
+                async_std::io::stdin()
+                    .read_line(&mut number)
+                    .await
+                    .expect("Could not read number.");
 
-            let value: usize = match number.trim().parse() {
-                Ok(value) => value,
-                Err(_) => return Err(ZFError::GenericError),
-            };
+                let value: usize = match number.trim().parse() {
+                    Ok(value) => value,
+                    Err(_) => {
+                        bail!(ErrorKind::InvalidData, "Expected value, found naught");
+                    }
+                };
 
-            output.send_async(Data::from(ZFUsize(value)), None).await
+                output.send_async(Data::from(ZFUsize(value)), None).await
+            }
         })))
-    }
-}
-
-#[async_trait]
-impl Node for ManualSource {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
     }
 }
 
 zenoh_flow::export_source!(register);
 
-fn register() -> ZFResult<Arc<dyn Source>> {
+fn register() -> Result<Arc<dyn Source>> {
     Ok(Arc::new(ManualSource) as Arc<dyn Source>)
 }
