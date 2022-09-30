@@ -13,7 +13,7 @@
 //
 
 use async_trait::async_trait;
-use std::{sync::Arc, usize};
+use std::{sync::Arc, time::Duration, usize};
 use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::ZFUsize;
 
@@ -46,7 +46,9 @@ impl Source for ManualSource {
                     }
                 };
 
-                output.send_async(Data::from(ZFUsize(value)), None).await
+                output.send_async(Data::from(ZFUsize(value)), None).await?;
+                async_std::task::sleep(Duration::from_millis(500));
+                Ok(())
             }
         })))
     }

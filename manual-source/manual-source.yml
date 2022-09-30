@@ -1,9 +1,9 @@
 id: ManualSource
+
 uri: file://./target/release/libmanual_source.dylib
-period:
-  duration: 500
-  unit: ms
-output:
-  id: Int
-  type: u64
-tags:[]
+
+outputs:
+  - id: Int
+    type: ZFUsize
+
+tags: []
