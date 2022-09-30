@@ -18,7 +18,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-std = { version = "=1.11.0", features = ["attributes"] }
+async-std = { version = "=1.12.0", features = ["attributes"] }
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 zenoh = { git = "https://github.com/eclipse-zenoh/zenoh.git", rev = "45b7ad70bddf45dfcdcae80e9c9a7680c70ac289"}
 clap = { version = "3.1.1", features = ["derive"] }

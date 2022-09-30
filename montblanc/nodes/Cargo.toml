@@ -22,7 +22,7 @@ edition = "2021"
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 env_logger = "0.9"
 serde = { version = "1.0.55", features = ["derive"] }
-async-std = { version = "=1.11.0", features = ["attributes"] }
+async-std = { version = "=1.12.0", features = ["attributes"] }
 typetag = "0.1"
 log = "0.4"
 bincode = "1"

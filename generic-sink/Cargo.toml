@@ -31,7 +31,7 @@ readme = "README.md"
 [dependencies]
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1"
-async-std = { version = "=1.11.0", features = ["attributes"] }
+async-std = { version = "=1.12.0", features = ["attributes"] }
 
 [lib]
 name = "generic_sink"
