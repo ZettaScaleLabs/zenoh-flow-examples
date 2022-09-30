@@ -47,7 +47,7 @@ impl Source for ManualSource {
                 };
 
                 output.send_async(Data::from(ZFUsize(value)), None).await?;
-                async_std::task::sleep(Duration::from_millis(500));
+                async_std::task::sleep(Duration::from_millis(500)).await;
                 Ok(())
             }
         })))

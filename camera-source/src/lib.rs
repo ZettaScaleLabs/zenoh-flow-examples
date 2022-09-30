@@ -126,7 +126,7 @@ impl Source for CameraSource {
 
         let output = outputs
             .take_into_arc("Frame")
-            .ok_or(zferror!(ErrorKind::NotFound))?;
+            .ok_or_else(|| zferror!(ErrorKind::NotFound))?;
 
         Ok(Some(Box::new(move || {
             let state = state.clone();
@@ -137,7 +137,7 @@ impl Source for CameraSource {
                 let buffer: Vec<u8>;
                 {
                     let mut state = state.lock().await;
-                    delay = state.delay.clone();
+                    delay = state.delay;
                     let buf = state.get_frame();
                     buffer = buf;
                 }
