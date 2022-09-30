@@ -1,6 +1,6 @@
 id: Camera
 uri: file://./target/release/libcamera_source.so
-output:
-  id: Frame
-  type: image
+outputs:
+  - id: Frame
+    type: image
 tags: []
