@@ -27,8 +27,8 @@ description = "Zenoh Flow Examples"
 readme = "README.md"
 
 [dependencies]
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1.50"
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 
 [lib]
@@ -39,5 +39,5 @@ path="src/lib.rs"
 [package.metadata.zenohflow]
 id = "sum-and-send"
 kind = "operator"
-inputs=[ {id ="Number", type="int"}]
-outputs=[ {id ="Sum", type="int"}]
+inputs=[{ id ="Number", type="ZFUsize" }]
+outputs=[{ id ="Sum", type="ZFUsize" }]

@@ -1,9 +1,13 @@
 id : SumOperator
+
 uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libsum_and_send.so
+
 inputs:
   - id: Number
-    type: usize
+    type: ZFUsize
+
 outputs:
   - id: Sum
-    type: usize
+    type: ZFUsize
+
 tags: []

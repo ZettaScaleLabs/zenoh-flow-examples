@@ -14,20 +14,19 @@
 //#![feature(async_closure)]
 
 use async_trait::async_trait;
-use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
+use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::ZFUsize;
 
 #[derive(Debug)]
 struct SumAndSend;
 
-#[derive(Debug, Clone)]
-struct SumAndSendState {
-    pub x: ZFUsize,
-}
-
 static INPUT: &str = "Number";
 static OUTPUT: &str = "Sum";
+
 #[async_trait]
 impl Operator for SumAndSend {
     async fn setup(
@@ -36,22 +35,30 @@ impl Operator for SumAndSend {
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> Result<Option<Arc<dyn AsyncIteration>>> {
-        let mut state = SumAndSendState { x: ZFUsize(0) };
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        // let mut state = SumAndSendState { x: ZFUsize(0) };
 
-        let input_value = inputs.take(INPUT).unwrap();
-        let output_value = outputs.take(OUTPUT).unwrap();
+        let input = inputs.take_into_arc(INPUT).unwrap();
+        let output = outputs.take_into_arc(OUTPUT).unwrap();
+        let state = Arc::new(AtomicUsize::new(0));
 
-        Ok(Some(Arc::new(move || async move {
-            let data = match input_value.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
-                _ => Err(zferror!(ErrorKind::Empty, "No data")),
-            }?;
+        Ok(Some(Box::new(move || {
+            let state = Arc::clone(&state);
+            let input = Arc::clone(&input);
+            let output = Arc::clone(&output);
 
-            let res = ZFUsize(state.x.0 + data.0);
-            state.x = res.clone();
+            async move {
+                let data = if let Message::Data(mut message) = input.recv_async().await.unwrap() {
+                    message.get_inner_data().try_get::<ZFUsize>()?.clone()
+                } else {
+                    bail!(ErrorKind::Empty, "No data")
+                };
 
-            output_value.send_async(Data::from(res), None).await
+                state.fetch_add(data.0, Ordering::AcqRel);
+                let data = Data::from(ZFUsize(state.load(Ordering::Acquire)));
+
+                output.send_async(data, None).await
+            }
         })))
     }
 }
