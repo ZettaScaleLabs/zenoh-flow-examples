@@ -15,18 +15,10 @@
 
 use async_trait::async_trait;
 use std::sync::Arc;
-use zenoh_flow::zenoh_flow_derive::ZFState;
-use zenoh_flow::{export_operator, types::ZFResult, Node, Operator, Streams};
-use zenoh_flow::{AsyncIteration, Configuration, Inputs, Message, Outputs};
-use zenoh_flow::{Context, Data, ZFError};
+use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct BuzzOperator;
-
-#[derive(Debug, ZFState, Clone)]
-struct BuzzState {
-    buzzword: String,
-}
 
 static LINK_ID_INPUT_INT: &str = "Int";
 static LINK_ID_INPUT_STR: &str = "Str";
@@ -40,55 +32,48 @@ impl Operator for BuzzOperator {
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let state = match configuration {
-            Some(config) => match config["buzzword"].as_str() {
-                Some(buzzword) => BuzzState {
-                    buzzword: buzzword.to_string(),
-                },
-                None => BuzzState {
-                    buzzword: "Buzz".to_string(),
-                },
-            },
-            None => BuzzState {
-                buzzword: "Buzz".to_string(),
-            },
-        };
-
-        let input_fizz = inputs.take(LINK_ID_INPUT_STR).unwrap();
-        let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
-        let output_buzz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
-
-        Ok(Some(Arc::new(move || async move {
-            let value = match input_value.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
-                _ => Err(ZFError::InvalidData("No data".to_string())),
-            }?;
-
-            let fizz = match input_fizz.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFString>()?.clone()),
-                _ => Err(ZFError::InvalidData("No data".to_string())),
-            }?;
-
-            let mut buzz = fizz.clone();
-            if value.0 % 3 == 0 {
-                buzz.0.push_str(&state.buzzword);
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        let mut word = "Buzz".to_string();
+        if let Some(configuration) = configuration {
+            if let Some(buzzword) = configuration["buzzword"].as_str() {
+                word = buzzword.to_string();
             }
+        }
 
-            output_buzz.send_async(Data::from(buzz), None).await
+        let input_fizz = inputs.take_into_arc(LINK_ID_INPUT_STR).unwrap();
+        let input_value = inputs.take_into_arc(LINK_ID_INPUT_INT).unwrap();
+        let output_buzz = outputs.take_into_arc(LINK_ID_OUTPUT_STR).unwrap();
+
+        Ok(Some(Box::new(move || {
+            let input_fizz = Arc::clone(&input_fizz);
+            let input_value = Arc::clone(&input_value);
+            let output_buzz = Arc::clone(&output_buzz);
+            let word = word.clone();
+
+            async move {
+                let value = match input_value.recv_async().await.unwrap() {
+                    Message::Data(mut msg) => msg.get_inner_data().try_get::<ZFUsize>()?.clone(),
+                    _ => bail!(ErrorKind::InvalidData, "No data"),
+                };
+
+                let fizz = match input_fizz.recv_async().await.unwrap() {
+                    Message::Data(mut msg) => msg.get_inner_data().try_get::<ZFString>()?.clone(),
+                    _ => bail!(ErrorKind::InvalidData, "No data"),
+                };
+
+                let mut buzz = fizz.clone();
+                if value.0 % 3 == 0 {
+                    buzz.0.push_str(&word);
+                }
+
+                output_buzz.send_async(Data::from(buzz), None).await
+            }
         })))
-    }
-}
-
-#[async_trait]
-impl Node for BuzzOperator {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
     }
 }
 
 export_operator!(register);
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
+fn register() -> Result<Arc<dyn Operator>> {
     Ok(Arc::new(BuzzOperator) as Arc<dyn Operator>)
 }

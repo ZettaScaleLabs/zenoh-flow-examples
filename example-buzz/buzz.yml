@@ -1,11 +1,15 @@
 id: BuzzOperator
+
 uri: file://./target/release/libexample_buzz.dylib
+
 inputs:
   - id: Int
-    type: u64
+    type: ZFUsize
   - id: Str
-    type: string
+    type: ZFString
+
 outputs:
   - id: Str
-    type: string
+    type: ZFString
+
 tags: []

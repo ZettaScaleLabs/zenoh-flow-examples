@@ -19,7 +19,7 @@ repository = "https://github.com/atolab/zenoh-flow-examples"
 homepage = "http://zenoh.io"
 authors = ["kydos <angelo@icorsaro.net>",
            "gabrik <gabriele.baldoni@gmail.com>",
-           "Julien Loudet <julien.loudet@adlinktech.com>",]
+           "Julien Loudet <julien.loudet@zettascale.tech>",]
 edition = "2018"
 license = " EPL-2.0 OR Apache-2.0"
 categories = ["network-programming"]
@@ -29,8 +29,8 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1.50"
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 
 
@@ -42,5 +42,5 @@ path="src/lib.rs"
 [package.metadata.zenohflow]
 id = "example-buzz"
 kind = "operator"
-inputs=[ {id ="Int", type="int"}, {id ="Str", type="str"}]
-outputs=[ {id ="Str", type="str"}]
+inputs=[ {id ="Int", type="ZFUsize"}, {id ="Str", type="ZFString"}]
+outputs=[ {id ="Str", type="ZFString"}]
