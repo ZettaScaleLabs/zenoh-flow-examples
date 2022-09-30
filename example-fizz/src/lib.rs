@@ -11,18 +11,10 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
-//#![feature(async_closure)]
-
 use async_trait::async_trait;
 use std::sync::Arc;
-use zenoh_flow::AsyncIteration;
-use zenoh_flow::Configuration;
-use zenoh_flow::Inputs;
-use zenoh_flow::Message;
-use zenoh_flow::Outputs;
-use zenoh_flow::{
-    export_operator, types::ZFResult, Context, Data, Node, Operator, Streams, ZFError,
-};
+use zenoh_flow::zfresult::ZFResult;
+use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
 struct FizzOperator;
@@ -32,13 +24,6 @@ static LINK_ID_OUTPUT_INT: &str = "Int";
 static LINK_ID_OUTPUT_STR: &str = "Str";
 
 #[async_trait]
-impl Node for FizzOperator {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
-    }
-}
-
-#[async_trait]
 impl Operator for FizzOperator {
     async fn setup(
         &self,
@@ -46,25 +31,31 @@ impl Operator for FizzOperator {
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let input_value = inputs.take(LINK_ID_INPUT_INT).unwrap();
-        let output_value = outputs.take(LINK_ID_OUTPUT_INT).unwrap();
-        let output_fizz = outputs.take(LINK_ID_OUTPUT_STR).unwrap();
+    ) -> ZFResult<Option<Box<dyn AsyncIteration>>> {
+        let input_value = inputs.take_into_arc(LINK_ID_INPUT_INT).unwrap();
+        let output_value = outputs.take_into_arc(LINK_ID_OUTPUT_INT).unwrap();
+        let output_fizz = outputs.take_into_arc(LINK_ID_OUTPUT_STR).unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            let mut fizz = ZFString::from("");
+        Ok(Some(Box::new(move || {
+            let c_input = Arc::clone(&input_value);
+            let c_output_val = Arc::clone(&output_value);
+            let c_output_fizz = Arc::clone(&output_fizz);
 
-            let value = match input_value.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_get::<ZFUsize>()?.clone()),
-                _ => Err(ZFError::InvalidData("No data".to_string())),
-            }?;
+            async move {
+                let mut fizz = ZFString::from("");
 
-            if value.0 % 2 == 0 {
-                fizz = ZFString::from("Fizz");
+                let value = match c_input.recv_async().await.unwrap() {
+                    Message::Data(mut msg) => msg.get_inner_data().try_get::<ZFUsize>()?.clone(),
+                    _ => bail!(ErrorKind::InvalidData, "No data"),
+                };
+
+                if value.0 % 2 == 0 {
+                    fizz = ZFString::from("Fizz");
+                }
+
+                c_output_val.send_async(Data::from(value), None).await?;
+                c_output_fizz.send_async(Data::from(fizz), None).await
             }
-
-            output_value.send_async(Data::from(value), None).await?;
-            output_fizz.send_async(Data::from(fizz), None).await
         })))
     }
 }
