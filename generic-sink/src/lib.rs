@@ -22,24 +22,6 @@ use zenoh_flow::prelude::*;
 
 struct GenericSink;
 
-#[derive(Clone, Debug)]
-struct SinkState {
-    pub file: Option<Arc<Mutex<File>>>,
-}
-
-impl SinkState {
-    pub fn new(configuration: &Option<Configuration>) -> Self {
-        let file = match configuration {
-            Some(c) => {
-                let f = File::create(c["file"].as_str().unwrap()).unwrap();
-                Some(Arc::new(Mutex::new(f)))
-            }
-            None => None,
-        };
-        Self { file }
-    }
-}
-
 #[async_trait]
 impl Sink for GenericSink {
     async fn setup(
@@ -47,28 +29,40 @@ impl Sink for GenericSink {
         _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> Result<Option<Arc<dyn AsyncIteration>>> {
-        let state = SinkState::new(configuration);
-        let input = inputs.take("Data").unwrap();
-        Ok(Some(Arc::new(move || async move {
-            if let Ok(data) = input.recv_async().await {
-                match &state.file {
-                    None => {
-                        println!("#######");
-                        println!("Example Generic Sink Received -> {:?}", data);
-                        println!("#######");
-                    }
-                    Some(f) => {
-                        let mut guard = f.lock().await;
-                        writeln!(&mut guard, "#######").unwrap();
-                        writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data)
-                            .unwrap();
-                        writeln!(&mut guard, "#######").unwrap();
-                        guard.sync_all().unwrap();
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        let file = match configuration {
+            Some(c) => {
+                let f = File::create(c["file"].as_str().unwrap()).unwrap();
+                Some(Arc::new(Mutex::new(f)))
+            }
+            None => None,
+        };
+
+        let input = inputs.take_into_arc("Data").unwrap();
+
+        Ok(Some(Box::new(move || {
+            let file = file.clone();
+            let input = Arc::clone(&input);
+            async move {
+                if let Ok(data) = input.recv_async().await {
+                    match &file {
+                        None => {
+                            println!("#######");
+                            println!("Example Generic Sink Received -> {:?}", data);
+                            println!("#######");
+                        }
+                        Some(f) => {
+                            let mut guard = f.lock().await;
+                            writeln!(&mut guard, "#######").unwrap();
+                            writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data)
+                                .unwrap();
+                            writeln!(&mut guard, "#######").unwrap();
+                            guard.sync_all().unwrap();
+                        }
                     }
                 }
+                Ok(())
             }
-            Ok(())
         })))
     }
 }
