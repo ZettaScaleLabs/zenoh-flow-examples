@@ -29,7 +29,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-std = { version = "=1.11.0", features = ["attributes"] }
+async-std = { version = "=1.12.0", features = ["attributes"] }
 async-trait = "0.1.50"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}

@@ -13,20 +13,15 @@
 //
 //#![feature(async_closure)]
 
+use async_std::sync::Mutex;
 use async_trait::async_trait;
 use std::{
     fs::File,
     io::{prelude::*, BufReader},
     path::Path,
+    sync::Arc,
 };
-use zenoh_flow::{
-    async_std::sync::{Arc, Mutex},
-    AsyncIteration, Inputs, Message, Outputs, Streams,
-};
-use zenoh_flow::{
-    zenoh_flow_derive::ZFState, zf_spin_lock, Data, Node, Operator, ZFError, ZFResult,
-};
-use zenoh_flow::{Configuration, Context};
+use zenoh_flow::{bail, prelude::*, zfresult::ZFError};
 
 use opencv::core::prelude::MatTrait;
 use opencv::dnn::NetTrait;
@@ -39,12 +34,11 @@ static OUTPUT: &str = "Frame";
 #[derive(Debug)]
 struct ObjDetection;
 
-#[derive(ZFState, Clone)]
 struct ODState {
-    pub dnn: Arc<Mutex<opencv::dnn::Net>>,
-    pub classes: Arc<Mutex<Vec<String>>>,
-    pub encode_options: Arc<Mutex<opencv::types::VectorOfi32>>,
-    pub outputs: Arc<Mutex<opencv::core::Vector<String>>>,
+    pub dnn: opencv::dnn::Net,
+    pub classes: Vec<String>,
+    pub encode_options: opencv::types::VectorOfi32,
+    pub outputs: opencv::core::Vector<String>,
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
@@ -72,37 +66,33 @@ impl ODState {
         let net_classes = configuration["network-classes"].as_str().unwrap();
         let classes = lines_from_file(net_classes);
 
-        let mut net = opencv::dnn::read_net_from_darknet(net_cfg, net_weights).unwrap();
+        let mut dnn = opencv::dnn::read_net_from_darknet(net_cfg, net_weights).unwrap();
         let encode_options = opencv::types::VectorOfi32::new();
 
-        net.set_preferable_backend(opencv::dnn::DNN_BACKEND_CUDA)
+        dnn.set_preferable_backend(opencv::dnn::DNN_BACKEND_CUDA)
             .unwrap();
-        net.set_preferable_target(opencv::dnn::DNN_TARGET_CUDA)
+        dnn.set_preferable_target(opencv::dnn::DNN_TARGET_CUDA)
             .unwrap();
 
-        let output_names = net.get_unconnected_out_layers_names().unwrap();
+        let outputs = dnn.get_unconnected_out_layers_names().unwrap();
 
         Self {
-            dnn: Arc::new(Mutex::new(net)),
-            classes: Arc::new(Mutex::new(classes)),
-            encode_options: Arc::new(Mutex::new(encode_options)),
-            outputs: Arc::new(Mutex::new(output_names)),
+            dnn,
+            classes,
+            encode_options,
+            outputs,
         }
     }
 
-    pub fn infer(&self, frame: Vec<u8>) -> Vec<u8> {
+    pub fn infer(&mut self, frame: Vec<u8>) -> Vec<u8> {
         let scale = 1.0 / 255.0;
         let mean = core::Scalar::new(0f64, 0f64, 0f64, 0f64);
         let mut detections: opencv::types::VectorOfMat = core::Vector::new();
 
-        let mut net = zf_spin_lock!(self.dnn);
-        let encode_options = zf_spin_lock!(self.encode_options);
-        let classes = zf_spin_lock!(self.classes);
-        let outputs = zf_spin_lock!(self.outputs);
-
-        let mut boxes: Vec<core::Vector<core::Rect>> = vec![core::Vector::new(); classes.len()];
-        let mut scores: Vec<core::Vector<f32>> = vec![core::Vector::new(); classes.len()];
-        let mut indices: Vec<core::Vector<i32>> = vec![core::Vector::new(); classes.len()];
+        let mut boxes: Vec<core::Vector<core::Rect>> =
+            vec![core::Vector::new(); self.classes.len()];
+        let mut scores: Vec<core::Vector<f32>> = vec![core::Vector::new(); self.classes.len()];
+        let mut indices: Vec<core::Vector<i32>> = vec![core::Vector::new(); self.classes.len()];
 
         let colors: Vec<core::Scalar> = vec![
             core::Scalar::new(0f64, 255f64, 0f64, -1f64),
@@ -133,12 +123,13 @@ impl ODState {
         .unwrap();
 
         //set the input
-        net.set_input(&blob, "", 1.0, core::Scalar::new(0f64, 0f64, 0f64, 0f64))
+        self.dnn
+            .set_input(&blob, "", 1.0, core::Scalar::new(0f64, 0f64, 0f64, 0f64))
             .unwrap();
 
         //run the DNN
         let now = Instant::now();
-        net.forward(&mut detections, &outputs).unwrap();
+        self.dnn.forward(&mut detections, &self.outputs).unwrap();
         let elapsed = now.elapsed().as_micros();
 
         // loop on the detected objects
@@ -158,7 +149,7 @@ impl ODState {
                     height: height as i32,
                 };
 
-                for c in 0..classes.len() {
+                for c in 0..self.classes.len() {
                     let conf = *obj.at_2d::<f32>(i, 5 + (c as i32)).unwrap();
                     if conf >= 0.4 {
                         boxes[c].push(scaled_obj);
@@ -169,7 +160,7 @@ impl ODState {
         }
 
         //remove duplicates
-        for c in 0..classes.len() {
+        for c in 0..self.classes.len() {
             opencv::dnn::nms_boxes(&boxes[c], &scores[c], 0.0, 0.4, &mut indices[c], 1.0, 0)
                 .unwrap();
         }
@@ -177,7 +168,7 @@ impl ODState {
         let mut detected = 0;
 
         // add boxes with score
-        for c in 0..classes.len() {
+        for c in 0..self.classes.len() {
             for i in &indices[c] {
                 let rect = boxes[c].get(i as usize).unwrap();
                 let score = scores[c].get(i as usize).unwrap();
@@ -190,7 +181,7 @@ impl ODState {
                 )
                 .unwrap();
 
-                let label = format!("{}: {}", classes[c], score);
+                let label = format!("{}: {}", self.classes[c], score);
                 let mut baseline = 0;
                 imgproc::get_text_size(
                     &label,
@@ -264,15 +255,8 @@ impl ODState {
 
         // encode and send
         let mut buf = opencv::types::VectorOfu8::new();
-        opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
+        opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &self.encode_options).unwrap();
         buf.into()
-    }
-}
-
-#[async_trait]
-impl Node for ObjDetection {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
     }
 }
 
@@ -284,27 +268,38 @@ impl Operator for ObjDetection {
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let state = ODState::new(configuration);
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        let state = Arc::new(Mutex::new(ODState::new(configuration)));
 
-        let input_frame = inputs.take(INPUT).unwrap();
-        let output_frame = outputs.take(OUTPUT).unwrap();
+        let input_frame = inputs.take_into_arc(INPUT).unwrap();
+        let output_frame = outputs.take_into_arc(OUTPUT).unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            let frame = match input_frame.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
-                _ => Err(ZFError::InvalidData("No data".to_string())),
-            }?;
+        Ok(Some(Box::new(move || {
+            let state = state.clone();
+            let input_frame = input_frame.clone();
+            let output_frame = output_frame.clone();
 
-            let res = state.infer(frame);
+            async move {
+                let frame = match input_frame.recv_async().await.unwrap() {
+                    Message::Data(mut msg) => Ok::<Vec<u8>, ZFError>(
+                        msg.get_inner_data().try_as_bytes()?.as_ref().clone(),
+                    ),
+                    _ => bail!(ErrorKind::InvalidData, "No data"),
+                }?;
 
-            output_frame.send_async(Data::from_bytes(res), None).await
+                let res: Vec<u8>;
+                {
+                    res = state.lock().await.infer(frame);
+                }
+
+                output_frame.send_async(Data::from(res), None).await
+            }
         })))
     }
 }
 
 zenoh_flow::export_operator!(register);
 
-fn register() -> ZFResult<Arc<dyn zenoh_flow::Operator>> {
-    Ok(Arc::new(ObjDetection) as Arc<dyn zenoh_flow::Operator>)
+fn register() -> Result<Arc<dyn Operator>> {
+    Ok(Arc::new(ObjDetection) as Arc<dyn Operator>)
 }

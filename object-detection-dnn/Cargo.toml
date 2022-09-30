@@ -27,6 +27,7 @@ description = "Zenoh Flow Examples"
 readme = "README.md"
 
 [dependencies]
+async-std = { version = "=1.12.0", features = ["attributes","unstable"] }
 zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
 async-trait = "0.1.50"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
