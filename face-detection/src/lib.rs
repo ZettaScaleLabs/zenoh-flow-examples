@@ -12,14 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-//#![feature(async_closure)]
+use async_std::sync::Mutex;
 use async_trait::async_trait;
 use opencv::{core, imgproc, objdetect, prelude::*, types};
-use zenoh_flow::async_std::sync::{Arc, Mutex};
-use zenoh_flow::{
-    zenoh_flow_derive::ZFState, zf_spin_lock, AsyncIteration, Configuration, Context, Data, Inputs,
-    Message, Node, Operator, Outputs, Streams, ZFError, ZFResult,
-};
+use std::sync::Arc;
+use zenoh_flow::{bail, prelude::*};
 
 #[derive(Debug)]
 struct FaceDetection;
@@ -27,10 +24,9 @@ struct FaceDetection;
 static INPUT: &str = "Frame";
 static OUTPUT: &str = "Frame";
 
-#[derive(ZFState, Clone)]
 struct FDState {
-    pub face: Arc<Mutex<objdetect::CascadeClassifier>>,
-    pub encode_options: Arc<Mutex<opencv::types::VectorOfi32>>,
+    pub face: objdetect::CascadeClassifier,
+    pub encode_options: opencv::types::VectorOfi32,
 }
 
 // because of opencv
@@ -56,15 +52,12 @@ impl FDState {
         let encode_options = opencv::types::VectorOfi32::new();
 
         Self {
-            face: Arc::new(Mutex::new(face)),
-            encode_options: Arc::new(Mutex::new(encode_options)),
+            face,
+            encode_options,
         }
     }
 
-    pub fn infer(&self, frame: Vec<u8>) -> Vec<u8> {
-        let mut face = zf_spin_lock!(self.face);
-        let encode_options = zf_spin_lock!(self.encode_options);
-
+    pub fn infer(&mut self, frame: Vec<u8>) -> Vec<u8> {
         // Decode Image
         let mut frame = opencv::imgcodecs::imdecode(
             &opencv::types::VectorOfu8::from_iter(frame),
@@ -88,22 +81,23 @@ impl FDState {
         )
         .unwrap();
         let mut faces = types::VectorOfRect::new();
-        face.detect_multi_scale(
-            &reduced,
-            &mut faces,
-            1.1,
-            2,
-            objdetect::CASCADE_SCALE_IMAGE,
-            core::Size {
-                width: 30,
-                height: 30,
-            },
-            core::Size {
-                width: 0,
-                height: 0,
-            },
-        )
-        .unwrap();
+        self.face
+            .detect_multi_scale(
+                &reduced,
+                &mut faces,
+                1.1,
+                2,
+                objdetect::CASCADE_SCALE_IMAGE,
+                core::Size {
+                    width: 30,
+                    height: 30,
+                },
+                core::Size {
+                    width: 0,
+                    height: 0,
+                },
+            )
+            .unwrap();
         for face in faces {
             let scaled_face = core::Rect {
                 x: face.x * 4,
@@ -123,7 +117,7 @@ impl FDState {
         }
 
         let mut buf = opencv::types::VectorOfu8::new();
-        opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &encode_options).unwrap();
+        opencv::imgcodecs::imencode(".jpg", &frame, &mut buf, &self.encode_options).unwrap();
         buf.into()
     }
 }
@@ -136,35 +130,39 @@ impl Operator for FaceDetection {
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let state = FDState::new(configuration);
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+        let state = Arc::new(Mutex::new(FDState::new(configuration)));
 
-        let input_frame = inputs.take(INPUT).unwrap();
-        let output_frame = outputs.take(OUTPUT).unwrap();
+        let input_frame = inputs.take_into_arc(INPUT).unwrap();
+        let output_frame = outputs.take_into_arc(OUTPUT).unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            let data = match input_frame.recv_async().await.unwrap() {
-                Message::Data(mut msg) => Ok(msg.get_inner_data().try_as_bytes()?.as_ref().clone()),
-                _ => Err(ZFError::InvalidData("No data".to_string())),
-            }?;
+        Ok(Some(Box::new(move || {
+            let state = state.clone();
+            let input_frame = input_frame.clone();
+            let output_frame = output_frame.clone();
 
-            let buf = state.infer(data);
+            async move {
+                let raw_input = input_frame.recv_async().await?;
+                if let Message::Data(mut msg) = raw_input {
+                    let data = msg.get_inner_data().try_as_bytes()?.as_ref().clone();
 
-            output_frame.send_async(Data::from_bytes(buf), None).await
+                    let buffer: Vec<u8>;
+                    {
+                        buffer = state.lock().await.infer(data);
+                    }
+
+                    output_frame.send_async(Data::from(buffer), None).await
+                } else {
+                    bail!(ErrorKind::InvalidData, "No data")
+                }
+            }
         })))
-    }
-}
-
-#[async_trait]
-impl Node for FaceDetection {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
     }
 }
 
 // Also generated by macro
 zenoh_flow::export_operator!(register);
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
+fn register() -> Result<Arc<dyn Operator>> {
     Ok(Arc::new(FaceDetection) as Arc<dyn Operator>)
 }
