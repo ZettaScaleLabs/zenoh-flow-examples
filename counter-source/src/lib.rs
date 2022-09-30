@@ -31,20 +31,23 @@ impl Source for CountSource {
         _context: &mut Context,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Result<Option<Arc<dyn AsyncIteration>>> {
+    ) -> Result<Option<Box<dyn AsyncIteration>>> {
         if let Some(conf) = configuration {
             let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
         }
 
-        let output = outputs.take("Counter").unwrap();
+        let output = outputs.take_into_arc("Counter").unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-            let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
-            output.send_async(d, None).await.unwrap();
+        Ok(Some(Box::new(move || {
+            let output = Arc::clone(&output);
+            async move {
+                async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+                let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
+                output.send_async(d, None).await.unwrap();
 
-            Ok(())
+                Ok(())
+            }
         })))
     }
 }
