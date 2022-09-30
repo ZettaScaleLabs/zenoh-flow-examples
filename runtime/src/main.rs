@@ -22,7 +22,7 @@ use std::fs::{File, *};
 use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
-use zenoh::config::Config;
+use zenoh::prelude::r#async::*;
 use zenoh_flow::runtime::dataflow::loader::{Loader, LoaderConfig};
 use zenoh_flow::runtime::RuntimeContext;
 use zenoh_flow::Result;
@@ -77,7 +77,7 @@ async fn main() {
         Some(z_config) => get_zenoh_config(&z_config).unwrap(),
     };
 
-    let session = Arc::new(zenoh::open(z_config).await.unwrap());
+    let session = Arc::new(zenoh::open(z_config).res().await.unwrap());
 
     let hlc = async_std::sync::Arc::new(uhlc::HLC::default());
     let loader = Arc::new(Loader::new(loader_config));
