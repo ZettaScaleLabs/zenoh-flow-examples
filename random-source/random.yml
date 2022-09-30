@@ -1,6 +1,9 @@
-id : RandomSource
+id: RandomSource
+
 uri: file://./target/release/librandom_source.dylib
-output:
-  id: Random
-  type: usize
+
+outputs:
+  - id: Random
+    type: ZFUsize
+
 tags: []
