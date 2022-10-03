@@ -1,5 +1,5 @@
 id : Rotterdam
-uri: file://./target/release/librotterdam.so
+uri: file://./target/release/librotterdam.dylib
 inputs:
   - id: Mekong
     type: twist-w-coovariance-ts

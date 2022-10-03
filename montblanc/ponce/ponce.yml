@@ -1,5 +1,5 @@
 id : Ponce
-uri: file://./target/release/libponce.so
+uri: file://./target/release/libponce.dylib
 inputs:
   - id: Danube
     type: str

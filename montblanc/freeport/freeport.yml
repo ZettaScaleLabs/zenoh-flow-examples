@@ -1,9 +1,12 @@
 id : Freeport
-uri: file://./target/release/libfreeport.so
+
+uri: file://./target/release/libfreeport.dylib
+
 # period:
 #   length: 50
 #   unit: ms
-output:
-  id: Ganges
-  type: i64
+outputs:
+  - id: Ganges
+    type: i64
+
 tags: []

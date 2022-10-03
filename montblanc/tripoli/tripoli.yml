@@ -1,5 +1,5 @@
 id : Tripoli
-uri: file://./target/release/libtripoli.so
+uri: file://./target/release/libtripoli.dylib
 inputs:
   - id: Columbia
     type: img

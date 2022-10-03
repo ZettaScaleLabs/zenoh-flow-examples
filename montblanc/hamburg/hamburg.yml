@@ -1,5 +1,5 @@
 id : Hamburg
-uri: file://./target/release/libhamburg.so
+uri: file://./target/release/libhamburg.dylib
 inputs:
   - id: Danube
     type: str

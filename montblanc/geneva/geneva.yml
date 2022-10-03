@@ -1,5 +1,5 @@
 id : Geneva
-uri: file://./target/release/libgeneva.so
+uri: file://./target/release/libgeneva.dylib
 inputs:
   - id: Danube
     type: str

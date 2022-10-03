@@ -1,6 +1,9 @@
 id : Arequipa
-uri: file://./target/release/libarequipa.so
-input:
-  id: Arkansas
-  type: str
+
+uri: file://./target/release/libarequipa.dylib
+
+inputs:
+  - id: Arkansas
+    type: str
+
 tags: []

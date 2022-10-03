@@ -1,10 +1,12 @@
-
 id : Portsmouth
-uri: file://./target/release/libportsmouth.so
+
+uri: file://./target/release/libportsmouth.dylib
+
 # period:
 #   length: 500
 #   unit: ms
-output:
-  id: Danube
-  type: str
+outputs:
+  - id: Danube
+    type: str
+
 tags: []

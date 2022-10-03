@@ -1,9 +1,13 @@
 id : Madelin
-uri: file://./target/release/libmadelin.so
-period:
-  length: 10
-  unit: ms
-output:
-  id: Nile
-  type: i32
+
+uri: file://./target/release/libmadelin.dylib
+
+# period:
+#   length: 10
+#   unit: ms
+
+outputs:
+  - id: Nile
+    type: i32
+
 tags: []

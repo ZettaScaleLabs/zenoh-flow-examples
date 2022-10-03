@@ -1,5 +1,5 @@
 id : Georgetown
-uri: file://./target/release/libgeorgetown.so
+uri: file://./target/release/libgeorgetown.dylib
 inputs:
   - id: Lena
     type: wrench-ts

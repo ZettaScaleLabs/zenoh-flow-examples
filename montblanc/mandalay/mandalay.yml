@@ -1,5 +1,5 @@
 id : Mandalay
-uri: file://./target/release/libmandalay.so
+uri: file://./target/release/libmandalay.dylib
 # period:
 #   length: 100
 #   unit: ms
