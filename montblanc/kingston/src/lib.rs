@@ -14,11 +14,10 @@
 
 use nodes::sources::Kingston;
 use std::sync::Arc;
-use zenoh_flow::Source;
-use zenoh_flow::{export_source, types::ZFResult};
+use zenoh_flow::prelude::*;
 
 export_source!(register);
 
-fn register() -> ZFResult<Arc<dyn Source>> {
+fn register() -> Result<Arc<dyn Source>> {
     Ok(Arc::new(Kingston) as Arc<dyn Source>)
 }

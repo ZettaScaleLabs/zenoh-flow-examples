@@ -12,13 +12,12 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use std::sync::Arc;
-use zenoh_flow::{export_operator, types::ZFResult, Operator};
-
 use nodes::operators::Barcelona;
+use std::sync::Arc;
+use zenoh_flow::prelude::*;
 
 export_operator!(register);
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
+fn register() -> Result<Arc<dyn Operator>> {
     Ok(Arc::new(Barcelona) as Arc<dyn Operator>)
 }

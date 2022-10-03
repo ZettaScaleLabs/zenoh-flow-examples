@@ -13,12 +13,12 @@
 //
 
 use std::sync::Arc;
-use zenoh_flow::{export_operator, types::ZFResult, Operator};
+use zenoh_flow::prelude::*;
 
 use nodes::operators::Georgetown;
 
 export_operator!(register);
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
+fn register() -> Result<Arc<dyn Operator>> {
     Ok(Arc::new(Georgetown) as Arc<dyn Operator>)
 }

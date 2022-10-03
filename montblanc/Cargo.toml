@@ -17,6 +17,7 @@ members = [
     "arequipa",
     "barcelona",
     "cordoba",
+    "datatypes",
     "delhi",
     "freeport",
     "geneva",
@@ -25,17 +26,16 @@ members = [
     "hebron",
     "kingston",
     "lyon",
-    "mandalay",
     "madelin",
+    "mandalay",
     "monaco",
+    "nodes",
     "osaka",
     "ponce",
     "portsmouth",
     "rotterdam",
     "taipei",
     "tripoli",
-    "datatypes",
-    "nodes",
 ]
 
 [profile.dev]

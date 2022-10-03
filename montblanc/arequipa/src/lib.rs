@@ -14,11 +14,10 @@
 
 use nodes::sinks::Arequipa;
 use std::sync::Arc;
-use zenoh_flow::Sink;
-use zenoh_flow::{export_sink, types::ZFResult};
+use zenoh_flow::prelude::*;
 
 export_sink!(register);
 
-fn register() -> ZFResult<Arc<dyn Sink>> {
+fn register() -> Result<Arc<dyn Sink>> {
     Ok(Arc::new(Arequipa) as Arc<dyn Sink>)
 }

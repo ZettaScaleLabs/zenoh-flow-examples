@@ -14,9 +14,8 @@
 
 use async_trait::async_trait;
 use std::sync::Arc;
-use zenoh_flow::{
-    AsyncIteration, Configuration, Context, Inputs, Message, Node, Sink, Streams, ZFResult,
-};
+use zenoh_flow::prelude::*;
+use zenoh_flow::zfresult::ZFResult;
 
 use crate::ARKANSAS_PORT;
 
@@ -30,24 +29,20 @@ impl Sink for Arequipa {
         _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> ZFResult<Option<Arc<dyn AsyncIteration>>> {
-        let input_arkansas = inputs.take(ARKANSAS_PORT).unwrap();
+    ) -> ZFResult<Option<Box<dyn AsyncIteration>>> {
+        let input_arkansas = inputs.take_into_arc(ARKANSAS_PORT).unwrap();
 
-        Ok(Some(Arc::new(move || async move {
-            if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
-                let data = msg
-                    .get_inner_data()
-                    .try_get::<datatypes::data_types::String>()?;
-                println!("Arequipa: Received data {}", data.value);
+        Ok(Some(Box::new(move || {
+            let input_arkansas = Arc::clone(&input_arkansas);
+            async move {
+                if let Ok(Message::Data(mut msg)) = input_arkansas.recv_async().await {
+                    let data = msg
+                        .get_inner_data()
+                        .try_get::<datatypes::data_types::String>()?;
+                    println!("Arequipa: Received data {}", data.value);
+                }
+                Ok(())
             }
-            Ok(())
         })))
-    }
-}
-
-#[async_trait]
-impl Node for Arequipa {
-    async fn finalize(&self) -> ZFResult<()> {
-        Ok(())
     }
 }
