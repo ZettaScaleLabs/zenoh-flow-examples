@@ -1,6 +1,6 @@
 id: PrintSink
 
-uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libgeneric_sink.so
+uri: file://./target/release/libgeneric_sink.so
 
 inputs:
   - id: Data
