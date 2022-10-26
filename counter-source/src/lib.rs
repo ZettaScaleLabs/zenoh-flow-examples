@@ -17,8 +17,8 @@ use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
-use zenoh_flow_example_types::ZFUsize;
 use zenoh_flow::types::{Configuration, Context, Data, Outputs, Streams};
+use zenoh_flow_example_types::ZFUsize;
 
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
@@ -31,7 +31,9 @@ impl Node for CountSource {
     async fn iteration(&self) -> Result<()> {
         COUNTER.fetch_add(1, Ordering::AcqRel);
         async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-        self.output.send_async(Data::from(ZFUsize(COUNTER.load(Ordering::Relaxed))), None).await?;
+        self.output
+            .send_async(Data::from(ZFUsize(COUNTER.load(Ordering::Relaxed))), None)
+            .await?;
         Ok(())
     }
 }
@@ -52,14 +54,15 @@ impl SourceFactoryTrait for CountSourceFactory {
         }
 
         Ok(Some(Arc::new(CountSource {
-            output: outputs.take("Counter").ok_or_else(|| zferror!(ErrorKind::NotFound))?,
+            output: outputs
+                .take("Counter")
+                .ok_or_else(|| zferror!(ErrorKind::NotFound))?,
         })))
     }
 }
 
-
 export_source_factory!(register);
 
 fn register() -> Result<Arc<dyn SourceFactoryTrait>> {
-   Ok(Arc::new(CountSourceFactory) as Arc<dyn SourceFactoryTrait>)
+    Ok(Arc::new(CountSourceFactory) as Arc<dyn SourceFactoryTrait>)
 }

@@ -22,7 +22,7 @@ use zenoh_flow::prelude::*;
 
 struct GenericSink {
     input: Input,
-    file: Option<Arc<Mutex<File>>>
+    file: Option<Arc<Mutex<File>>>,
 }
 
 #[async_trait]
@@ -38,8 +38,7 @@ impl Node for GenericSink {
                 Some(f) => {
                     let mut guard = f.lock().await;
                     writeln!(&mut guard, "#######").unwrap();
-                    writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data)
-                        .unwrap();
+                    writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data).unwrap();
                     writeln!(&mut guard, "#######").unwrap();
                     guard.sync_all().unwrap();
                 }
@@ -47,7 +46,6 @@ impl Node for GenericSink {
         }
         Ok(())
     }
-
 }
 
 struct GenericSinkFactory;
@@ -68,15 +66,16 @@ impl SinkFactoryTrait for GenericSinkFactory {
             None => None,
         };
         Ok(Some(Arc::new(GenericSink {
-            input: inputs.take("Data").ok_or_else(|| zferror!(ErrorKind::NotFound))?,
-            file
+            input: inputs
+                .take("Data")
+                .ok_or_else(|| zferror!(ErrorKind::NotFound))?,
+            file,
         })))
     }
 }
 
-
 export_sink_factory!(register);
 
 fn register() -> Result<Arc<dyn SinkFactoryTrait>> {
-   Ok(Arc::new(GenericSinkFactory) as Arc<dyn SinkFactoryTrait>)
+    Ok(Arc::new(GenericSinkFactory) as Arc<dyn SinkFactoryTrait>)
 }
