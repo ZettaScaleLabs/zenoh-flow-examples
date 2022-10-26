@@ -30,7 +30,7 @@ readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.50"
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+zenoh-flow = "0.4.0"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 
 [lib]

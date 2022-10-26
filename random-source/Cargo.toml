@@ -30,7 +30,7 @@ readme = "README.md"
 async-std = { version = "=1.12.0", features = ["attributes", "unstable"] }
 async-trait = "0.1.50"
 rand = "0.8"
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+zenoh-flow = "0.4.0"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 
 [lib]

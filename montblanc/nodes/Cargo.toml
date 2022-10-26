@@ -19,7 +19,7 @@ edition = "2021"
 
 [dependencies]
 # zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+zenoh-flow = "0.4.0"
 env_logger = "0.9"
 serde = { version = "1.0.55", features = ["derive"] }
 async-std = { version = "=1.12.0", features = ["attributes"] }

@@ -37,10 +37,12 @@ members = [
 debug=true
 opt-level = 0
 
-
 [profile.release]
 debug=true
 lto="fat"
 codegen-units=1
 opt-level=3
 panic="abort"
+
+[patch.crates-io]
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}

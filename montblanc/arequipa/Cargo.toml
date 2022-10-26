@@ -24,4 +24,4 @@ path="src/lib.rs"
 
 [dependencies]
 nodes = {path = "../nodes"}
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+zenoh-flow = "0.4.0"
