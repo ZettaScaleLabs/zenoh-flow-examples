@@ -18,42 +18,48 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
 use zenoh_flow_example_types::ZFUsize;
+use zenoh_flow::types::{Configuration, Context, Data, Outputs, Streams};
 
 static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Debug)]
-struct CountSource;
+struct CountSource {
+    output: Output,
+}
 
 #[async_trait]
-impl Source for CountSource {
-    async fn setup(
+impl Node for CountSource {
+    async fn iteration(&self) -> Result<()> {
+        COUNTER.fetch_add(1, Ordering::AcqRel);
+        async_std::task::sleep(std::time::Duration::from_secs(1)).await;
+        self.output.send_async(Data::from(ZFUsize(COUNTER.load(Ordering::Relaxed))), None).await?;
+        Ok(())
+    }
+}
+
+struct CountSourceFactory;
+
+#[async_trait]
+impl SourceFactoryTrait for CountSourceFactory {
+    async fn new_source(
         &self,
         _context: &mut Context,
         configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+    ) -> Result<Option<Arc<dyn Node>>> {
         if let Some(conf) = configuration {
             let initial = conf["initial"].as_u64().unwrap() as usize;
             COUNTER.store(initial, Ordering::SeqCst);
         }
 
-        let output = outputs.take_into_arc("Counter").unwrap();
-
-        Ok(Some(Box::new(move || {
-            let output = Arc::clone(&output);
-            async move {
-                async_std::task::sleep(std::time::Duration::from_secs(1)).await;
-                let d = Data::from(ZFUsize(COUNTER.fetch_add(1, Ordering::AcqRel)));
-                output.send_async(d, None).await.unwrap();
-
-                Ok(())
-            }
+        Ok(Some(Arc::new(CountSource {
+            output: outputs.take("Counter").ok_or_else(|| zferror!(ErrorKind::NotFound))?,
         })))
     }
 }
 
-zenoh_flow::export_source!(register);
 
-fn register() -> Result<Arc<dyn Source>> {
-    Ok(Arc::new(CountSource) as Arc<dyn Source>)
+export_source_factory!(register);
+
+fn register() -> Result<Arc<dyn SourceFactoryTrait>> {
+   Ok(Arc::new(CountSourceFactory) as Arc<dyn SourceFactoryTrait>)
 }

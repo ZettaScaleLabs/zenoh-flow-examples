@@ -20,16 +20,46 @@ use std::io::Write;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
 
-struct GenericSink;
+struct GenericSink {
+    input: Input,
+    file: Option<Arc<Mutex<File>>>
+}
 
 #[async_trait]
-impl Sink for GenericSink {
-    async fn setup(
+impl Node for GenericSink {
+    async fn iteration(&self) -> Result<()> {
+        if let Ok(data) = self.input.recv_async().await {
+            match &self.file {
+                None => {
+                    println!("#######");
+                    println!("Example Generic Sink Received -> {:?}", data);
+                    println!("#######");
+                }
+                Some(f) => {
+                    let mut guard = f.lock().await;
+                    writeln!(&mut guard, "#######").unwrap();
+                    writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data)
+                        .unwrap();
+                    writeln!(&mut guard, "#######").unwrap();
+                    guard.sync_all().unwrap();
+                }
+            }
+        }
+        Ok(())
+    }
+
+}
+
+struct GenericSinkFactory;
+
+#[async_trait]
+impl SinkFactoryTrait for GenericSinkFactory {
+    async fn new_sink(
         &self,
         _context: &mut Context,
         configuration: &Option<Configuration>,
         mut inputs: Inputs,
-    ) -> Result<Option<Box<dyn AsyncIteration>>> {
+    ) -> Result<Option<Arc<dyn Node>>> {
         let file = match configuration {
             Some(c) => {
                 let f = File::create(c["file"].as_str().unwrap()).unwrap();
@@ -37,38 +67,16 @@ impl Sink for GenericSink {
             }
             None => None,
         };
-
-        let input = inputs.take_into_arc("Data").unwrap();
-
-        Ok(Some(Box::new(move || {
-            let file = file.clone();
-            let input = Arc::clone(&input);
-            async move {
-                if let Ok(data) = input.recv_async().await {
-                    match &file {
-                        None => {
-                            println!("#######");
-                            println!("Example Generic Sink Received -> {:?}", data);
-                            println!("#######");
-                        }
-                        Some(f) => {
-                            let mut guard = f.lock().await;
-                            writeln!(&mut guard, "#######").unwrap();
-                            writeln!(&mut guard, "Example Generic Sink Received -> {:?}", data)
-                                .unwrap();
-                            writeln!(&mut guard, "#######").unwrap();
-                            guard.sync_all().unwrap();
-                        }
-                    }
-                }
-                Ok(())
-            }
+        Ok(Some(Arc::new(GenericSink {
+            input: inputs.take("Data").ok_or_else(|| zferror!(ErrorKind::NotFound))?,
+            file
         })))
     }
 }
 
-export_sink!(register);
 
-fn register() -> Result<Arc<dyn Sink>> {
-    Ok(Arc::new(GenericSink) as Arc<dyn Sink>)
+export_sink_factory!(register);
+
+fn register() -> Result<Arc<dyn SinkFactoryTrait>> {
+   Ok(Arc::new(GenericSinkFactory) as Arc<dyn SinkFactoryTrait>)
 }
