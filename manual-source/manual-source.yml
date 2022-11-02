@@ -1,6 +1,6 @@
 id: ManualSource
 
-uri: file://./target/release/libmanual_source.dylib
+uri: file://./target/release/libmanual_source.so
 
 outputs:
   - id: Int

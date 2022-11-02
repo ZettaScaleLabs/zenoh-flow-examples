@@ -17,45 +17,54 @@ use std::{sync::Arc, time::Duration, usize};
 use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::ZFUsize;
 
-struct ManualSource;
+struct ManualSource {
+    output: Output,
+}
 
 #[async_trait]
-impl Source for ManualSource {
-    async fn setup(
+impl Node for ManualSource {
+    async fn iteration(&self) -> Result<()> {
+        println!("> Please input a number: ");
+        let mut number = String::new();
+        async_std::io::stdin()
+            .read_line(&mut number)
+            .await
+            .expect("Could not read number.");
+
+        let value: usize = match number.trim().parse() {
+            Ok(value) => value,
+            Err(_) => {
+                bail!(ErrorKind::InvalidData, "Expected value, found naught");
+            }
+        };
+
+        self.output
+            .send_async(Data::from(ZFUsize(value)), None)
+            .await?;
+        async_std::task::sleep(Duration::from_millis(500)).await;
+        Ok(())
+    }
+}
+
+struct ManualSourceFactory;
+
+#[async_trait]
+impl SourceFactoryTrait for ManualSourceFactory {
+    async fn new_source(
         &self,
         _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut outputs: Outputs,
-    ) -> Result<Option<Box<dyn AsyncIteration>>> {
-        let output = outputs.take_into_arc("Int").unwrap();
-
-        Ok(Some(Box::new(move || {
-            let output = Arc::clone(&output);
-            async move {
-                println!("> Please input a number: ");
-                let mut number = String::new();
-                async_std::io::stdin()
-                    .read_line(&mut number)
-                    .await
-                    .expect("Could not read number.");
-
-                let value: usize = match number.trim().parse() {
-                    Ok(value) => value,
-                    Err(_) => {
-                        bail!(ErrorKind::InvalidData, "Expected value, found naught");
-                    }
-                };
-
-                output.send_async(Data::from(ZFUsize(value)), None).await?;
-                async_std::task::sleep(Duration::from_millis(500)).await;
-                Ok(())
-            }
-        })))
+    ) -> Result<Option<Arc<dyn Node>>> {
+        let output = outputs
+            .take("Int")
+            .ok_or_else(|| zferror!(ErrorKind::NotFound))?;
+        Ok(Some(Arc::new(ManualSource { output })))
     }
 }
 
-zenoh_flow::export_source!(register);
+export_source_factory!(register);
 
-fn register() -> Result<Arc<dyn Source>> {
-    Ok(Arc::new(ManualSource) as Arc<dyn Source>)
+fn register() -> Result<Arc<dyn SourceFactoryTrait>> {
+    Ok(Arc::new(ManualSourceFactory) as Arc<dyn SourceFactoryTrait>)
 }

@@ -13,55 +13,68 @@
 //
 use async_trait::async_trait;
 use std::sync::Arc;
-use zenoh_flow::zfresult::ZFResult;
 use zenoh_flow::{bail, prelude::*};
 use zenoh_flow_example_types::{ZFString, ZFUsize};
 
-struct FizzOperator;
+struct FizzOperator {
+    input_value: Input,
+    output_value: Output,
+    output_fizz: Output,
+}
 
 static LINK_ID_INPUT_INT: &str = "Int";
 static LINK_ID_OUTPUT_INT: &str = "Int";
 static LINK_ID_OUTPUT_STR: &str = "Str";
 
 #[async_trait]
-impl Operator for FizzOperator {
-    async fn setup(
+impl Node for FizzOperator {
+    async fn iteration(&self) -> Result<()> {
+        let value = match self.input_value.recv_async().await.unwrap() {
+            Message::Data(mut msg) => msg.get_inner_data().try_get::<ZFUsize>()?.clone(),
+            _ => bail!(ErrorKind::InvalidData, "No data"),
+        };
+
+        let fizz = ZFString::from(if value.0 % 2 == 0 { "Fizz" } else { "" });
+
+        self.output_value
+            .send_async(Data::from(value), None)
+            .await?;
+        self.output_fizz.send_async(Data::from(fizz), None).await?;
+        Ok(())
+    }
+}
+
+struct FizzOperatorFactory;
+
+#[async_trait]
+impl OperatorFactoryTrait for FizzOperatorFactory {
+    async fn new_operator(
         &self,
         _context: &mut Context,
         _configuration: &Option<Configuration>,
         mut inputs: Inputs,
         mut outputs: Outputs,
-    ) -> ZFResult<Option<Box<dyn AsyncIteration>>> {
-        let input_value = inputs.take_into_arc(LINK_ID_INPUT_INT).unwrap();
-        let output_value = outputs.take_into_arc(LINK_ID_OUTPUT_INT).unwrap();
-        let output_fizz = outputs.take_into_arc(LINK_ID_OUTPUT_STR).unwrap();
+    ) -> Result<Option<Arc<dyn Node>>> {
+        let input_value = inputs
+            .take(LINK_ID_INPUT_INT)
+            .ok_or_else(|| zferror!(ErrorKind::NotFound))?;
+        let output_value = outputs
+            .take(LINK_ID_OUTPUT_INT)
+            .ok_or_else(|| zferror!(ErrorKind::NotFound))?;
+        let output_fizz = outputs
+            .take(LINK_ID_OUTPUT_STR)
+            .ok_or_else(|| zferror!(ErrorKind::NotFound))?;
 
-        Ok(Some(Box::new(move || {
-            let c_input = Arc::clone(&input_value);
-            let c_output_val = Arc::clone(&output_value);
-            let c_output_fizz = Arc::clone(&output_fizz);
-
-            async move {
-                let mut fizz = ZFString::from("");
-
-                let value = match c_input.recv_async().await.unwrap() {
-                    Message::Data(mut msg) => msg.get_inner_data().try_get::<ZFUsize>()?.clone(),
-                    _ => bail!(ErrorKind::InvalidData, "No data"),
-                };
-
-                if value.0 % 2 == 0 {
-                    fizz = ZFString::from("Fizz");
-                }
-
-                c_output_val.send_async(Data::from(value), None).await?;
-                c_output_fizz.send_async(Data::from(fizz), None).await
-            }
+        Ok(Some(Arc::new(FizzOperator {
+            input_value,
+            output_value,
+            output_fizz,
         })))
     }
 }
 
-export_operator!(register);
+export_operator_factory!(register);
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
-    Ok(Arc::new(FizzOperator) as Arc<dyn Operator>)
+fn register() -> Result<Arc<dyn OperatorFactoryTrait>> {
+    Ok(Arc::new(FizzOperatorFactory) as Arc<dyn OperatorFactoryTrait>)
 }

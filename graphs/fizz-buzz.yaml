@@ -1,0 +1,51 @@
+flow: FizzBuzz
+
+operators:
+  - id: FizzOperator
+    descriptor: ./example-fizz/fizz.yml
+  - id: BuzzOperator
+    descriptor: ./example-buzz/buzz.yml
+
+sources:
+  - id: ManualSenderOperator
+    descriptor: ./manual-source/manual-source.yml
+
+sinks:
+  - id: ReceiverOperator
+    descriptor: ./generic-sink/generic-sink.yml
+
+links:
+  - from:
+      node: ManualSenderOperator
+      output: Int
+    to:
+      node: FizzOperator
+      input: Int
+
+  # FizzOperator -> BuzzOperator
+  - from:
+      node: FizzOperator
+      output: Int
+    to:
+      node: BuzzOperator
+      input: Int
+
+  - from:
+      node: FizzOperator
+      output: Str
+    to:
+      node: BuzzOperator
+      input: Str
+
+  - from:
+      node: BuzzOperator
+      output: Str
+    to:
+      node: ReceiverOperator
+      input: Data
+
+mapping:
+  ManualSenderOperator: foo
+  FizzOperator: foo
+  BuzzOperator: bar
+  ReceiverOperator: bar

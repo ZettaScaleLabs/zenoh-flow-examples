@@ -46,7 +46,7 @@ This will create, depending on your OS, the libraries that the pipeline will fet
 To run all components on the same Zenoh Flow runtime:
 
 ```bash
-./target/release/runtime --graph-file ./graphs/fizz_buzz_pipeline.yaml --runtime foo
+./target/release/runtime --graph-file ./graphs/fizz-buzz.yaml --runtime foo
 ```
 
 _Note: in that particular case the `--runtime foo` is discarded._

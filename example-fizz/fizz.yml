@@ -1,11 +1,11 @@
 id: FizzOperator
-uri: file://./target/release/libexample_fizz.dylib
+uri: file://./target/release/libexample_fizz.so
 inputs:
   - id: Int
-    type: u64
+    type: ZFUsize
 outputs:
   - id: Int
-    type: u64
+    type: ZFUsize
   - id: Str
-    type: string
+    type: ZFString
 tags: []

@@ -1,6 +1,6 @@
 id: BuzzOperator
 
-uri: file://./target/release/libexample_buzz.dylib
+uri: file://./target/release/libexample_buzz.so
 
 inputs:
   - id: Int

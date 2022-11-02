@@ -34,7 +34,6 @@ async-trait = "0.1"
 zenoh-flow = "0.4.0"
 zenoh-flow-example-types = { path = "../zenoh-flow-example-types" }
 
-
 [lib]
 name = "counter_source"
 crate-type=["cdylib"]
