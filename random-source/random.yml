@@ -1,6 +1,6 @@
 id: RandomSource
 
-uri: file://./target/release/librandom_source.dylib
+uri: file://./target/release/librandom_source.so
 
 outputs:
   - id: Random
