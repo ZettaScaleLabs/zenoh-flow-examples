@@ -1,0 +1,19 @@
+[package]
+name = "pub-sink"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "=1.12.0", features = ["attributes"] }
+async-trait = "0.1"
+serde = "1.0.145"
+serde_json = "1.0.87"
+zenoh = "0.6.0-beta.1"
+zenoh-flow = "0.4.0"
+
+[lib]
+name = "pub_sink"
+crate-type=["cdylib"]
+path="src/lib.rs"

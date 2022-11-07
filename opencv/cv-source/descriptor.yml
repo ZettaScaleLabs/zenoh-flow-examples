@@ -1,0 +1,6 @@
+id: Camera
+uri: file://./target/release/libcv_source.so
+outputs:
+  - id: Frame
+    type: image
+tags: []

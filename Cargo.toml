@@ -30,6 +30,7 @@ members = [
   "random-source",
   "video-file-source",
   "runtime",
+  "opencv/*",
   # "run-record-replay",
 ]
 

@@ -1,0 +1,5 @@
+key_expr: zf/data/cv_pub
+zenoh_config:
+  connect:
+    endpoints:
+      - tcp/127.0.0.1:7448
