@@ -56,7 +56,7 @@ links:
       output: Str
     to:
       node: ReceiverOperator
-      input: Str
+      input: Data
 
   # FizzOperator -> BuzzOperator2
   - from:
@@ -78,7 +78,7 @@ links:
       output: Str
     to:
       node: ReceiverOperator2
-      input: Str
+      input: Data
 
   # FizzOperator -> BuzzOperator3
   - from:
@@ -100,7 +100,7 @@ links:
       output: Str
     to:
       node: ReceiverOperator3
-      input: Str
+      input: Data
 
 mapping:
   ManualSenderOperator: foo
