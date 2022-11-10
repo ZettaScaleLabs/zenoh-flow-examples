@@ -26,6 +26,15 @@ impl ZFData for ZFString {
     fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.as_bytes().to_vec())
     }
+
+    fn try_deserialize(bytes: &[u8]) -> Result<ZFString>
+    where
+        Self: Sized,
+    {
+        Ok(ZFString(String::from_utf8(bytes.to_vec()).map_err(
+            |e| zferror!(ErrorKind::DeseralizationError, e),
+        )?))
+    }
 }
 
 impl From<String> for ZFString {
@@ -40,17 +49,6 @@ impl From<&str> for ZFString {
     }
 }
 
-impl Deserializable for ZFString {
-    fn try_deserialize(bytes: &[u8]) -> Result<ZFString>
-    where
-        Self: Sized,
-    {
-        Ok(ZFString(String::from_utf8(bytes.to_vec()).map_err(
-            |e| zferror!(ErrorKind::DeseralizationError, e),
-        )?))
-    }
-}
-
 #[derive(Debug, Clone, ZFData)]
 pub struct ZFUsize(pub usize);
 
@@ -58,9 +56,7 @@ impl ZFData for ZFUsize {
     fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.to_ne_bytes().to_vec())
     }
-}
 
-impl Deserializable for ZFUsize {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -84,9 +80,7 @@ impl ZFData for ZFBytes {
     fn try_serialize(&self) -> Result<Vec<u8>> {
         Ok(self.0.clone())
     }
-}
 
-impl Deserializable for ZFBytes {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -117,9 +111,7 @@ impl ZFData for GamepadInput {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for GamepadInput {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,

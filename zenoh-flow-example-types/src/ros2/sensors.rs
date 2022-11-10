@@ -74,9 +74,7 @@ impl ZFData for BatteryState {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for BatteryState {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -98,9 +96,7 @@ impl ZFData for MagneticField {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for MagneticField {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -126,9 +122,7 @@ impl ZFData for IMU {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for IMU {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -152,9 +146,7 @@ impl ZFData for JointState {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for JointState {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,

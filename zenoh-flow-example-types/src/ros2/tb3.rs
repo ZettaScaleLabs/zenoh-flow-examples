@@ -67,9 +67,7 @@ impl ZFData for SensorState {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for SensorState {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -101,9 +99,7 @@ impl ZFData for Sound {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Sound {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -126,9 +122,7 @@ impl ZFData for VersionInfo {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for VersionInfo {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -153,9 +147,7 @@ impl ZFData for RobotInformation {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for RobotInformation {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -174,9 +166,7 @@ impl ZFData for LaserScan {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for LaserScan {
     fn try_deserialize(bytes: &[u8]) -> Result<LaserScan>
     where
         Self: Sized,

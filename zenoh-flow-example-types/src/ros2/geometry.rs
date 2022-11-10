@@ -28,9 +28,7 @@ impl ZFData for Vector3 {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Vector3 {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -52,9 +50,7 @@ impl ZFData for Twist {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Twist {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -77,9 +73,7 @@ impl ZFData for TwistWithCovariance {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for TwistWithCovariance {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -102,9 +96,7 @@ impl ZFData for Point {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Point {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -128,9 +120,7 @@ impl ZFData for Quaternion {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Quaternion {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -152,9 +142,7 @@ impl ZFData for Pose {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for Pose {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
@@ -177,9 +165,7 @@ impl ZFData for PoseWithCovariance {
         Ok(bincode::serialize(self)
             .map_err(|e| zferror!(ErrorKind::SerializationError, "{}", e))?)
     }
-}
 
-impl Deserializable for PoseWithCovariance {
     fn try_deserialize(bytes: &[u8]) -> Result<Self>
     where
         Self: Sized,
