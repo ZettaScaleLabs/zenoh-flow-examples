@@ -1,0 +1,16 @@
+[package]
+name = "protobuf-types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+zenoh-flow = "0.4.0"
+serde = { version = "1.0.55", features = ["derive"] }
+prost = "0.11.2"
+
+[build-dependencies]
+prost-build = "0.11.2"
+anyhow = "1.0.66"
+glob = "0.3.0"

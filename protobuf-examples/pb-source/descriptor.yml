@@ -1,0 +1,6 @@
+id: Camera
+uri: file://./target/release/libpb_source.so
+outputs:
+  - id: Frame
+    type: message
+tags: []

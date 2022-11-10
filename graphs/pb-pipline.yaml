@@ -1,0 +1,15 @@
+flow: ProtobufPipeline
+operators: []
+sources:
+  - id : ProtobufSource
+    descriptor: ./protobuf-examples/pb-source/descriptor.yml
+sinks:
+  - id : PrintSink
+    descriptor: ./generic-sink/generic-sink.yml
+links:
+- from:
+    node : ProtobufSource
+    output : Frame
+  to:
+    node : PrintSink
+    input : Data

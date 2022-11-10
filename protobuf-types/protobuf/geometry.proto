@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ros2.geometry;
+
+message Vector3 {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}

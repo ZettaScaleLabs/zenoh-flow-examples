@@ -31,6 +31,8 @@ members = [
   "video-file-source",
   "runtime",
   "opencv/*",
+  "protobuf-types",
+  "protobuf-examples/*",
   # "run-record-replay",
 ]
 
