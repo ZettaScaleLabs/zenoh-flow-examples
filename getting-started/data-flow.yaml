@@ -1,0 +1,32 @@
+flow: hello-world
+
+
+sources:
+  - id: zenoh-sub
+    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/zenoh-sub/zenoh-sub.yaml
+    
+
+operators:
+  - id: greetings-maker
+    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/greetings-maker/greetings-maker.yaml
+  
+
+sinks:
+  - id: file-writer
+    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/file-writer/file-writer.yaml
+    
+
+links:
+  - from:
+      node: zenoh-sub
+      output: out
+    to:
+      node: greetings-maker
+      input: name
+
+  - from:
+      node: greetings-maker
+      output: greeting
+    to:
+      node: file-writer
+      input: in

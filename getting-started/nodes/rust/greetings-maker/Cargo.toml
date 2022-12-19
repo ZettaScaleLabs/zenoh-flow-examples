@@ -1,0 +1,12 @@
+[package]
+name = "greetings-maker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+zenoh-flow = { workspace = true }
+async-trait = { workspace = true }
+async-std = { workspace = true }
+
+[lib]
+crate-type=["cdylib"]

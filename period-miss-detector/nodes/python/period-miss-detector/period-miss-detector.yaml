@@ -1,0 +1,13 @@
+id: period-miss-detector
+
+uri: file:///Users/julien/dev/zenoh-flow-examples/period-miss-detector/nodes/python/period-miss-detector/period-miss-detector.py
+
+inputs:
+  - id: in
+    type: string
+
+outputs:
+  - id: out
+    type: string
+    
+tags: []
