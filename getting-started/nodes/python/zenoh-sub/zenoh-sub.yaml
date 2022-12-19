@@ -1,4 +1,4 @@
-id: file-reader
+id: zenoh-sub
 
 # Do not forget to change the extension depending on your operating system!
 # Linux   -> .so
@@ -11,5 +11,5 @@ uri: file:///Users/julien/dev/zenoh-flow-examples/getting-started/nodes/python/z
 outputs:
   - id: out
     type: string
-    
+
 tags: []
