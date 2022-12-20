@@ -3,14 +3,12 @@
 The purpose of this example is to demonstrate how Zenoh-Flow can handle a
 complex dataflow graph, like a robotic application.
 
-## Graph
+## Dataflow Graph
 ![mont-blanc-graph](mont_blanc.png "Montblanc dataflow graph").
-
-
 
 ## How to run
 
-### Build (for Rust nodes only)
+### Build
 
 We first generate the different shared libraries of the different nodes.
 
