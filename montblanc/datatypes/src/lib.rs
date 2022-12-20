@@ -17,9 +17,33 @@ use rand::distributions::{Alphanumeric, Distribution, Standard};
 use rand::Rng;
 use std::io::Cursor;
 use std::time::{SystemTime, UNIX_EPOCH};
-use zenoh_flow::prelude::{Deserializable, DowncastAny, ZFData};
+use zenoh_flow::prelude::{DowncastAny, ZFData};
 use zenoh_flow::zferror;
 use zenoh_flow::zfresult::{ErrorKind, ZFResult};
+
+pub static AMAZON_PORT: &str = "Amazon";
+pub static DANUBE_PORT: &str = "Danube";
+pub static GANGES_PORT: &str = "Ganges";
+pub static NILE_PORT: &str = "Nile";
+pub static TIGRIS_PORT: &str = "Tigris";
+pub static PARANA_PORT: &str = "Parana";
+pub static COLUMBIA_PORT: &str = "Columbia";
+pub static COLORADO_PORT: &str = "Colorado";
+pub static SALWEEN_PORT: &str = "Salween";
+pub static GODAVARI_PORT: &str = "Godavari";
+pub static CHENAB_PORT: &str = "Chenab";
+pub static LOIRE_PORT: &str = "Loire";
+pub static YAMUNA_PORT: &str = "Yamuna";
+pub static BRAZOS_PORT: &str = "Brazos";
+pub static TAGUS_PORT: &str = "Tagus";
+pub static MISSOURI_PORT: &str = "Missouri";
+pub static CONGO_PORT: &str = "Congo";
+pub static MEKONG_PORT: &str = "Mekong";
+pub static ARKANSAS_PORT: &str = "Arkansas";
+pub static OHIO_PORT: &str = "Ohio";
+pub static VOLGA_PORT: &str = "Volga";
+pub static MURRAY_PORT: &str = "Murray";
+pub static LENA_PORT: &str = "Lena";
 
 pub mod data_types {
     include!(concat!(env!("OUT_DIR"), "/datatypes.data_types.rs"));
@@ -417,15 +441,13 @@ impl ZFData for data_types::Vector3Stamped {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Vector3Stamped {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Vector3Stamped>
     where
         Self: Sized,
     {
         data_types::Vector3Stamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -449,15 +471,13 @@ impl ZFData for data_types::WrenchStamped {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::WrenchStamped {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::WrenchStamped>
     where
         Self: Sized,
     {
         data_types::WrenchStamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -481,15 +501,13 @@ impl ZFData for data_types::TwistWithCovarianceStamped {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::TwistWithCovarianceStamped {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::TwistWithCovarianceStamped>
     where
         Self: Sized,
     {
         data_types::TwistWithCovarianceStamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -513,15 +531,13 @@ impl ZFData for data_types::Twist {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Twist {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Twist>
     where
         Self: Sized,
     {
         data_types::Twist::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -545,15 +561,13 @@ impl ZFData for data_types::Pose {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Pose {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Pose>
     where
         Self: Sized,
     {
         data_types::Pose::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -577,15 +591,13 @@ impl ZFData for data_types::LaserScan {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::LaserScan {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::LaserScan>
     where
         Self: Sized,
     {
         data_types::LaserScan::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -609,15 +621,13 @@ impl ZFData for data_types::Vector3 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Vector3 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Vector3>
     where
         Self: Sized,
     {
         data_types::Vector3::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -641,15 +651,13 @@ impl ZFData for data_types::PointCloud2 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::PointCloud2 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::PointCloud2>
     where
         Self: Sized,
     {
         data_types::PointCloud2::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -673,15 +681,13 @@ impl ZFData for data_types::Quaternion {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Quaternion {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Quaternion>
     where
         Self: Sized,
     {
         data_types::Quaternion::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -704,15 +710,13 @@ impl ZFData for data_types::Image {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Image {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Image>
     where
         Self: Sized,
     {
         data_types::Image::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -736,15 +740,13 @@ impl ZFData for data_types::Float32 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Float32 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Float32>
     where
         Self: Sized,
     {
         data_types::Float32::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -768,15 +770,13 @@ impl ZFData for data_types::String {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::String {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::String>
     where
         Self: Sized,
     {
         data_types::String::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -800,15 +800,13 @@ impl ZFData for data_types::Int32 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Int32 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Int32>
     where
         Self: Sized,
     {
         data_types::Int32::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeseralizationError, "{:?}", e).into())
+            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
     }
 }
 
@@ -832,15 +830,13 @@ impl ZFData for data_types::Int64 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Int64 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Int64>
     where
         Self: Sized,
     {
         data_types::Int64::decode(&mut Cursor::new(bytes))
-            .map_err(|_| zferror!(ErrorKind::DeseralizationError).into())
+            .map_err(|_| zferror!(ErrorKind::DeserializationError).into())
     }
 }
 
@@ -864,14 +860,12 @@ impl ZFData for data_types::Float64 {
             .map_err(|_| zferror!(ErrorKind::SerializationError))?;
         Ok(buf)
     }
-}
 
-impl Deserializable for data_types::Float64 {
     fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Float64>
     where
         Self: Sized,
     {
         data_types::Float64::decode(&mut Cursor::new(bytes))
-            .map_err(|_| zferror!(ErrorKind::DeseralizationError).into())
+            .map_err(|_| zferror!(ErrorKind::DeserializationError).into())
     }
 }

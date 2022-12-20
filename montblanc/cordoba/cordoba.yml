@@ -1,6 +1,6 @@
 id : Cordoba
 
-uri: file://./target/release/libcordoba.dylib
+uri: file://./target/release/libcordoba.so
 
 # period:
 #   length: 100

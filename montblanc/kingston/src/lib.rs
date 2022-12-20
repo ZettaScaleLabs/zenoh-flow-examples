@@ -12,12 +12,36 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Kingston;
-use std::sync::Arc;
+use datatypes::YAMUNA_PORT;
+use rand::random;
+use std::time::Duration;
 use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Kingston {
+    output: Output<datatypes::data_types::Vector3>,
+}
 
-fn register() -> Result<Arc<dyn Source>> {
-    Ok(Arc::new(Kingston) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Kingston {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(100)).await;
+        let value: datatypes::data_types::Vector3 = random();
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Kingston {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(YAMUNA_PORT)
+                .expect(&format!("No Output called '{}' found", YAMUNA_PORT)),
+        })
+    }
 }

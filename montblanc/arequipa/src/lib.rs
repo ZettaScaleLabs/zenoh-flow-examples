@@ -12,12 +12,55 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sinks::Arequipa;
-use std::sync::Arc;
+use async_std::{fs::File, io::WriteExt, sync::Mutex};
+use datatypes::ARKANSAS_PORT;
 use zenoh_flow::prelude::*;
 
-export_sink!(register);
 
-fn register() -> Result<Arc<dyn Sink>> {
-    Ok(Arc::new(Arequipa) as Arc<dyn Sink>)
+static OUT_FILE : &str = "/tmp/montblanc.out";
+
+#[export_sink]
+pub struct Arequipa {
+    input: Input<datatypes::data_types::String>,
+    file: Mutex<File>,
+}
+
+#[async_trait::async_trait]
+impl Node for Arequipa {
+    async fn iteration(&self) -> Result<()> {
+        let (message, _) = self.input.recv().await?;
+
+        if let Message::Data(data) = message {
+            let mut file = self.file.lock().await;
+            file.write_all((*data).value.as_bytes())
+                .await
+                .map_err(|e| zferror!(ErrorKind::IOError, "{:?}", e))?;
+            return file
+                .flush()
+                .await
+                .map_err(|e| zferror!(ErrorKind::IOError, "{:?}", e).into());
+        }
+
+        Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl Sink for Arequipa {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut inputs: Inputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            input: inputs
+                .take(ARKANSAS_PORT)
+                .expect(&format!("No Input called '{}' found", ARKANSAS_PORT)),
+            file: Mutex::new(
+                File::create(OUT_FILE)
+                    .await
+                    .expect(&format!("Could not create {OUT_FILE}")),
+            ),
+        })
+    }
 }

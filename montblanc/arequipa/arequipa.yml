@@ -1,6 +1,6 @@
 id : Arequipa
 
-uri: file://./target/release/libarequipa.dylib
+uri: file://./target/release/libarequipa.so
 
 inputs:
   - id: Arkansas

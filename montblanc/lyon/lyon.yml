@@ -1,5 +1,5 @@
 id : Lyon
-uri: file://./target/release/liblyon.dylib
+uri: file://./target/release/liblyon.so
 inputs:
   - id: Amazon
     type: f32

@@ -23,5 +23,7 @@ crate-type=["cdylib"]
 path="src/lib.rs"
 
 [dependencies]
-nodes = {path = "../nodes"}
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}
+datatypes = { path = "../datatypes" }
+async-std = { version = "=1.12.0", features = ["attributes"] }
+async-trait = "0.1.50"
+zenoh-flow = "0.4.0"

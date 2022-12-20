@@ -1,6 +1,6 @@
 id : Freeport
 
-uri: file://./target/release/libfreeport.dylib
+uri: file://./target/release/libfreeport.so
 
 # period:
 #   length: 50

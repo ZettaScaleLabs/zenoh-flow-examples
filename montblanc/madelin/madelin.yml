@@ -1,6 +1,6 @@
 id : Madelin
 
-uri: file://./target/release/libmadelin.dylib
+uri: file://./target/release/libmadelin.so
 
 # period:
 #   length: 10

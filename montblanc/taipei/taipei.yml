@@ -1,5 +1,5 @@
 id : Taipei
-uri: file://./target/release/libtaipei.dylib
+uri: file://./target/release/libtaipei.so
 inputs:
   - id: Columbia
     type: img

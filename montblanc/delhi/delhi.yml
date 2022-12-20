@@ -1,6 +1,6 @@
 id : Delhi
 
-uri: file://./target/release/libdelhi.dylib
+uri: file://./target/release/libdelhi.so
 
 # period:
 #   length: 1

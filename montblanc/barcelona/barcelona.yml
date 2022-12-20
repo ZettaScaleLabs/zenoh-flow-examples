@@ -1,5 +1,5 @@
 id : Barcelona
-uri: file://./target/release/libbarcelona.dylib
+uri: file://./target/release/libbarcelona.so
 inputs:
   - id: Mekong
     type: twist-w-coovariance-ts

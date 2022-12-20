@@ -1,6 +1,6 @@
 id : Hebron
 
-uri: file://./target/release/libhebron.dylib
+uri: file://./target/release/libhebron.so
 
 # period:
 #   length: 100

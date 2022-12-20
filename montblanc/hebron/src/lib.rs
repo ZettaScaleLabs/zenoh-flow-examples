@@ -12,12 +12,36 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Hebron;
-use std::sync::Arc;
+use datatypes::CHENAB_PORT;
+use rand::random;
+use std::time::Duration;
 use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Hebron {
+    output: Output<datatypes::data_types::Quaternion>,
+}
 
-fn register() -> Result<Arc<dyn Source>> {
-    Ok(Arc::new(Hebron) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Hebron {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(100)).await;
+        let value: datatypes::data_types::Quaternion = random();
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Hebron {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(CHENAB_PORT)
+                .expect(&format!("No Output called '{}' found", CHENAB_PORT)),
+        })
+    }
 }
