@@ -16,8 +16,7 @@ use async_std::{fs::File, io::WriteExt, sync::Mutex};
 use datatypes::ARKANSAS_PORT;
 use zenoh_flow::prelude::*;
 
-
-static OUT_FILE : &str = "/tmp/montblanc.out";
+static OUT_FILE: &str = "/tmp/montblanc.out";
 
 #[export_sink]
 pub struct Arequipa {

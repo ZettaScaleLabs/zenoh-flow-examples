@@ -16,7 +16,6 @@
 members = ["zenoh-sub", "period-miss-detector", "file-writer"]
 
 [workspace.dependencies]
-# zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0" }
-zenoh-flow = { path = "/Users/julien/dev/zenoh-flow/zenoh-flow/" }
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0" }
 async-trait = "0.1"
 async-std = "1.12"
