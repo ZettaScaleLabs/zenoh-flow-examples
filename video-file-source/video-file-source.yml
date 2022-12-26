@@ -1,6 +1,0 @@
-id : VideoSource
-uri: file://./target/release/libvideo_file_source.dylib
-outputs:
-  - id: Frame
-    type: image
-tags: []

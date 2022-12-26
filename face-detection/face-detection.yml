@@ -1,9 +1,0 @@
-id : FaceDetection
-uri: file://./target/release/libface_detection.so
-inputs:
-  - id: Frame
-    type: image
-outputs:
-  - id: Frame
-    type: image
-tags: []

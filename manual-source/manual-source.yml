@@ -1,9 +1,0 @@
-id: ManualSource
-
-uri: file://./target/release/libmanual_source.dylib
-
-outputs:
-  - id: Int
-    type: ZFUsize
-
-tags: []

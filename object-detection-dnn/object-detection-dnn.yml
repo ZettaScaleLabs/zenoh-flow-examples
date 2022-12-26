@@ -1,9 +1,0 @@
-id : ObjectDetection
-uri: file://./target/release/libobject_detection_dnn.so
-inputs:
- - id: Frame
-    type: image
-outputs:
-  - id: Frame
-    type: image
-tags: []
