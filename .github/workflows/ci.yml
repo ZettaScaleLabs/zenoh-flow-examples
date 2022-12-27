@@ -39,6 +39,9 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
       - name: Code format check [getting started]
         uses: actions-rs/cargo@v1
         with:
