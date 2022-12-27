@@ -42,7 +42,7 @@ impl Source for Madelin {
         Ok(Self {
             output: outputs
                 .take(NILE_PORT)
-                .expect(&format!("No Output called '{}' found", NILE_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", NILE_PORT)),
         })
     }
 }

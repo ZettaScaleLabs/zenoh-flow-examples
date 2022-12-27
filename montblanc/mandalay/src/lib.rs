@@ -63,31 +63,31 @@ impl Operator for Mandalay {
         Ok(Self {
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .expect(&format!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
             input_chenab: inputs
                 .take(CHENAB_PORT)
-                .expect(&format!("No Input called '{}' found", CHENAB_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CHENAB_PORT)),
             input_salween: inputs
                 .take(SALWEEN_PORT)
-                .expect(&format!("No Input called '{}' found", SALWEEN_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", SALWEEN_PORT)),
             input_godavari: inputs
                 .take(GODAVARI_PORT)
-                .expect(&format!("No Input called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", GODAVARI_PORT)),
             input_loire: inputs
                 .take(LOIRE_PORT)
-                .expect(&format!("No Input called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT)),
             input_yamuna: inputs
                 .take(YAMUNA_PORT)
-                .expect(&format!("No Input called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT)),
             output_brazos: outputs
                 .take(BRAZOS_PORT)
-                .expect(&format!("No Output called '{}' found", BRAZOS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", BRAZOS_PORT)),
             output_tagus: outputs
                 .take(TAGUS_PORT)
-                .expect(&format!("No Output called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TAGUS_PORT)),
             output_missouri: outputs
                 .take(MISSOURI_PORT)
-                .expect(&format!("No Output called '{}' found", MISSOURI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MISSOURI_PORT)),
             state: Arc::new(Mutex::new(MandalayState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

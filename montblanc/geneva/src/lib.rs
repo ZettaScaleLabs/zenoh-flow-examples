@@ -50,19 +50,19 @@ impl Operator for Geneva {
         Ok(Self {
             input_parana: inputs
                 .take(PARANA_PORT)
-                .expect(&format!("No Input called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT)),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .expect(&format!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
             input_tagus: inputs
                 .take(TAGUS_PORT)
-                .expect(&format!("No Input called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT)),
             input_congo: inputs
                 .take(CONGO_PORT)
-                .expect(&format!("No Input called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT)),
             output_arkansas: outputs
                 .take(ARKANSAS_PORT)
-                .expect(&format!("No Output called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", ARKANSAS_PORT)),
             state: Arc::new(Mutex::new(GenevaState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

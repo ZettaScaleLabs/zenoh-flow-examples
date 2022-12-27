@@ -65,35 +65,35 @@ impl Operator for Ponce {
         Ok(Self {
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .expect(&format!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
             input_tagus: inputs
                 .take(TAGUS_PORT)
-                .expect(&format!("No Input called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT)),
             input_missouri: inputs
                 .take(MISSOURI_PORT)
-                .expect(&format!("No Input called '{}' found", MISSOURI_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MISSOURI_PORT)),
             input_loire: inputs
                 .take(LOIRE_PORT)
-                .expect(&format!("No Input called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT)),
             input_yamuna: inputs
                 .take(YAMUNA_PORT)
-                .expect(&format!("No Input called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT)),
             input_ohio: inputs
                 .take(OHIO_PORT)
-                .expect(&format!("No Input called '{}' found", OHIO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", OHIO_PORT)),
             input_volga: inputs
                 .take(VOLGA_PORT)
-                .expect(&format!("No Input called '{}' found", VOLGA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", VOLGA_PORT)),
             input_brazos: inputs
                 .take(BRAZOS_PORT)
-                .expect(&format!("No Input called '{}' found", BRAZOS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", BRAZOS_PORT)),
 
             output_congo: outputs
                 .take(CONGO_PORT)
-                .expect(&format!("No Output called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", CONGO_PORT)),
             output_mekong: outputs
                 .take(MEKONG_PORT)
-                .expect(&format!("No Output called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MEKONG_PORT)),
             state: Arc::new(Mutex::new(PonceState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

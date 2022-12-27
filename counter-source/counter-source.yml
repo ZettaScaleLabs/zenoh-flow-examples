@@ -1,9 +1,0 @@
-id: Counter
-
-uri: file:///home/gabri/Workspace/zenoh-flow-examples/target/debug/libcounter_source.so
-
-outputs:
-  - id: Counter
-    type: ZFUsize
-
-tags: []

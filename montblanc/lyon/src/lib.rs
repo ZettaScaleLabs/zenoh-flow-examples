@@ -32,10 +32,10 @@ impl Operator for Lyon {
         Ok(Self {
             input: inputs
                 .take_raw(AMAZON_PORT)
-                .expect(&format!("No Input called '{}' found", AMAZON_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT)),
             output: outputs
                 .take_raw(TIGRIS_PORT)
-                .expect(&format!("No Output called '{}' found", TIGRIS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT)),
         })
     }
 }

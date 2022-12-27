@@ -42,7 +42,7 @@ impl Source for Freeport {
         Ok(Self {
             output: outputs
                 .take(GANGES_PORT)
-                .expect(&format!("No Output called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GANGES_PORT)),
         })
     }
 }

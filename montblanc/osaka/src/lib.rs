@@ -51,19 +51,19 @@ impl Operator for Osaka {
         Ok(Self {
             input_parana: inputs
                 .take(PARANA_PORT)
-                .expect(&format!("No Input called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT)),
             input_columbia: inputs
                 .take(COLUMBIA_PORT)
-                .expect(&format!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
             input_colorado: inputs
                 .take(COLORADO_PORT)
-                .expect(&format!("No Input called '{}' found", COLORADO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLORADO_PORT)),
             output_salween: outputs
                 .take(SALWEEN_PORT)
-                .expect(&format!("No Output called '{}' found", SALWEEN_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", SALWEEN_PORT)),
             output_godavari: outputs
                 .take(GODAVARI_PORT)
-                .expect(&format!("No Output called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT)),
             state: Arc::new(Mutex::new(OsakaState {
                 parana_last_val: data_types::String {
                     value: datatypes::random_string(1),
