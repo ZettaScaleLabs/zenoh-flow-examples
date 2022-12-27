@@ -46,13 +46,13 @@ impl Operator for Tripoli {
         Ok(Self {
             input_columbia: inputs
                 .take(COLUMBIA_PORT)
-                .expect(&format!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
             input_godavari: inputs
                 .take(GODAVARI_PORT)
-                .expect(&format!("No Output called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT)),
             output_loire: outputs
                 .take(LOIRE_PORT)
-                .expect(&format!("No Output called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", LOIRE_PORT)),
             state: Arc::new(Mutex::new(TripoliState {
                 pointcloud2_data: random(),
                 columbia_last_val: random(),

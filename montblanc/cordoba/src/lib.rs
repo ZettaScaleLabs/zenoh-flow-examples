@@ -42,7 +42,7 @@ impl Source for Cordoba {
         Ok(Self {
             output: outputs
                 .take(AMAZON_PORT)
-                .expect(&format!("No Output called '{}' found", AMAZON_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT)),
         })
     }
 }

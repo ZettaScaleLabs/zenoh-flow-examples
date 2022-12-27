@@ -41,7 +41,7 @@ impl Source for Kingston {
         Ok(Self {
             output: outputs
                 .take(YAMUNA_PORT)
-                .expect(&format!("No Output called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", YAMUNA_PORT)),
         })
     }
 }

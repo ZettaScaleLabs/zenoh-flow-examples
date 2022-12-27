@@ -35,10 +35,10 @@ impl Operator for Barcelona {
         Ok(Self {
             input_mekong: inputs
                 .take(MEKONG_PORT)
-                .expect(&format!("No Input called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
             output_lena: outputs
                 .take(LENA_PORT)
-                .expect(&format!("No Output called '{}' found", LENA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", LENA_PORT)),
         })
     }
 }

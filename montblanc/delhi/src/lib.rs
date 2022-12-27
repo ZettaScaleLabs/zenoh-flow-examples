@@ -41,7 +41,7 @@ impl Source for Delhi {
         Ok(Self {
             output: outputs
                 .take(COLUMBIA_PORT)
-                .expect(&format!("No Output called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLUMBIA_PORT)),
         })
     }
 }

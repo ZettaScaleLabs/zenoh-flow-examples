@@ -32,10 +32,10 @@ impl Operator for Taipei {
         Ok(Self {
             input: inputs
                 .take_raw(COLUMBIA_PORT)
-                .expect(&format!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
             output: outputs
                 .take_raw(COLORADO_PORT)
-                .expect(&format!("No Output called '{}' found", COLORADO_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT)),
         })
     }
 }

@@ -48,19 +48,19 @@ impl Operator for Hamburg {
         Ok(Self {
             input_tigris: inputs
                 .take(TIGRIS_PORT)
-                .expect(&format!("No Input called '{}' found", TIGRIS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TIGRIS_PORT)),
             input_ganges: inputs
                 .take(GANGES_PORT)
-                .expect(&format!("No Input called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", GANGES_PORT)),
             input_nile: inputs
                 .take(NILE_PORT)
-                .expect(&format!("No Input called '{}' found", NILE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", NILE_PORT)),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .expect(&format!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
             output_parana: outputs
                 .take(PARANA_PORT)
-                .expect(&format!("No Output called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", PARANA_PORT)),
             state: Arc::new(Mutex::new(HamburgState {
                 ganges_last_val: 0i64,
                 nile_last_val: 0i32,
@@ -76,17 +76,17 @@ impl Node for Hamburg {
         select! {
             msg = self.input_tigris.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
-                    self.state.lock().await.tigris_last_val = (*inner_data).value;
+                    self.state.lock().await.tigris_last_val = inner_data.value;
                 }
             },
             msg  = self.input_ganges.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
-                    self.state.lock().await.ganges_last_val = (*inner_data).value;
+                    self.state.lock().await.ganges_last_val = inner_data.value;
                 }
             },
             msg  = self.input_nile.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
-                    self.state.lock().await.nile_last_val = (*inner_data).value;
+                    self.state.lock().await.nile_last_val = inner_data.value;
                 }
             },
             msg  = self.input_danube.recv().fuse() => {
@@ -97,7 +97,7 @@ impl Node for Hamburg {
                     let new_value = data_types::String {
                         value: format!(
                             "{}-{}-{}-{}",
-                            (*inner_data).value,
+                            inner_data.value,
                             guard_state.tigris_last_val,
                             guard_state.ganges_last_val,
                             guard_state.nile_last_val

@@ -41,7 +41,7 @@ impl Source for Hebron {
         Ok(Self {
             output: outputs
                 .take(CHENAB_PORT)
-                .expect(&format!("No Output called '{}' found", CHENAB_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", CHENAB_PORT)),
         })
     }
 }

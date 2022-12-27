@@ -36,10 +36,10 @@ impl Operator for Monaco {
         Ok(Self {
             input_congo: inputs
                 .take(CONGO_PORT)
-                .expect(&format!("No Input called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT)),
             output_ohio: outputs
                 .take(OHIO_PORT)
-                .expect(&format!("No Output called '{}' found", OHIO_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", OHIO_PORT)),
         })
     }
 }

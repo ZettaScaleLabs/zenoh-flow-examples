@@ -31,7 +31,7 @@ impl Node for Arequipa {
 
         if let Message::Data(data) = message {
             let mut file = self.file.lock().await;
-            file.write_all((*data).value.as_bytes())
+            file.write_all(data.value.as_bytes())
                 .await
                 .map_err(|e| zferror!(ErrorKind::IOError, "{:?}", e))?;
             return file
@@ -54,11 +54,11 @@ impl Sink for Arequipa {
         Ok(Self {
             input: inputs
                 .take(ARKANSAS_PORT)
-                .expect(&format!("No Input called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", ARKANSAS_PORT)),
             file: Mutex::new(
                 File::create(OUT_FILE)
                     .await
-                    .expect(&format!("Could not create {OUT_FILE}")),
+                    .unwrap_or_else(|_| panic!("Could not create {}", OUT_FILE)),
             ),
         })
     }

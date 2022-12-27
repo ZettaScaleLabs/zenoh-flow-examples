@@ -42,7 +42,7 @@ impl Source for Portsmouth {
         Ok(Self {
             output: outputs
                 .take(DANUBE_PORT)
-                .expect(&format!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
         })
     }
 }

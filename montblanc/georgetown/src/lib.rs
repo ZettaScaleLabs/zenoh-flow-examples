@@ -49,13 +49,13 @@ impl Operator for Georgetown {
         Ok(Self {
             input_murray: inputs
                 .take(MURRAY_PORT)
-                .expect(&format!("No Input called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MURRAY_PORT)),
             input_lena: inputs
                 .take(LENA_PORT)
-                .expect(&format!("No Input called '{}' found", LENA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LENA_PORT)),
             output_volga: outputs
                 .take(VOLGA_PORT)
-                .expect(&format!("No Output called '{}' found", VOLGA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", VOLGA_PORT)),
             state: Arc::new(Mutex::new(GeorgetownState {
                 murray_last_val: random(),
                 lena_last_val: random(),

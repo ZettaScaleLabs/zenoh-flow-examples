@@ -35,10 +35,10 @@ impl Operator for Rotterdam {
         Ok(Self {
             input_mekong: inputs
                 .take(MEKONG_PORT)
-                .expect(&format!("No Input called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
             output_murray: outputs
                 .take(MURRAY_PORT)
-                .expect(&format!("No Output called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT)),
         })
     }
 }
