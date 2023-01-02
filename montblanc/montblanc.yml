@@ -13,71 +13,74 @@
 #
 
 flow: Montblanc
+vars:
+ BASE_DIR: "./zenoh-flow-examples/montblanc"
+
 operators:
   - id : Lyon
-    descriptor: ./lyon/lyon.yml
+    descriptor: "file://{{BASE_DIR}}/lyon/lyon.yml"
 
   - id : Hamburg
-    descriptor: ./hamburg/hamburg.yml
+    descriptor: "file://{{BASE_DIR}}/hamburg/hamburg.yml"
 
   - id : Taipei
-    descriptor: ./taipei/taipei.yml
+    descriptor: "file://{{BASE_DIR}}/taipei/taipei.yml"
 
   - id : Osaka
-    descriptor: ./osaka/osaka.yml
+    descriptor: "file://{{BASE_DIR}}/osaka/osaka.yml"
 
   - id : Tripoli
-    descriptor: ./tripoli/tripoli.yml
+    descriptor: "file://{{BASE_DIR}}/tripoli/tripoli.yml"
 
   - id : Mandalay
-    descriptor: ./mandalay/mandalay.yml
+    descriptor: "file://{{BASE_DIR}}/mandalay/mandalay.yml"
 
   - id : Ponce
-    descriptor: ./ponce/ponce.yml
+    descriptor: "file://{{BASE_DIR}}/ponce/ponce.yml"
 
   - id : Geneva
-    descriptor: ./geneva/geneva.yml
+    descriptor: "file://{{BASE_DIR}}/geneva/geneva.yml"
 
   - id : Monaco
-    descriptor: ./monaco/monaco.yml
+    descriptor: "file://{{BASE_DIR}}/monaco/monaco.yml"
 
   - id : Rotterdam
-    descriptor: ./rotterdam/rotterdam.yml
+    descriptor: "file://{{BASE_DIR}}/rotterdam/rotterdam.yml"
 
   - id : Barcelona
-    descriptor: ./barcelona/barcelona.yml
+    descriptor: "file://{{BASE_DIR}}/barcelona/barcelona.yml"
 
   - id : Georgetown
-    descriptor: ./georgetown/georgetown.yml
+    descriptor: "file://{{BASE_DIR}}/georgetown/georgetown.yml"
 
 
 
 
 sources:
   - id : Cordoba
-    descriptor: ./cordoba/cordoba.yml
+    descriptor: "file://{{BASE_DIR}}/cordoba/cordoba.yml"
 
   - id : Portsmouth
-    descriptor: ./portsmouth/portsmouth.yml
+    descriptor: "file://{{BASE_DIR}}/portsmouth/portsmouth.yml"
 
   - id : Freeport
-    descriptor: ./freeport/freeport.yml
+    descriptor: "file://{{BASE_DIR}}/freeport/freeport.yml"
 
   - id : Madelin
-    descriptor: ./madelin/madelin.yml
+    descriptor: "file://{{BASE_DIR}}/madelin/madelin.yml"
 
   - id : Delhi
-    descriptor: ./delhi/delhi.yml
+    descriptor: "file://{{BASE_DIR}}/delhi/delhi.yml"
 
   - id : Hebron
-    descriptor: ./hebron/hebron.yml
+    descriptor: "file://{{BASE_DIR}}/hebron/hebron.yml"
 
   - id : Kingston
-    descriptor: ./kingston/kingston.yml
+    descriptor: "file://{{BASE_DIR}}/kingston/kingston.yml"
 
 sinks:
   - id : Arequipa
-    descriptor: ./arequipa/arequipa.yml
+    descriptor: "file://{{BASE_DIR}}/arequipa/arequipa.yml"
 
 links:
 - from:

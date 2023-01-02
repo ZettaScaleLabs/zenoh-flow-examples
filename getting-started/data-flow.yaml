@@ -1,20 +1,21 @@
 flow: hello-world
-
+vars:
+ BASE_DIR: "./zenoh-flow-examples/getting-started"
 
 sources:
   - id: zenoh-sub
-    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/zenoh-sub/zenoh-sub.yaml
-    
+    descriptor: "file://{{ BASE_DIR }}/nodes/rust/zenoh-sub/zenoh-sub.yaml"
+
 
 operators:
   - id: greetings-maker
-    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/greetings-maker/greetings-maker.yaml
-  
+    descriptor: "file://{{ BASE_DIR }}/nodes/rust/greetings-maker/greetings-maker.yaml
+
 
 sinks:
   - id: file-writer
-    descriptor: /Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/file-writer/file-writer.yaml
-    
+    descriptor: "file://{{ BASE_DIR} }/nodes/rust/file-writer/file-writer.yaml
+
 
 links:
   - from:
