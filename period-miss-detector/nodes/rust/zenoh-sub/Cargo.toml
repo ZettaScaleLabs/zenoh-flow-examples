@@ -21,7 +21,7 @@ edition = "2018"
 zenoh-flow = { workspace = true }
 async-trait = { workspace = true }
 async-std = { workspace = true }
-zenoh = "0.6.0-beta.1"
+zenoh = { version = "=0.7.0-rc" }
 flume = "0.10.14"
 
 [lib]
