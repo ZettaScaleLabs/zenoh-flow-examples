@@ -17,6 +17,7 @@ members = [
     "arequipa",
     "barcelona",
     "cordoba",
+    "datatypes",
     "delhi",
     "freeport",
     "geneva",
@@ -25,8 +26,8 @@ members = [
     "hebron",
     "kingston",
     "lyon",
-    "mandalay",
     "madelin",
+    "mandalay",
     "monaco",
     "osaka",
     "ponce",
@@ -34,8 +35,6 @@ members = [
     "rotterdam",
     "taipei",
     "tripoli",
-    "datatypes",
-    "nodes",
 ]
 
 [profile.dev]
@@ -44,4 +43,10 @@ opt-level = 0
 
 [profile.release]
 debug = false
-opt-level = 3
+lto="fat"
+codegen-units=1
+opt-level=3
+panic="abort"
+
+[patch.crates-io]
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "dev/v0.4.0"}

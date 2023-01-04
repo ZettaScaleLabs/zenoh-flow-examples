@@ -34,39 +34,64 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Update dependencies
-        run: sudo apt update
-
-      - name: Install dependencies
-        run: sudo apt install libopencv-dev libclang-dev clang -y
-
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
           components: rustfmt, clippy
 
-      - name: Code format check
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+
+      - name: Code format check [getting started]
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: -- --check
+          args: --check --manifest-path ./getting-started/nodes/rust/Cargo.toml --all
 
-      - name: Clippy
+      - name: Code format check [period miss detector]
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --check --manifest-path ./period-miss-detector/nodes/rust/Cargo.toml --all
+
+      - name: Code format check [montblanc]
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --check --manifest-path ./montblanc/Cargo.toml --all
+
+      - name: Clippy [getting-started]
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all -- -D warnings
+          args: --manifest-path ./getting-started/nodes/rust/Cargo.toml --all -- -D warnings
 
-      - name: Build
+      - name: Clippy [period-miss-detector]
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path ./period-miss-detector/nodes/rust/Cargo.toml --all -- -D warnings
+
+      - name: Clippy [montblanc]
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --manifest-path ./montblanc/Cargo.toml --all -- -D warnings
+
+      - name: Build [getting-started]
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --verbose --all-targets
+          args: --manifest-path ./getting-started/nodes/rust/Cargo.toml --verbose --all-targets
 
-      - name: Run tests
+      - name: Build [period-miss-detector]
         uses: actions-rs/cargo@v1
         with:
-          command: test
-          args: --release --verbose
-        env:
-          ASYNC_STD_THREAD_COUNT: 4
+          command: build
+          args: --manifest-path ./period-miss-detector/nodes/rust/Cargo.toml --verbose --all-targets
+
+      - name: Build [montblanc]
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --manifest-path ./montblanc/Cargo.toml --verbose --all-targets

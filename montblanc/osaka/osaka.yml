@@ -1,0 +1,15 @@
+id : Osaka
+uri: file://./target/release/libosaka.so
+inputs:
+  - id: Parana
+    type: str
+  - id: Columbia
+    type: img
+  - id: Colorado
+    type: img
+outputs:
+  - id: Salween
+    type: point-cloud2
+  - id: Godavari
+    type: laser-scan
+tags: []

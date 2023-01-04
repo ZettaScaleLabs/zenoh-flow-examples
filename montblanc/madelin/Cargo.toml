@@ -14,8 +14,8 @@
 
 [package]
 name = "madelin"
-version = "0.3.0"
-edition = "2021"
+version = "0.1.0"
+edition = "2018"
 
 [lib]
 name = "madelin"
@@ -23,5 +23,8 @@ crate-type=["cdylib"]
 path="src/lib.rs"
 
 [dependencies]
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", tag = "v0.3.0" }
-nodes = {path = "../nodes"}
+async-std = { version = "=1.12.0", features = ["attributes"] }
+datatypes = { path = "../datatypes" }
+async-trait = "0.1.50"
+zenoh-flow = "=0.4.0-alpha.1"
+rand = "0.8.0"

@@ -1,0 +1,15 @@
+id : Geneva
+uri: file://./target/release/libgeneva.so
+inputs:
+  - id: Danube
+    type: str
+  - id: Parana
+    type: str
+  - id: Tagus
+    type: pose
+  - id: Congo
+    type: twist
+outputs:
+  - id: Arkansas
+    type: str
+tags: []

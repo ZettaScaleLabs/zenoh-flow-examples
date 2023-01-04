@@ -12,13 +12,37 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Cordoba;
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Source;
-use zenoh_flow::{export_source, types::ZFResult};
+use datatypes::AMAZON_PORT;
+use rand::random;
+use std::time::Duration;
+use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Cordoba {
+    output: Output<datatypes::data_types::Float32>,
+}
 
-fn register() -> ZFResult<Arc<dyn Source>> {
-    Ok(Arc::new(Cordoba) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Cordoba {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(100)).await;
+        let data: f32 = random::<f32>() * 1000000.0;
+        let value = datatypes::data_types::Float32 { value: data };
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Cordoba {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(AMAZON_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT)),
+        })
+    }
 }

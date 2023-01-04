@@ -1,0 +1,9 @@
+id : Arequipa
+
+uri: file://./target/release/libarequipa.so
+
+inputs:
+  - id: Arkansas
+    type: str
+
+tags: []

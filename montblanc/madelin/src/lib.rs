@@ -12,13 +12,37 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Madelin;
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Source;
-use zenoh_flow::{export_source, types::ZFResult};
+use datatypes::NILE_PORT;
+use rand::random;
+use std::time::Duration;
+use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Madelin {
+    output: Output<datatypes::data_types::Int32>,
+}
 
-fn register() -> ZFResult<Arc<dyn Source>> {
-    Ok(Arc::new(Madelin) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Madelin {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(10)).await;
+        let data: i32 = random::<i32>();
+        let value = datatypes::data_types::Int32 { value: data };
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Madelin {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(NILE_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", NILE_PORT)),
+        })
+    }
 }

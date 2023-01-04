@@ -1,0 +1,12 @@
+id : Cordoba
+
+uri: file://./target/release/libcordoba.so
+
+# period:
+#   length: 100
+#   unit: ms
+outputs:
+  - id: Amazon
+    type: f32
+
+tags: []

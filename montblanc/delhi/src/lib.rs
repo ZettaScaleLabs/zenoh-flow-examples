@@ -12,13 +12,36 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Delhi;
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Source;
-use zenoh_flow::{export_source, types::ZFResult};
+use datatypes::COLUMBIA_PORT;
+use rand::random;
+use std::time::Duration;
+use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Delhi {
+    output: Output<datatypes::data_types::Image>,
+}
 
-fn register() -> ZFResult<Arc<dyn Source>> {
-    Ok(Arc::new(Delhi) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Delhi {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(1000)).await;
+        let value: datatypes::data_types::Image = random();
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Delhi {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(COLUMBIA_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLUMBIA_PORT)),
+        })
+    }
 }

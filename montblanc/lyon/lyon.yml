@@ -1,0 +1,9 @@
+id : Lyon
+uri: file://./target/release/liblyon.so
+inputs:
+  - id: Amazon
+    type: f32
+outputs:
+  - id: Tigris
+    type: f32
+tags: []

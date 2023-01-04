@@ -1,0 +1,12 @@
+[package]
+name = "period-miss-detector"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+zenoh-flow = { workspace = true }
+async-trait = { workspace = true }
+async-std = { workspace = true }
+
+[lib]
+crate-type=["cdylib"]

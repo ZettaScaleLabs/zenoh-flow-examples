@@ -12,13 +12,37 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::{export_operator, types::ZFResult, Operator};
+use datatypes::{AMAZON_PORT, TIGRIS_PORT};
+use zenoh_flow::prelude::*;
 
-use nodes::operators::Lyon;
+#[export_operator]
+pub struct Lyon {
+    input: InputRaw,
+    output: OutputRaw,
+}
 
-export_operator!(register);
+#[async_trait::async_trait]
+impl Operator for Lyon {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            input: inputs
+                .take_raw(AMAZON_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT)),
+            output: outputs
+                .take_raw(TIGRIS_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT)),
+        })
+    }
+}
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
-    Ok(Arc::new(Lyon) as Arc<dyn Operator>)
+#[async_trait::async_trait]
+impl Node for Lyon {
+    async fn iteration(&self) -> Result<()> {
+        self.output.forward(self.input.recv().await?).await
+    }
 }

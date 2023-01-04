@@ -12,13 +12,37 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::{export_operator, types::ZFResult, Operator};
+use datatypes::{COLORADO_PORT, COLUMBIA_PORT};
+use zenoh_flow::prelude::*;
 
-use nodes::operators::Taipei;
+#[export_operator]
+pub struct Taipei {
+    input: InputRaw,
+    output: OutputRaw,
+}
 
-export_operator!(register);
+#[async_trait::async_trait]
+impl Operator for Taipei {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            input: inputs
+                .take_raw(COLUMBIA_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+            output: outputs
+                .take_raw(COLORADO_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT)),
+        })
+    }
+}
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
-    Ok(Arc::new(Taipei) as Arc<dyn Operator>)
+#[async_trait::async_trait]
+impl Node for Taipei {
+    async fn iteration(&self) -> Result<()> {
+        self.output.forward(self.input.recv().await?).await
+    }
 }

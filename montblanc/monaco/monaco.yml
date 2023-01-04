@@ -1,0 +1,9 @@
+id : Monaco
+uri: file://./target/release/libmonaco.so
+inputs:
+  - id: Congo
+    type: twist
+outputs:
+  - id: Ohio
+    type: f32
+tags: []

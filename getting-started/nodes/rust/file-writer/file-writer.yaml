@@ -1,0 +1,15 @@
+id: file-writer
+
+# Do not forget to change the extension depending on your operating system!
+# Linux   -> .so
+# Windows -> .dll (and remove the "lib" in front)
+# MacOS   -> .dylib
+uri: file:///Users/julien/dev/zenoh-flow-examples/getting-started/nodes/rust/target/debug/libfile_writer.dylib
+# If the compilation is in release:
+# uri: file:///absolute/path/to/target/release/libfile_writer.so
+
+inputs:
+  - id: in
+    type: string
+    
+tags: []

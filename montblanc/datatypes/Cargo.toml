@@ -14,17 +14,17 @@
 
 [package]
 name = "datatypes"
-version = "0.3.0"
-edition = "2021"
+version = "0.1.0"
+edition = "2018"
 
 [dependencies]
 bytes = "1.1"
-prost = "0.9"
+prost = "0.11"
 rand = "0.8.4"
-prost-build = "0.9"
+prost-build = "0.11"
 chrono = "0.4"
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", tag = "v0.3.0" }
+zenoh-flow = "=0.4.0-alpha.1"
 
 [build-dependencies]
-prost-build = "0.9"
+prost-build = "0.11"
 chrono = "0.4"

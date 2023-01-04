@@ -1,0 +1,9 @@
+id : Barcelona
+uri: file://./target/release/libbarcelona.so
+inputs:
+  - id: Mekong
+    type: twist-w-coovariance-ts
+outputs:
+  - id: Lena
+    type: wrench-ts
+tags: []

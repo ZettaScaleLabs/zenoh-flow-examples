@@ -12,13 +12,60 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::{export_operator, types::ZFResult, Operator};
+use datatypes::data_types;
+use datatypes::{MEKONG_PORT, MURRAY_PORT};
+use futures::prelude::*;
+use futures::select;
+use zenoh_flow::prelude::*;
 
-use nodes::operators::Rotterdam;
+#[export_operator]
+pub struct Rotterdam {
+    input_mekong: Input<data_types::TwistWithCovarianceStamped>,
+    output_murray: Output<data_types::Vector3Stamped>,
+}
 
-export_operator!(register);
+#[async_trait::async_trait]
+impl Operator for Rotterdam {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut inputs: Inputs,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            input_mekong: inputs
+                .take(MEKONG_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
+            output_murray: outputs
+                .take(MURRAY_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT)),
+        })
+    }
+}
 
-fn register() -> ZFResult<Arc<dyn Operator>> {
-    Ok(Arc::new(Rotterdam) as Arc<dyn Operator>)
+#[async_trait::async_trait]
+impl Node for Rotterdam {
+    async fn iteration(&self) -> Result<()> {
+        select! {
+            msg  = self.input_mekong.recv().fuse() => {
+                if let Ok((Message::Data(inner_data),_)) = msg {
+                    let value = data_types::Vector3Stamped {
+                        header: Some(inner_data.header.as_ref().ok_or_else(|| zferror!(ErrorKind::Empty))?.clone()),
+                        // vector: random(),
+                        vector: inner_data
+                            .twist
+                            .as_ref()
+                            .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                            .twist
+                            .as_ref()
+                            .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                            .linear
+                            .clone(),
+                    };
+                    self.output_murray.send(value, None).await?;
+                }
+            }
+        }
+        Ok(())
+    }
 }

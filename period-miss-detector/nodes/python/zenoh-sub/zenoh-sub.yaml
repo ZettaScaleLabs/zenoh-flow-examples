@@ -1,0 +1,9 @@
+id: zenoh-sub
+
+uri: file:///Users/julien/dev/zenoh-flow-examples/period-miss-detector/nodes/python/zenoh-sub/zenoh-sub.py
+
+outputs:
+  - id: out
+    type: string
+    
+tags: []

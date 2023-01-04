@@ -12,13 +12,37 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use nodes::sources::Portsmouth;
-use zenoh_flow::async_std::sync::Arc;
-use zenoh_flow::Source;
-use zenoh_flow::{export_source, types::ZFResult};
+use datatypes::DANUBE_PORT;
+use std::time::Duration;
+use zenoh_flow::prelude::*;
 
-export_source!(register);
+#[export_source]
+pub struct Portsmouth {
+    output: Output<datatypes::data_types::String>,
+}
 
-fn register() -> ZFResult<Arc<dyn Source>> {
-    Ok(Arc::new(Portsmouth) as Arc<dyn Source>)
+#[async_trait::async_trait]
+impl Node for Portsmouth {
+    async fn iteration(&self) -> Result<()> {
+        async_std::task::sleep(Duration::from_millis(200)).await;
+        let value = datatypes::data_types::String {
+            value: datatypes::random_string(256),
+        };
+        self.output.send(value, None).await
+    }
+}
+
+#[async_trait::async_trait]
+impl Source for Portsmouth {
+    async fn new(
+        _context: Context,
+        _configuration: Option<Configuration>,
+        mut outputs: Outputs,
+    ) -> Result<Self> {
+        Ok(Self {
+            output: outputs
+                .take(DANUBE_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+        })
+    }
 }

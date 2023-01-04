@@ -1,0 +1,15 @@
+id : Hamburg
+uri: file://./target/release/libhamburg.so
+inputs:
+  - id: Danube
+    type: str
+  - id: Ganges
+    type: i64
+  - id: Nile
+    type: i32
+  - id: Tigris
+    type: f32
+outputs:
+  - id: Parana
+    type: str
+tags: []

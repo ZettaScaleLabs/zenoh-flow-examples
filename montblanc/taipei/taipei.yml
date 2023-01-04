@@ -1,0 +1,9 @@
+id : Taipei
+uri: file://./target/release/libtaipei.so
+inputs:
+  - id: Columbia
+    type: img
+outputs:
+  - id: Colorado
+    type: img
+tags: []
