@@ -1,9 +1,10 @@
 id: file-writer
 
-uri: file:///Users/julien/dev/zenoh-flow-examples/getting-started/nodes/python/file-writer/file-writer.py
+vars:
+ BASE_DIR: "./zenoh-flow-examples/getting-started"
+
+uri: "file://{{ BASE_DIR }}/nodes/python/file-writer/file-writer.py"
 
 inputs:
   - id: in
     type: string
-    
-tags: []

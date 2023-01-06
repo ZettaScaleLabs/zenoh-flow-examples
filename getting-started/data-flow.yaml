@@ -1,4 +1,5 @@
 flow: hello-world
+
 vars:
  BASE_DIR: "./zenoh-flow-examples/getting-started"
 
@@ -9,12 +10,12 @@ sources:
 
 operators:
   - id: greetings-maker
-    descriptor: "file://{{ BASE_DIR }}/nodes/rust/greetings-maker/greetings-maker.yaml
+    descriptor: "file://{{ BASE_DIR }}/nodes/rust/greetings-maker/greetings-maker.yaml"
 
 
 sinks:
   - id: file-writer
-    descriptor: "file://{{ BASE_DIR} }/nodes/rust/file-writer/file-writer.yaml
+    descriptor: "file://{{ BASE_DIR }}/nodes/rust/file-writer/file-writer.yaml"
 
 
 links:
