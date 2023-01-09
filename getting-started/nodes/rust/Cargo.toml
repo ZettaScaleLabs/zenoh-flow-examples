@@ -22,4 +22,4 @@ async-std = "1.12"
 
 
 [patch.crates-io]
-zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "master"}
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master"}
