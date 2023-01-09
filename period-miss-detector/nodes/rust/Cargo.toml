@@ -16,6 +16,10 @@
 members = ["zenoh-sub", "period-miss-detector", "file-writer"]
 
 [workspace.dependencies]
-zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow.git", branch = "master" }
+zenoh-flow = "0.5.0-dev"
 async-trait = "0.1"
 async-std = "1.12"
+
+
+[patch.crates-io]
+zenoh-flow = { git = "https://github.com/ZettaScaleLabs/zenoh-flow.git", branch = "master"}
