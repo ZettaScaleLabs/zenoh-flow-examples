@@ -1,6 +1,6 @@
 id : Madelin
 
-uri: file://./target/release/libmadelin.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libmadelin.so
 
 # period:
 #   length: 10

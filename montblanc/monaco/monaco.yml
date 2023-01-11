@@ -1,5 +1,5 @@
 id : Monaco
-uri: file://./target/release/libmonaco.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libmonaco.so
 inputs:
   - id: Congo
     type: twist

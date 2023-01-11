@@ -14,7 +14,7 @@
 
 use prost::Message;
 use rand::distributions::{Alphanumeric, Distribution, Standard};
-use rand::Rng;
+use rand::{Rng, random};
 use std::io::Cursor;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zenoh_flow::prelude::{DowncastAny, ZFData};
@@ -240,7 +240,7 @@ pub fn deserialize_twist_with_covariance(
 impl Distribution<data_types::TwistWithCovarianceStamped> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::TwistWithCovarianceStamped {
         data_types::TwistWithCovarianceStamped {
-            header: rng.gen(),
+            header: random(),
             twist: rng.gen(),
         }
     }

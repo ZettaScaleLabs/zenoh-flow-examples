@@ -1,5 +1,5 @@
 id : Georgetown
-uri: file://./target/release/libgeorgetown.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libgeorgetown.so
 inputs:
   - id: Lena
     type: wrench-ts

@@ -17,6 +17,7 @@ use datatypes::{MEKONG_PORT, MURRAY_PORT};
 use futures::prelude::*;
 use futures::select;
 use zenoh_flow::prelude::*;
+use rand::random;
 
 #[export_operator]
 pub struct Rotterdam {
@@ -50,8 +51,7 @@ impl Node for Rotterdam {
             msg  = self.input_mekong.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
                     let value = data_types::Vector3Stamped {
-                        header: Some(inner_data.header.as_ref().ok_or_else(|| zferror!(ErrorKind::Empty))?.clone()),
-                        // vector: random(),
+                        header: Some(inner_data.header.clone().unwrap_or(random())),
                         vector: inner_data
                             .twist
                             .as_ref()
