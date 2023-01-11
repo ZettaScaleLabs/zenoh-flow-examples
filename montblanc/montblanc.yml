@@ -14,7 +14,7 @@
 
 flow: Montblanc
 vars:
- BASE_DIR: "./zenoh-flow-examples/montblanc"
+ BASE_DIR: "/home/ato/Workspace/zenoh-flow-examples/montblanc"
 
 operators:
   - id : Lyon

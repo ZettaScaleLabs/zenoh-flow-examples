@@ -1,5 +1,5 @@
 id : Mandalay
-uri: file://./target/release/libmandalay.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libmandalay.so
 # period:
 #   length: 100
 #   unit: ms

@@ -1,6 +1,6 @@
 id : Cordoba
 
-uri: file://./target/release/libcordoba.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libcordoba.so
 
 # period:
 #   length: 100

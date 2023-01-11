@@ -1,5 +1,5 @@
 id : Osaka
-uri: file://./target/release/libosaka.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libosaka.so
 inputs:
   - id: Parana
     type: str

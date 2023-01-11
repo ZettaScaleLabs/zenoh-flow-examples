@@ -17,6 +17,7 @@ use datatypes::{LENA_PORT, MEKONG_PORT};
 use futures::prelude::*;
 use futures::select;
 use zenoh_flow::prelude::*;
+use rand::random;
 
 #[export_operator]
 pub struct Barcelona {
@@ -50,7 +51,7 @@ impl Node for Barcelona {
             msg  = self.input_mekong.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
                     let value = data_types::WrenchStamped {
-                        header: Some(inner_data.header.as_ref().ok_or_else(|| zferror!(ErrorKind::Empty))?.clone()),
+                        header: Some(inner_data.header.clone().unwrap_or(random())),
                         wrench: Some(data_types::Wrench {
                             force: inner_data
                                 .twist

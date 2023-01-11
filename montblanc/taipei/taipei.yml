@@ -1,5 +1,5 @@
 id : Taipei
-uri: file://./target/release/libtaipei.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libtaipei.so
 inputs:
   - id: Columbia
     type: img
