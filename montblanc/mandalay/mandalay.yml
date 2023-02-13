@@ -23,8 +23,4 @@ outputs:
     type: pose
   - id: Missouri
     type: img
-  - id:  Ohio
-    type: f32
-  - id: Volga
-    type: f64
 tags: []
