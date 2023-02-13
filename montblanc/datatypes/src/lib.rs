@@ -14,7 +14,7 @@
 
 use prost::Message;
 use rand::distributions::{Alphanumeric, Distribution, Standard};
-use rand::{Rng, random};
+use rand::{random, Rng};
 use std::io::Cursor;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zenoh_flow::prelude::{DowncastAny, ZFData};
