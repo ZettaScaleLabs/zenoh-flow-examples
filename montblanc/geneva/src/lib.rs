@@ -24,7 +24,6 @@ use zenoh_flow::prelude::*;
 #[derive(Debug, Clone)]
 struct GenevaState {
     danube_last_val: data_types::String,
-    parana_last_val: data_types::String,
     tagus_last_val: data_types::Pose,
     congo_last_val: data_types::Twist,
 }
@@ -67,9 +66,6 @@ impl Operator for Geneva {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),
                 },
-                parana_last_val: data_types::String {
-                    value: datatypes::random_string(1),
-                },
                 tagus_last_val: random(),
                 congo_last_val: random(),
             })),
@@ -99,14 +95,8 @@ impl Node for Geneva {
             msg  = self.input_parana.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
 
-                    let mut guard_state = self.state.lock().await;
-                    guard_state.parana_last_val = (*inner_data).clone();
-
                     let value = data_types::String {
-                        value: format!(
-                            "{}-{}",
-                            guard_state.parana_last_val.value, guard_state.danube_last_val.value
-                        ),
+                        value: format!("geneva/arkansas:{}", inner_data.value),
                     };
 
                     self.output_arkansas.send(value, None).await?;

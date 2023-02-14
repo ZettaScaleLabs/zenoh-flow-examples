@@ -91,19 +91,9 @@ impl Node for Hamburg {
             },
             msg  = self.input_danube.recv().fuse() => {
                 if let Ok((Message::Data(inner_data),_)) = msg {
-
-                    let guard_state = self.state.lock().await;
-
                     let new_value = data_types::String {
-                        value: format!(
-                            "{}-{}-{}-{}",
-                            inner_data.value,
-                            guard_state.tigris_last_val,
-                            guard_state.ganges_last_val,
-                            guard_state.nile_last_val
-                        ),
+                        value: format!("hamburg/parana:{}", inner_data.value)
                     };
-
                     self.output_parana.send(new_value, None).await?;
                 }
             }
