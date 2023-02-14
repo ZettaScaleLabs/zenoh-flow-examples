@@ -26,7 +26,7 @@ impl Node for Portsmouth {
     async fn iteration(&self) -> Result<()> {
         async_std::task::sleep(Duration::from_millis(200)).await;
         let value = datatypes::data_types::String {
-            value: datatypes::random_string(256),
+            value: "portsmouth/danube".into(),
         };
         self.output.send(value, None).await
     }
