@@ -31,7 +31,8 @@ impl Node for Arequipa {
 
         if let Message::Data(data) = message {
             let mut file = self.file.lock().await;
-            file.write_all(data.value.as_bytes())
+            let final_data = format!("{}\n", data.value);
+            file.write_all(data.as_bytes())
                 .await
                 .map_err(|e| zferror!(ErrorKind::IOError, "{:?}", e))?;
             return file
