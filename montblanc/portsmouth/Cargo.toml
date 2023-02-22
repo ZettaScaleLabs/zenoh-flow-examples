@@ -26,5 +26,5 @@ path="src/lib.rs"
 datatypes = { path = "../datatypes" }
 
 async-trait = "0.1.50"
-zenoh-flow = "=0.4.0-alpha.1"
+zenoh-flow = "=0.4.0-alpha.2"
 async-std = { version = "=1.12.0", features = ["attributes"] }

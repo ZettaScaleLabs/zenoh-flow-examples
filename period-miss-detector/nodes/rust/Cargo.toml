@@ -16,6 +16,6 @@
 members = ["zenoh-sub", "period-miss-detector", "file-writer"]
 
 [workspace.dependencies]
-zenoh-flow = "=0.4.0-alpha.1"
+zenoh-flow = "=0.4.0-alpha.2"
 async-trait = "0.1"
 async-std = "1.12"
