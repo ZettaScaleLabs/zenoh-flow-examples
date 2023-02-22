@@ -308,7 +308,7 @@ links:
 #   Freeport: robot
 #   Madelin: robot
 #   Lyon: robot
-#   Delhi robot
+#   Delhi: robot
 #   Hamburg: robot
 #   Taipei: robot
 #   Osaka: robot
@@ -317,6 +317,7 @@ links:
 #   Kingston: robot
 #   Mandalay: robot
 #   Ponce: robot
+#   Arequipa: ws
 #   Geneva: ws
 #   Monaco: ws
 #   Rotterdam: ws
