@@ -16,8 +16,8 @@ use datatypes::data_types;
 use datatypes::{LENA_PORT, MEKONG_PORT};
 use futures::prelude::*;
 use futures::select;
-use zenoh_flow::prelude::*;
 use rand::random;
+use zenoh_flow::prelude::*;
 
 #[export_operator]
 pub struct Barcelona {
