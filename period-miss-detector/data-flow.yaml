@@ -7,7 +7,9 @@ vars:
 
 sources:
   - id: zenoh-sub
-    descriptor: "file://{{ BASE_DIR }}/rust/zenoh-sub/zenoh-sub.yaml"
+    configuration:
+      out: zf/period-miss-detector
+    descriptor: "builtin://zenoh"
 
 
 operators:

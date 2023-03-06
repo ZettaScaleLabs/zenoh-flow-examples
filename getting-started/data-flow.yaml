@@ -5,7 +5,9 @@ vars:
 
 sources:
   - id: zenoh-sub
-    descriptor: "file://{{ BASE_DIR }}/nodes/rust/zenoh-sub/zenoh-sub.yaml"
+    configuration:
+      out: zf/getting-started/hello
+    descriptor: "builtin://zenoh"
 
 
 operators:
@@ -16,6 +18,10 @@ operators:
 sinks:
   - id: file-writer
     descriptor: "file://{{ BASE_DIR }}/nodes/rust/file-writer/file-writer.yaml"
+  - id: zenoh-writer
+    configuration:
+      in: zf/getting-started/greeting
+    descriptor: "builtin://zenoh"
 
 
 links:
@@ -31,4 +37,11 @@ links:
       output: greeting
     to:
       node: file-writer
+      input: in
+
+  - from:
+      node: greetings-maker
+      output: greeting
+    to:
+      node: zenoh-writer
       input: in

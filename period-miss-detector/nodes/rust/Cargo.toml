@@ -13,7 +13,7 @@
 #
 
 [workspace]
-members = ["zenoh-sub", "period-miss-detector", "file-writer"]
+members = ["period-miss-detector", "file-writer"]
 
 [workspace.dependencies]
 zenoh-flow = "0.5.0-dev"

@@ -13,7 +13,7 @@
 #
 
 [workspace]
-members = ["zenoh-sub", "greetings-maker", "file-writer"]
+members = ["greetings-maker", "file-writer"]
 
 [workspace.dependencies]
 zenoh-flow = "0.5.0-dev"
