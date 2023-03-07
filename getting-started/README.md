@@ -19,14 +19,12 @@ For each YAML file in the list below, check that the paths and filenames are
 correct:
 - data-flow.yaml
 - Rust nodes:
-  - nodes/rust/zenoh-sub/zenoh-sub.yaml
   - nodes/rust/period-miss-detector/period-miss-detector.yaml
   - nodes/rust/file-writer/file-writer.yaml
 - Python nodes:
-  - nodes/python/zenoh-sub/zenoh-sub.yaml
   - nodes/python/period-miss-detector/period-miss-detector.yaml
   - nodes/python/file-writer/file-writer.yaml
-  
+
 :bulb: Note that you actually only need to update the files of the nodes you are going to use —
 which could be a mix of Python and Rust nodes.
 

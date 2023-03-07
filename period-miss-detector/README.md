@@ -19,7 +19,6 @@ cd ~/dev/zenoh-flow-examples/period-miss-detector/nodes/rust/ && cargo build --w
 For each YAML file in the list below, check that the paths and filenames are
 correct:
 - data-flow.yaml
-- nodes/zenoh-sub.yaml
 - nodes/period-miss-detector.yaml
 - nodes/file-writer.yaml
 
