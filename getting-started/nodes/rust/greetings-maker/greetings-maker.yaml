@@ -1,7 +1,7 @@
 id: greetings-maker
 
 vars:
- BASE_DIR: "./zenoh-flow-examples/getting-started"
+ BASE_DIR: "/Volumes/Workspace/Workspace/zettascale/zenoh-flow/zenoh-flow-examples/getting-started"
 
 # Do not forget to change the extension depending on your operating system!
 # Linux   -> .so
@@ -11,10 +11,5 @@ uri: "file://{{ BASE_DIR }}/nodes/rust/target/debug/libgreetings_maker.dylib"
 # If the compilation is in release:
 # uri: file:///absolute/path/to/target/release/libgreetings_maker.so
 
-inputs:
-  - id: name
-    type: string
-
-outputs:
-  - id: greeting
-    type: string
+inputs: [name]
+outputs: [greeting]

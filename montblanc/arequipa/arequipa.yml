@@ -2,8 +2,4 @@ id : Arequipa
 
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libarequipa.so
 
-inputs:
-  - id: Arkansas
-    type: str
-
-tags: []
+inputs: [Arkansas]

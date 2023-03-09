@@ -6,8 +6,4 @@ id : Kingston
 
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libkingston.so
 
-outputs:
-  - id: Yamuna
-    type: vector3
-
-tags: []
+outputs: [Yamuna]

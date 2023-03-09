@@ -1,9 +1,4 @@
 id : Lyon
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/liblyon.so
-inputs:
-  - id: Amazon
-    type: f32
-outputs:
-  - id: Tigris
-    type: f32
-tags: []
+inputs: [Amazon]
+outputs: [Tigris]

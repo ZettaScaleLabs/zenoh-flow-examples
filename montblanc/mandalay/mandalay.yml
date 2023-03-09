@@ -4,23 +4,13 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 #   length: 100
 #   unit: ms
 inputs:
-  - id: Danube
-    type: str
-  - id: Chenab
-    type: quaternion
-  - id: Salween
-    type: point-cloud2
-  - id: Godavari
-    type: laser-scan
-  - id: Loire
-    type: point-cloud2
-  - id: Yamuna
-    type: vector3
+  - Danube
+  - Chenab
+  - Salween
+  - Godavari
+  - Loire
+  - Yamuna
 outputs:
-  - id: Brazos
-    type: point-cloud2
-  - id: Tagus
-    type: pose
-  - id: Missouri
-    type: img
-tags: []
+  - Brazos
+  - Tagus
+  - Missouri

@@ -6,8 +6,4 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 #   length: 10
 #   unit: ms
 
-outputs:
-  - id: Nile
-    type: i32
-
-tags: []
+outputs: [Nile]

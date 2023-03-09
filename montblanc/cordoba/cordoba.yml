@@ -5,8 +5,4 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 # period:
 #   length: 100
 #   unit: ms
-outputs:
-  - id: Amazon
-    type: f32
-
-tags: []
+outputs: [Amazon]

@@ -5,8 +5,4 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 # period:
 #   length: 500
 #   unit: ms
-outputs:
-  - id: Danube
-    type: str
-
-tags: []
+outputs: [Danube]

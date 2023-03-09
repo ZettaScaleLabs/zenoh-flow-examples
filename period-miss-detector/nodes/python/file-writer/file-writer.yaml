@@ -5,6 +5,4 @@ vars:
 
 uri: "file://{{ BASE_DIR }}/nodes/python/file-writer/file-writer.py"
 
-inputs:
-  - id: in
-    type: string
+inputs: [in]

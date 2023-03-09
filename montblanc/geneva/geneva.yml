@@ -1,15 +1,8 @@
 id : Geneva
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libgeneva.so
 inputs:
-  - id: Danube
-    type: str
-  - id: Parana
-    type: str
-  - id: Tagus
-    type: pose
-  - id: Congo
-    type: twist
-outputs:
-  - id: Arkansas
-    type: str
-tags: []
+  - Danube
+  - Parana
+  - Tagus
+  - Congo
+outputs: [Arkansas]

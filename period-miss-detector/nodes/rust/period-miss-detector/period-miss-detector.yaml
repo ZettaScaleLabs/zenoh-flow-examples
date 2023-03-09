@@ -11,12 +11,5 @@ uri: "file://{{ BASE_DIR }}/nodes/rust/target/debug/libperiod_miss_detector.dyli
 # If the compilation is in release:
 # uri: file:///absolute/path/to/target/release/libperiod_miss_detector.dylib
 
-inputs:
-  - id: in
-    type: string
-
-outputs:
-  - id: out
-    type: string
-    
-tags: []
+inputs: [in]
+outputs: [out]

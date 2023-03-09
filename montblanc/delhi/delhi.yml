@@ -5,8 +5,4 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 # period:
 #   length: 1
 #   unit: s
-outputs:
-  - id: Columbia
-    type: img
-
-tags: []
+outputs: [Columbia]

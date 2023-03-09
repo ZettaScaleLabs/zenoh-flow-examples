@@ -1,9 +1,4 @@
 id : Monaco
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libmonaco.so
-inputs:
-  - id: Congo
-    type: twist
-outputs:
-  - id: Ohio
-    type: f32
-tags: []
+inputs: [Congo]
+outputs: [Ohio]

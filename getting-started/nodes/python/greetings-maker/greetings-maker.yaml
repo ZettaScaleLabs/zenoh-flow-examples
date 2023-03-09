@@ -1,14 +1,9 @@
 id: greetings-maker
 
 vars:
- BASE_DIR: "./zenoh-flow-examples/getting-started"
+ BASE_DIR: "/Volumes/Workspace/Workspace/zettascale/zenoh-flow/zenoh-flow-examples/getting-started"
 
 uri: "file://{{ BASE_DIR }}/nodes/python/greetings-maker/greetings-maker.py"
 
-inputs:
-  - id: name
-    type: string
-
-outputs:
-  - id: greeting
-    type: string
+inputs: [name]
+outputs: [greeting]

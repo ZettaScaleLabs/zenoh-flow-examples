@@ -5,8 +5,5 @@ uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/lib
 # period:
 #   length: 50
 #   unit: ms
-outputs:
-  - id: Ganges
-    type: i64
+outputs: [Ganges]
 
-tags: []

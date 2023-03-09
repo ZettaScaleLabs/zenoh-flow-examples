@@ -11,6 +11,4 @@ uri: "file://{{ BASE_DIR }}/nodes/rust/target/debug/libfile_writer.dylib"
 # If the compilation is in release:
 # uri: file:///absolute/path/to/target/release/libfile_writer.so
 
-inputs:
-  - id: in
-    type: string
+inputs: [in]

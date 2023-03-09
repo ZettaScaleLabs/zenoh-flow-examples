@@ -5,10 +5,5 @@ vars:
 
 uri: "file://{{ BASE_DIR }}/nodes/python/period-miss-detector/period-miss-detector.py"
 
-inputs:
-  - id: in
-    type: string
-
-outputs:
-  - id: out
-    type: string
+inputs: [in]
+outputs: [out]

@@ -1,9 +1,4 @@
 id : Rotterdam
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/librotterdam.so
-inputs:
-  - id: Mekong
-    type: twist-w-coovariance-ts
-outputs:
-  - id: Murray
-    type: vector3-ts
-tags: []
+inputs: [Mekong]
+outputs: [Murray]

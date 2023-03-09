@@ -1,11 +1,6 @@
 id : Georgetown
 uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libgeorgetown.so
 inputs:
-  - id: Lena
-    type: wrench-ts
-  - id: Murray
-    type: vector3-ts
-outputs:
-  - id: Volga
-    type: f64
-tags: []
+  - Lena
+  - Murray
+outputs: [Volga]
