@@ -41,7 +41,7 @@ class GreetingsMaker(Operator):
     async def iteration(self) -> None:
         data_msg = await self.in_stream.recv()
         name = data_msg.data.decode("utf-8")
-        greetings = self.generate_greeting(name)
+        greetings = self.generate_greetings(name)
 
         await self.output.send(greetings.encode("utf-8"))
         return None
