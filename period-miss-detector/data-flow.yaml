@@ -8,7 +8,8 @@ vars:
 sources:
   - id: zenoh-sub
     configuration:
-      out: zf/period-miss-detector
+      key-expressions:
+        out: zf/period-miss-detector
     descriptor: "builtin://zenoh"
 
 
