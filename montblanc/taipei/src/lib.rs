@@ -31,11 +31,13 @@ impl Operator for Taipei {
     ) -> Result<Self> {
         Ok(Self {
             input: inputs
-                .take_raw(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+                .take(COLUMBIA_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT))
+                .raw(),
             output: outputs
-                .take_raw(COLORADO_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT)),
+                .take(COLORADO_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT))
+                .raw(),
         })
     }
 }

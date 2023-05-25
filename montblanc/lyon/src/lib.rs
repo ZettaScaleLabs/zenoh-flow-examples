@@ -31,11 +31,13 @@ impl Operator for Lyon {
     ) -> Result<Self> {
         Ok(Self {
             input: inputs
-                .take_raw(AMAZON_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT)),
+                .take(AMAZON_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT))
+                .raw(),
             output: outputs
-                .take_raw(TIGRIS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT)),
+                .take(TIGRIS_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT))
+                .raw(),
         })
     }
 }

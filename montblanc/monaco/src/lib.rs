@@ -16,8 +16,9 @@ use datatypes::data_types;
 use datatypes::{CONGO_PORT, OHIO_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_operator]
 pub struct Monaco {
@@ -36,10 +37,14 @@ impl Operator for Monaco {
         Ok(Self {
             input_congo: inputs
                 .take(CONGO_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT))
+                .typed(|bytes| data_types::Twist::decode(bytes).map_err(|e| anyhow!(e))),
             output_ohio: outputs
                 .take(OHIO_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", OHIO_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", OHIO_PORT))
+                .typed(|buffer, data: &data_types::Float32| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }

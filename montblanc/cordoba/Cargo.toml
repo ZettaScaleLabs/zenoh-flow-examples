@@ -29,3 +29,4 @@ datatypes = { path = "../datatypes" }
 async-trait = "0.1.50"
 zenoh-flow = "0.5.0-dev"
 rand = "0.8.0"
+prost = { workspace = true }

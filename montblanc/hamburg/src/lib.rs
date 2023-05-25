@@ -17,8 +17,9 @@ use datatypes::data_types;
 use datatypes::{DANUBE_PORT, GANGES_PORT, NILE_PORT, PARANA_PORT, TIGRIS_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct HamburgState {
@@ -48,19 +49,26 @@ impl Operator for Hamburg {
         Ok(Self {
             input_tigris: inputs
                 .take(TIGRIS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", TIGRIS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TIGRIS_PORT))
+                .typed(|bytes| data_types::Float32::decode(bytes).map_err(|e| anyhow!(e))),
             input_ganges: inputs
                 .take(GANGES_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", GANGES_PORT))
+                .typed(|bytes| data_types::Int64::decode(bytes).map_err(|e| anyhow!(e))),
             input_nile: inputs
                 .take(NILE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", NILE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", NILE_PORT))
+                .typed(|bytes| data_types::Int32::decode(bytes).map_err(|e| anyhow!(e))),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             output_parana: outputs
                 .take(PARANA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", PARANA_PORT))
+                .typed(|buffer, data: &data_types::String| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
             state: Arc::new(Mutex::new(HamburgState {
                 ganges_last_val: 0i64,
                 nile_last_val: 0i32,

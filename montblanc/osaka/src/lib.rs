@@ -12,14 +12,16 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use std::sync::Arc;
+
 use async_std::sync::Mutex;
-use datatypes::data_types;
+use datatypes::data_types::{self, LaserScan, PointCloud2};
 use datatypes::{COLORADO_PORT, COLUMBIA_PORT, GODAVARI_PORT, PARANA_PORT, SALWEEN_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct OsakaState {
@@ -51,19 +53,24 @@ impl Operator for Osaka {
         Ok(Self {
             input_parana: inputs
                 .take(PARANA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             input_columbia: inputs
                 .take(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT))
+                .typed(|bytes| data_types::Image::decode(bytes).map_err(|e| anyhow!(e))),
             input_colorado: inputs
                 .take(COLORADO_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLORADO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLORADO_PORT))
+                .typed(|bytes| data_types::Image::decode(bytes).map_err(|e| anyhow!(e))),
             output_salween: outputs
                 .take(SALWEEN_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", SALWEEN_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", SALWEEN_PORT))
+                .typed(|buffer, data: &PointCloud2| data.encode(buffer).map_err(|e| anyhow!(e))),
             output_godavari: outputs
                 .take(GODAVARI_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT))
+                .typed(|buffer, data: &LaserScan| data.encode(buffer).map_err(|e| anyhow!(e))),
             state: Arc::new(Mutex::new(OsakaState {
                 parana_last_val: data_types::String {
                     value: datatypes::random_string(1),

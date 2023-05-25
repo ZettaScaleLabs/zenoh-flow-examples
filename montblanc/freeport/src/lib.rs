@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::GANGES_PORT;
+use datatypes::{data_types, GANGES_PORT};
+use prost::Message;
 use rand::random;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Freeport {
@@ -42,7 +43,10 @@ impl Source for Freeport {
         Ok(Self {
             output: outputs
                 .take(GANGES_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GANGES_PORT))
+                .typed(|buffer, data: &data_types::Int64| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }

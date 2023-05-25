@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::YAMUNA_PORT;
+use datatypes::{data_types::Vector3, YAMUNA_PORT};
+use prost::Message;
 use rand::random;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Kingston {
@@ -41,7 +42,8 @@ impl Source for Kingston {
         Ok(Self {
             output: outputs
                 .take(YAMUNA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", YAMUNA_PORT))
+                .typed(|buffer, data: &Vector3| data.encode(buffer).map_err(|e| anyhow!(e))),
         })
     }
 }

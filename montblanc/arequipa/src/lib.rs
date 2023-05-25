@@ -13,8 +13,9 @@
 //
 
 use async_std::{fs::File, io::WriteExt, sync::Mutex};
-use datatypes::ARKANSAS_PORT;
-use zenoh_flow::prelude::*;
+use datatypes::{data_types, ARKANSAS_PORT};
+use prost::Message as pMessage;
+use zenoh_flow::{anyhow, prelude::*};
 
 static OUT_FILE: &str = "/tmp/montblanc.out";
 
@@ -55,7 +56,8 @@ impl Sink for Arequipa {
         Ok(Self {
             input: inputs
                 .take(ARKANSAS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", ARKANSAS_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             file: Mutex::new(
                 File::create(OUT_FILE)
                     .await

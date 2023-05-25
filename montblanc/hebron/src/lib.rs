@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::CHENAB_PORT;
+use datatypes::{data_types::Quaternion, CHENAB_PORT};
+use prost::Message as pMessage;
 use rand::random;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Hebron {
@@ -41,7 +42,8 @@ impl Source for Hebron {
         Ok(Self {
             output: outputs
                 .take(CHENAB_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", CHENAB_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", CHENAB_PORT))
+                .typed(|buffer, data: &Quaternion| data.encode(buffer).map_err(|e| anyhow!(e))),
         })
     }
 }

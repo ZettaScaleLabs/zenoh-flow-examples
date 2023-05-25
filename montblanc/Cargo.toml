@@ -37,6 +37,9 @@ members = [
     "tripoli",
 ]
 
+[workspace.dependencies]
+prost = "0.11"
+
 [profile.dev]
 debug = true
 opt-level = 0

@@ -16,8 +16,9 @@ use datatypes::data_types;
 use datatypes::{LENA_PORT, MEKONG_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_operator]
 pub struct Barcelona {
@@ -36,10 +37,16 @@ impl Operator for Barcelona {
         Ok(Self {
             input_mekong: inputs
                 .take(MEKONG_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT))
+                .typed(|bytes| {
+                    data_types::TwistWithCovarianceStamped::decode(bytes).map_err(|e| anyhow!(e))
+                }),
             output_lena: outputs
                 .take(LENA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", LENA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", LENA_PORT))
+                .typed(|buffer, data: &data_types::WrenchStamped| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }

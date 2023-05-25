@@ -12,12 +12,13 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::data_types;
+use datatypes::data_types::{self, Vector3Stamped};
 use datatypes::{MEKONG_PORT, MURRAY_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_operator]
 pub struct Rotterdam {
@@ -36,10 +37,14 @@ impl Operator for Rotterdam {
         Ok(Self {
             input_mekong: inputs
                 .take(MEKONG_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT))
+                .typed(|bytes| {
+                    data_types::TwistWithCovarianceStamped::decode(bytes).map_err(|e| anyhow!(e))
+                }),
             output_murray: outputs
                 .take(MURRAY_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT))
+                .typed(|buffer, data: &Vector3Stamped| data.encode(buffer).map_err(|e| anyhow!(e))),
         })
     }
 }

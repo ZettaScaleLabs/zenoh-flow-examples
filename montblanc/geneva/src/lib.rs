@@ -11,15 +11,16 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+use std::sync::Arc;
 
 use async_std::sync::Mutex;
 use datatypes::data_types;
 use datatypes::{ARKANSAS_PORT, CONGO_PORT, DANUBE_PORT, PARANA_PORT, TAGUS_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct GenevaState {
@@ -49,19 +50,26 @@ impl Operator for Geneva {
         Ok(Self {
             input_parana: inputs
                 .take(PARANA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             input_tagus: inputs
                 .take(TAGUS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT))
+                .typed(|bytes| data_types::Pose::decode(bytes).map_err(|e| anyhow!(e))),
             input_congo: inputs
                 .take(CONGO_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT))
+                .typed(|bytes| data_types::Twist::decode(bytes).map_err(|e| anyhow!(e))),
             output_arkansas: outputs
                 .take(ARKANSAS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", ARKANSAS_PORT))
+                .typed(|buffer, data: &data_types::String| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
             state: Arc::new(Mutex::new(GenevaState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

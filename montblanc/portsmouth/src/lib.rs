@@ -12,9 +12,10 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::DANUBE_PORT;
+use datatypes::{data_types, DANUBE_PORT};
+use prost::Message as pMessage;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Portsmouth {
@@ -42,7 +43,10 @@ impl Source for Portsmouth {
         Ok(Self {
             output: outputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|buffer, data: &data_types::String| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }

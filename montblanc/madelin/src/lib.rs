@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::NILE_PORT;
+use datatypes::{data_types::Int32, NILE_PORT};
+use prost::Message;
 use rand::random;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Madelin {
@@ -42,7 +43,8 @@ impl Source for Madelin {
         Ok(Self {
             output: outputs
                 .take(NILE_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", NILE_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", NILE_PORT))
+                .typed(|buffer, data: &Int32| data.encode(buffer).map_err(|e| anyhow!(e))),
         })
     }
 }

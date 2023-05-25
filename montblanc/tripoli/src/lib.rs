@@ -12,14 +12,16 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use std::sync::Arc;
+
 use async_std::sync::Mutex;
-use datatypes::data_types;
+use datatypes::data_types::{self, PointCloud2};
 use datatypes::{COLUMBIA_PORT, GODAVARI_PORT, LOIRE_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct TripoliState {
@@ -46,13 +48,16 @@ impl Operator for Tripoli {
         Ok(Self {
             input_columbia: inputs
                 .take(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT))
+                .typed(|bytes| data_types::Image::decode(bytes).map_err(|e| anyhow!(e))),
             input_godavari: inputs
                 .take(GODAVARI_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT))
+                .typed(|bytes| data_types::LaserScan::decode(bytes).map_err(|e| anyhow!(e))),
             output_loire: outputs
                 .take(LOIRE_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", LOIRE_PORT))
+                .typed(|buffer, data: &PointCloud2| data.encode(buffer).map_err(|e| anyhow!(e))),
             state: Arc::new(Mutex::new(TripoliState {
                 pointcloud2_data: random(),
                 columbia_last_val: random(),

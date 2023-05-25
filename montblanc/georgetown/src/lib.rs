@@ -11,16 +11,17 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+use std::sync::Arc;
+use std::time::Duration;
 
 use async_std::sync::Mutex;
-use datatypes::data_types;
+use datatypes::data_types::{self, Float64};
 use datatypes::{LENA_PORT, MURRAY_PORT, VOLGA_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use std::sync::Arc;
-use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct GeorgetownState {
@@ -49,13 +50,16 @@ impl Operator for Georgetown {
         Ok(Self {
             input_murray: inputs
                 .take(MURRAY_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MURRAY_PORT))
+                .typed(|bytes| data_types::Vector3Stamped::decode(bytes).map_err(|e| anyhow!(e))),
             input_lena: inputs
                 .take(LENA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", LENA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LENA_PORT))
+                .typed(|bytes| data_types::WrenchStamped::decode(bytes).map_err(|e| anyhow!(e))),
             output_volga: outputs
                 .take(VOLGA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", VOLGA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", VOLGA_PORT))
+                .typed(|buffer, data: &Float64| data.encode(buffer).map_err(|e| anyhow!(e))),
             state: Arc::new(Mutex::new(GeorgetownState {
                 murray_last_val: random(),
                 lena_last_val: random(),

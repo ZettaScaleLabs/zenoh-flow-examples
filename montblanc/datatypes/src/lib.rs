@@ -12,14 +12,9 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use prost::Message;
 use rand::distributions::{Alphanumeric, Distribution, Standard};
 use rand::{random, Rng};
-use std::io::Cursor;
 use std::time::{SystemTime, UNIX_EPOCH};
-use zenoh_flow::prelude::{DowncastAny, ZFData};
-use zenoh_flow::zferror;
-use zenoh_flow::zfresult::{ErrorKind, ZFResult};
 
 pub static AMAZON_PORT: &str = "Amazon";
 pub static DANUBE_PORT: &str = "Danube";
@@ -97,17 +92,6 @@ impl Distribution<data_types::Point> for Standard {
     }
 }
 
-pub fn serialize_point(point: &data_types::Point) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(point.encoded_len());
-    point.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_point(buf: &[u8]) -> Result<data_types::Point, prost::DecodeError> {
-    data_types::Point::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::Quaternion> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::Quaternion {
         data_types::Quaternion {
@@ -117,17 +101,6 @@ impl Distribution<data_types::Quaternion> for Standard {
             w: rng.gen(),
         }
     }
-}
-
-pub fn serialize_quaternion(quat: &data_types::Quaternion) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(quat.encoded_len());
-    quat.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_quaternion(buf: &[u8]) -> Result<data_types::Quaternion, prost::DecodeError> {
-    data_types::Quaternion::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::Vector3> for Standard {
@@ -140,17 +113,6 @@ impl Distribution<data_types::Vector3> for Standard {
     }
 }
 
-pub fn serialize_vector3(vec3: &data_types::Vector3) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(vec3.encoded_len());
-    vec3.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_vector3(buf: &[u8]) -> Result<data_types::Vector3, prost::DecodeError> {
-    data_types::Vector3::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::Vector3Stamped> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::Vector3Stamped {
         data_types::Vector3Stamped {
@@ -158,19 +120,6 @@ impl Distribution<data_types::Vector3Stamped> for Standard {
             vector: rng.gen(),
         }
     }
-}
-
-pub fn serialize_vector3_stamped(vec3s: &data_types::Vector3Stamped) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(vec3s.encoded_len());
-    vec3s.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_vector3_stamped(
-    buf: &[u8],
-) -> Result<data_types::Vector3Stamped, prost::DecodeError> {
-    data_types::Vector3Stamped::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::Pose> for Standard {
@@ -182,17 +131,6 @@ impl Distribution<data_types::Pose> for Standard {
     }
 }
 
-pub fn serialize_pose(pose: &data_types::Pose) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(pose.encoded_len());
-    pose.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_pose(buf: &[u8]) -> Result<data_types::Pose, prost::DecodeError> {
-    data_types::Pose::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::Twist> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::Twist {
         data_types::Twist {
@@ -200,17 +138,6 @@ impl Distribution<data_types::Twist> for Standard {
             angular: rng.gen(),
         }
     }
-}
-
-pub fn serialize_twist(twist: &data_types::Twist) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(twist.encoded_len());
-    twist.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_twist(buf: &[u8]) -> Result<data_types::Twist, prost::DecodeError> {
-    data_types::Twist::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::TwistWithCovariance> for Standard {
@@ -222,21 +149,6 @@ impl Distribution<data_types::TwistWithCovariance> for Standard {
     }
 }
 
-pub fn serialize_twist_with_covariance(
-    twist_with_cov: &data_types::TwistWithCovariance,
-) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(twist_with_cov.encoded_len());
-    twist_with_cov.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_twist_with_covariance(
-    buf: &[u8],
-) -> Result<data_types::TwistWithCovariance, prost::DecodeError> {
-    data_types::TwistWithCovariance::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::TwistWithCovarianceStamped> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::TwistWithCovarianceStamped {
         data_types::TwistWithCovarianceStamped {
@@ -244,21 +156,6 @@ impl Distribution<data_types::TwistWithCovarianceStamped> for Standard {
             twist: rng.gen(),
         }
     }
-}
-
-pub fn serialize_twist_with_covariance_stamped(
-    twist_with_cov: &data_types::TwistWithCovarianceStamped,
-) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(twist_with_cov.encoded_len());
-    twist_with_cov.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_twist_with_covariance_stamped(
-    buf: &[u8],
-) -> Result<data_types::TwistWithCovarianceStamped, prost::DecodeError> {
-    data_types::TwistWithCovarianceStamped::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::Wrench> for Standard {
@@ -270,17 +167,6 @@ impl Distribution<data_types::Wrench> for Standard {
     }
 }
 
-pub fn serialize_wrench(wrench: &data_types::Wrench) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(wrench.encoded_len());
-    wrench.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_wrench(buf: &[u8]) -> Result<data_types::Wrench, prost::DecodeError> {
-    data_types::Wrench::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::WrenchStamped> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::WrenchStamped {
         data_types::WrenchStamped {
@@ -288,19 +174,6 @@ impl Distribution<data_types::WrenchStamped> for Standard {
             wrench: rng.gen(),
         }
     }
-}
-
-pub fn serialize_wrench_stamped(wrench_stamped: &data_types::WrenchStamped) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(wrench_stamped.encoded_len());
-    wrench_stamped.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_wrench_stamped(
-    buf: &[u8],
-) -> Result<data_types::WrenchStamped, prost::DecodeError> {
-    data_types::WrenchStamped::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::Image> for Standard {
@@ -316,17 +189,6 @@ impl Distribution<data_types::Image> for Standard {
             data: empty_bytes(),
         }
     }
-}
-
-// pub fn serialize_image(img: &data_types::Image) -> Vec<u8> {
-//     let mut buf = Vec::new();
-//     buf.reserve(img.encoded_len());
-//     img.encode(&mut buf).unwrap();
-//     buf
-// }
-
-pub fn deserialize_image(buf: &[u8]) -> Result<data_types::Image, prost::DecodeError> {
-    data_types::Image::decode(&mut Cursor::new(buf))
 }
 
 impl Distribution<data_types::point_cloud2::point_field::DataType> for Standard {
@@ -382,17 +244,6 @@ impl Distribution<data_types::PointCloud2> for Standard {
     }
 }
 
-pub fn serialize_pointcloud2(pc: &data_types::PointCloud2) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(pc.encoded_len());
-    pc.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_pointcloud2(buf: &[u8]) -> Result<data_types::PointCloud2, prost::DecodeError> {
-    data_types::PointCloud2::decode(&mut Cursor::new(buf))
-}
-
 impl Distribution<data_types::LaserScan> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> data_types::LaserScan {
         data_types::LaserScan {
@@ -407,465 +258,5 @@ impl Distribution<data_types::LaserScan> for Standard {
             ranges: random_floats(1024),
             intensities: random_floats(1024),
         }
-    }
-}
-
-pub fn serialize_laserscan(ls: &data_types::LaserScan) -> Vec<u8> {
-    let mut buf = Vec::new();
-    buf.reserve(ls.encoded_len());
-    ls.encode(&mut buf).unwrap();
-    buf
-}
-
-pub fn deserialize_laserscan(buf: &[u8]) -> Result<data_types::LaserScan, prost::DecodeError> {
-    data_types::LaserScan::decode(&mut Cursor::new(buf))
-}
-
-// ZF interfaces implementation
-
-impl DowncastAny for data_types::Vector3Stamped {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Vector3Stamped {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Vector3Stamped>
-    where
-        Self: Sized,
-    {
-        data_types::Vector3Stamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::WrenchStamped {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::WrenchStamped {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::WrenchStamped>
-    where
-        Self: Sized,
-    {
-        data_types::WrenchStamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::TwistWithCovarianceStamped {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::TwistWithCovarianceStamped {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::TwistWithCovarianceStamped>
-    where
-        Self: Sized,
-    {
-        data_types::TwistWithCovarianceStamped::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Twist {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Twist {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Twist>
-    where
-        Self: Sized,
-    {
-        data_types::Twist::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Pose {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Pose {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Pose>
-    where
-        Self: Sized,
-    {
-        data_types::Pose::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::LaserScan {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::LaserScan {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::LaserScan>
-    where
-        Self: Sized,
-    {
-        data_types::LaserScan::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Vector3 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Vector3 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Vector3>
-    where
-        Self: Sized,
-    {
-        data_types::Vector3::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::PointCloud2 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::PointCloud2 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::PointCloud2>
-    where
-        Self: Sized,
-    {
-        data_types::PointCloud2::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Quaternion {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Quaternion {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Quaternion>
-    where
-        Self: Sized,
-    {
-        data_types::Quaternion::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-impl DowncastAny for data_types::Image {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Image {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Image>
-    where
-        Self: Sized,
-    {
-        data_types::Image::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Float32 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Float32 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Float32>
-    where
-        Self: Sized,
-    {
-        data_types::Float32::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::String {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::String {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::String>
-    where
-        Self: Sized,
-    {
-        data_types::String::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Int32 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Int32 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Int32>
-    where
-        Self: Sized,
-    {
-        data_types::Int32::decode(&mut Cursor::new(bytes))
-            .map_err(|e| zferror!(ErrorKind::DeserializationError, "{:?}", e).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Int64 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Int64 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Int64>
-    where
-        Self: Sized,
-    {
-        data_types::Int64::decode(&mut Cursor::new(bytes))
-            .map_err(|_| zferror!(ErrorKind::DeserializationError).into())
-    }
-}
-
-//
-
-impl DowncastAny for data_types::Float64 {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_mut_any(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
-}
-
-impl ZFData for data_types::Float64 {
-    fn try_serialize(&self) -> ZFResult<Vec<u8>> {
-        let mut buf = Vec::new();
-        buf.reserve(self.encoded_len());
-        self.encode(&mut buf)
-            .map_err(|_| zferror!(ErrorKind::SerializationError))?;
-        Ok(buf)
-    }
-
-    fn try_deserialize(bytes: &[u8]) -> ZFResult<data_types::Float64>
-    where
-        Self: Sized,
-    {
-        data_types::Float64::decode(&mut Cursor::new(bytes))
-            .map_err(|_| zferror!(ErrorKind::DeserializationError).into())
     }
 }

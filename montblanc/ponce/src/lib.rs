@@ -11,6 +11,7 @@
 // Contributors:
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
+use std::sync::Arc;
 
 use async_std::sync::Mutex;
 use datatypes::data_types;
@@ -20,9 +21,9 @@ use datatypes::{
 };
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
-use std::sync::Arc;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct PonceState {
@@ -65,35 +66,49 @@ impl Operator for Ponce {
         Ok(Self {
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             input_tagus: inputs
                 .take(TAGUS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT))
+                .typed(|bytes| data_types::Pose::decode(bytes).map_err(|e| anyhow!(e))),
             input_missouri: inputs
                 .take(MISSOURI_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MISSOURI_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MISSOURI_PORT))
+                .typed(|bytes| data_types::Image::decode(bytes).map_err(|e| anyhow!(e))),
             input_loire: inputs
                 .take(LOIRE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT))
+                .typed(|bytes| data_types::PointCloud2::decode(bytes).map_err(|e| anyhow!(e))),
             input_yamuna: inputs
                 .take(YAMUNA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT))
+                .typed(|bytes| data_types::Vector3::decode(bytes).map_err(|e| anyhow!(e))),
             input_ohio: inputs
                 .take(OHIO_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", OHIO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", OHIO_PORT))
+                .typed(|bytes| data_types::Float32::decode(bytes).map_err(|e| anyhow!(e))),
             input_volga: inputs
                 .take(VOLGA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", VOLGA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", VOLGA_PORT))
+                .typed(|bytes| data_types::Float64::decode(bytes).map_err(|e| anyhow!(e))),
             input_brazos: inputs
                 .take(BRAZOS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", BRAZOS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", BRAZOS_PORT))
+                .typed(|bytes| data_types::PointCloud2::decode(bytes).map_err(|e| anyhow!(e))),
 
             output_congo: outputs
                 .take(CONGO_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", CONGO_PORT))
+                .typed(|buffer, data: &data_types::Twist| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
             output_mekong: outputs
                 .take(MEKONG_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MEKONG_PORT))
+                .typed(|buffer, data: &data_types::TwistWithCovarianceStamped| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
             state: Arc::new(Mutex::new(PonceState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

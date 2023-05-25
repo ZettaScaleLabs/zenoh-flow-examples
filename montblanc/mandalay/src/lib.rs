@@ -13,17 +13,18 @@
 //
 
 use async_std::sync::Mutex;
-use datatypes::data_types;
+use datatypes::data_types::{self, Image, PointCloud2, Pose};
 use datatypes::{
     BRAZOS_PORT, CHENAB_PORT, DANUBE_PORT, GODAVARI_PORT, LOIRE_PORT, MISSOURI_PORT, SALWEEN_PORT,
     TAGUS_PORT, YAMUNA_PORT,
 };
 use futures::prelude::*;
 use futures::select;
+use prost::Message as pMessage;
 use rand::random;
 use std::sync::Arc;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[derive(Debug, Clone)]
 struct MandalayState {
@@ -63,31 +64,40 @@ impl Operator for Mandalay {
         Ok(Self {
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|bytes| data_types::String::decode(bytes).map_err(|e| anyhow!(e))),
             input_chenab: inputs
                 .take(CHENAB_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", CHENAB_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CHENAB_PORT))
+                .typed(|bytes| data_types::Quaternion::decode(bytes).map_err(|e| anyhow!(e))),
             input_salween: inputs
                 .take(SALWEEN_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", SALWEEN_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", SALWEEN_PORT))
+                .typed(|bytes| data_types::PointCloud2::decode(bytes).map_err(|e| anyhow!(e))),
             input_godavari: inputs
                 .take(GODAVARI_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", GODAVARI_PORT))
+                .typed(|bytes| data_types::LaserScan::decode(bytes).map_err(|e| anyhow!(e))),
             input_loire: inputs
                 .take(LOIRE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LOIRE_PORT))
+                .typed(|bytes| data_types::PointCloud2::decode(bytes).map_err(|e| anyhow!(e))),
             input_yamuna: inputs
                 .take(YAMUNA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", YAMUNA_PORT))
+                .typed(|bytes| data_types::Vector3::decode(bytes).map_err(|e| anyhow!(e))),
             output_brazos: outputs
                 .take(BRAZOS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", BRAZOS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", BRAZOS_PORT))
+                .typed(|buffer, data: &PointCloud2| data.encode(buffer).map_err(|e| anyhow!(e))),
             output_tagus: outputs
                 .take(TAGUS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TAGUS_PORT))
+                .typed(|buffer, data: &Pose| data.encode(buffer).map_err(|e| anyhow!(e))),
             output_missouri: outputs
                 .take(MISSOURI_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", MISSOURI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MISSOURI_PORT))
+                .typed(|buffer, data: &Image| data.encode(buffer).map_err(|e| anyhow!(e))),
             state: Arc::new(Mutex::new(MandalayState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),

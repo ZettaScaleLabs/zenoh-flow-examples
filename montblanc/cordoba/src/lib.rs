@@ -12,10 +12,11 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use datatypes::AMAZON_PORT;
+use datatypes::{data_types, AMAZON_PORT};
+use prost::Message;
 use rand::random;
 use std::time::Duration;
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_source]
 pub struct Cordoba {
@@ -42,7 +43,10 @@ impl Source for Cordoba {
         Ok(Self {
             output: outputs
                 .take(AMAZON_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT))
+                .typed(|buffer, data: &data_types::Float32| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }
