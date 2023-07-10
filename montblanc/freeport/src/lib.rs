@@ -13,6 +13,7 @@
 //
 
 use datatypes::GANGES_PORT;
+use prost::Message;
 use rand::random;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
@@ -42,7 +43,11 @@ impl Source for Freeport {
         Ok(Self {
             output: outputs
                 .take(GANGES_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GANGES_PORT))
+                .typed(|buf, v: &datatypes::data_types::Int64| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

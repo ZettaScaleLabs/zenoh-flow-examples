@@ -1,5 +1,5 @@
 id : Tripoli
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libtripoli.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libtripoli.so
 inputs:
   - Columbia
   - Godavari

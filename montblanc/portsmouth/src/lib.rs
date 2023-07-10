@@ -13,9 +13,9 @@
 //
 
 use datatypes::DANUBE_PORT;
+use prost::Message;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
-
 #[export_source]
 pub struct Portsmouth {
     output: Output<datatypes::data_types::String>,
@@ -42,7 +42,11 @@ impl Source for Portsmouth {
         Ok(Self {
             output: outputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|buf, v: &datatypes::data_types::String| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

@@ -13,10 +13,10 @@
 //
 
 use datatypes::CHENAB_PORT;
+use prost::Message;
 use rand::random;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
-
 #[export_source]
 pub struct Hebron {
     output: Output<datatypes::data_types::Quaternion>,
@@ -41,7 +41,11 @@ impl Source for Hebron {
         Ok(Self {
             output: outputs
                 .take(CHENAB_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", CHENAB_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", CHENAB_PORT))
+                .typed(|buf, v: &datatypes::data_types::Quaternion| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

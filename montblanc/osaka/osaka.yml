@@ -1,5 +1,5 @@
 id : Osaka
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libosaka.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libosaka.so
 inputs:
   - Parana
   - Columbia

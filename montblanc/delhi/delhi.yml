@@ -1,6 +1,6 @@
 id : Delhi
 
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libdelhi.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libdelhi.so
 
 # period:
 #   length: 1

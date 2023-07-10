@@ -17,10 +17,10 @@ use datatypes::data_types;
 use datatypes::{ARKANSAS_PORT, CONGO_PORT, DANUBE_PORT, PARANA_PORT, TAGUS_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message;
 use rand::random;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
-
 #[derive(Debug, Clone)]
 struct GenevaState {
     danube_last_val: data_types::String,
@@ -49,19 +49,27 @@ impl Operator for Geneva {
         Ok(Self {
             input_parana: inputs
                 .take(PARANA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", PARANA_PORT))
+                .typed(|buf| Ok(data_types::String::decode(buf)?)),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|buf| Ok(data_types::String::decode(buf)?)),
             input_tagus: inputs
                 .take(TAGUS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TAGUS_PORT))
+                .typed(|buf| Ok(data_types::Pose::decode(buf)?)),
             input_congo: inputs
                 .take(CONGO_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", CONGO_PORT))
+                .typed(|buf| Ok(data_types::Twist::decode(buf)?)),
             output_arkansas: outputs
                 .take(ARKANSAS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", ARKANSAS_PORT))
+                .typed(|buf, v: &data_types::String| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
             state: Arc::new(Mutex::new(GenevaState {
                 danube_last_val: data_types::String {
                     value: datatypes::random_string(1),
@@ -78,29 +86,35 @@ impl Node for Geneva {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_danube.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
-                    self.state.lock().await.danube_last_val = (*inner_data).clone();
+                if let Ok((msg, _ts)) = msg {
+                    if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                        self.state.lock().await.danube_last_val = (*inner_data).clone();
+                    }
                 }
             },
             msg  = self.input_tagus.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.tagus_last_val = (*inner_data).clone();
                 }
+            }
             },
             msg  = self.input_congo.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.congo_last_val = (*inner_data).clone();
-                }
+                }}
             },
             msg  = self.input_parana.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
-
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     let value = data_types::String {
                         value: format!("geneva/arkansas:{}", inner_data.value),
                     };
 
                     self.output_arkansas.send(value, None).await?;
                 }
+            }
             }
         }
         Ok(())

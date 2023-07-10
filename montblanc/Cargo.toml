@@ -37,6 +37,10 @@ members = [
     "tripoli",
 ]
 
+[patch.crates-io]
+zenoh-flow = { git = "https://github.com/eclipse-zenoh/zenoh-flow", branch = "master" }
+
+
 [profile.dev]
 debug = true
 opt-level = 0

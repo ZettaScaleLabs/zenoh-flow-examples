@@ -17,6 +17,7 @@ use datatypes::data_types;
 use datatypes::{COLUMBIA_PORT, GODAVARI_PORT, LOIRE_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message;
 use rand::random;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
@@ -46,13 +47,19 @@ impl Operator for Tripoli {
         Ok(Self {
             input_columbia: inputs
                 .take(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT))
+                .typed(|buf| Ok(data_types::Image::decode(buf)?)),
             input_godavari: inputs
                 .take(GODAVARI_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", GODAVARI_PORT))
+                .typed(|buf| Ok(data_types::LaserScan::decode(buf)?)),
             output_loire: outputs
                 .take(LOIRE_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", LOIRE_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", LOIRE_PORT))
+                .typed(|buf, v: &data_types::PointCloud2| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
             state: Arc::new(Mutex::new(TripoliState {
                 pointcloud2_data: random(),
                 columbia_last_val: random(),
@@ -66,18 +73,20 @@ impl Node for Tripoli {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_columbia.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.columbia_last_val = (*inner_data).clone();
-                }
+                }}
             },
             msg  = self.input_godavari.recv().fuse() => {
-                if let Ok((Message::Data(_inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(_inner_data) = msg {
 
                     let guard_state = self.state.lock().await;
 
                     self.output_loire.send(guard_state.pointcloud2_data.clone(), None).await?;
 
-                }
+                }}
             }
         }
         Ok(())

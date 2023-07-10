@@ -13,6 +13,7 @@
 //
 
 use datatypes::AMAZON_PORT;
+use prost::Message;
 use rand::random;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
@@ -42,7 +43,11 @@ impl Source for Cordoba {
         Ok(Self {
             output: outputs
                 .take(AMAZON_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", AMAZON_PORT))
+                .typed(|buf, v: &datatypes::data_types::Float32| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

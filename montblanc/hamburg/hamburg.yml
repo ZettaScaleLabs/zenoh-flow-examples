@@ -1,5 +1,5 @@
 id : Hamburg
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libhamburg.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libhamburg.so
 inputs:
   - Danube
   - Ganges

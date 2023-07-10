@@ -1,6 +1,6 @@
 id : Portsmouth
 
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libportsmouth.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libportsmouth.so
 
 # period:
 #   length: 500

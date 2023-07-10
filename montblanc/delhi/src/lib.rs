@@ -13,6 +13,7 @@
 //
 
 use datatypes::COLUMBIA_PORT;
+use prost::Message;
 use rand::random;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
@@ -41,7 +42,11 @@ impl Source for Delhi {
         Ok(Self {
             output: outputs
                 .take(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", COLUMBIA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLUMBIA_PORT))
+                .typed(|buf, v: &datatypes::data_types::Image| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

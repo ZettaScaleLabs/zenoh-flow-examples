@@ -1,6 +1,6 @@
 id : Hebron
 
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libhebron.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libhebron.so
 
 # period:
 #   length: 100

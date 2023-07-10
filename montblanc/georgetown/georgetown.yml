@@ -1,5 +1,5 @@
 id : Georgetown
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libgeorgetown.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libgeorgetown.so
 inputs:
   - Lena
   - Murray

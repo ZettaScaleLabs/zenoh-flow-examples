@@ -17,6 +17,7 @@ use datatypes::data_types;
 use datatypes::{LENA_PORT, MURRAY_PORT, VOLGA_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message;
 use rand::random;
 use std::sync::Arc;
 use std::time::Duration;
@@ -49,13 +50,19 @@ impl Operator for Georgetown {
         Ok(Self {
             input_murray: inputs
                 .take(MURRAY_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MURRAY_PORT))
+                .typed(|buf| Ok(data_types::Vector3Stamped::decode(buf)?)),
             input_lena: inputs
                 .take(LENA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", LENA_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", LENA_PORT))
+                .typed(|buf| Ok(data_types::WrenchStamped::decode(buf)?)),
             output_volga: outputs
                 .take(VOLGA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", VOLGA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", VOLGA_PORT))
+                .typed(|buf, v: &data_types::Float64| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
             state: Arc::new(Mutex::new(GeorgetownState {
                 murray_last_val: random(),
                 lena_last_val: random(),
@@ -70,14 +77,18 @@ impl Node for Georgetown {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_murray.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.murray_last_val = (*inner_data).clone();
                 }
+            }
             },
             msg  = self.input_lena.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.lena_last_val = (*inner_data).clone();
                 }
+            }
             },
             // Output every 50ms
             _ = async_std::task::sleep(Duration::from_millis(50)).fuse() => {

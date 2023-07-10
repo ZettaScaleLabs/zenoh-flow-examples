@@ -12,13 +12,15 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
+use datatypes::data_types;
 use datatypes::{COLORADO_PORT, COLUMBIA_PORT};
+use prost::Message;
 use zenoh_flow::prelude::*;
 
 #[export_operator]
 pub struct Taipei {
-    input: InputRaw,
-    output: OutputRaw,
+    input: Input<data_types::Image>,
+    output: Output<data_types::Image>,
 }
 
 #[async_trait::async_trait]
@@ -31,11 +33,16 @@ impl Operator for Taipei {
     ) -> Result<Self> {
         Ok(Self {
             input: inputs
-                .take_raw(COLUMBIA_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT)),
+                .take(COLUMBIA_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", COLUMBIA_PORT))
+                .typed(|buf| Ok(data_types::Image::decode(buf)?)),
             output: outputs
-                .take_raw(COLORADO_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT)),
+                .take(COLORADO_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", COLORADO_PORT))
+                .typed(|buf, v: &data_types::Image| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }
@@ -43,6 +50,10 @@ impl Operator for Taipei {
 #[async_trait::async_trait]
 impl Node for Taipei {
     async fn iteration(&self) -> Result<()> {
-        self.output.forward(self.input.recv().await?).await
+        let (msg, _ts) = self.input.recv().await?;
+        if let zenoh_flow::prelude::Message::Data(data) = msg {
+            self.output.send(data, None).await?;
+        }
+        Ok(())
     }
 }

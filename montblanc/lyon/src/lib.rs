@@ -13,12 +13,13 @@
 //
 
 use datatypes::{AMAZON_PORT, TIGRIS_PORT};
+use prost::Message;
 use zenoh_flow::prelude::*;
 
 #[export_operator]
 pub struct Lyon {
-    input: InputRaw,
-    output: OutputRaw,
+    input: Input<datatypes::data_types::Float32>,
+    output: Output<datatypes::data_types::Float32>,
 }
 
 #[async_trait::async_trait]
@@ -31,11 +32,16 @@ impl Operator for Lyon {
     ) -> Result<Self> {
         Ok(Self {
             input: inputs
-                .take_raw(AMAZON_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT)),
+                .take(AMAZON_PORT)
+                .unwrap_or_else(|| panic!("No Input called '{}' found", AMAZON_PORT))
+                .typed(|buf| Ok(datatypes::data_types::Float32::decode(buf)?)),
             output: outputs
-                .take_raw(TIGRIS_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT)),
+                .take(TIGRIS_PORT)
+                .unwrap_or_else(|| panic!("No Output called '{}' found", TIGRIS_PORT))
+                .typed(|buf, v: &datatypes::data_types::Float32| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }
@@ -43,6 +49,10 @@ impl Operator for Lyon {
 #[async_trait::async_trait]
 impl Node for Lyon {
     async fn iteration(&self) -> Result<()> {
-        self.output.forward(self.input.recv().await?).await
+        let (msg, _ts) = self.input.recv().await?;
+        if let zenoh_flow::prelude::Message::Data(data) = msg {
+            self.output.send(data, None).await?;
+        }
+        Ok(())
     }
 }

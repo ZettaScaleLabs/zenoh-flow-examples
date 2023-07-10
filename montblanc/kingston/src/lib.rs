@@ -13,6 +13,7 @@
 //
 
 use datatypes::YAMUNA_PORT;
+use prost::Message;
 use rand::random;
 use std::time::Duration;
 use zenoh_flow::prelude::*;
@@ -41,7 +42,11 @@ impl Source for Kingston {
         Ok(Self {
             output: outputs
                 .take(YAMUNA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", YAMUNA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", YAMUNA_PORT))
+                .typed(|buf, v: &datatypes::data_types::Vector3| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }

@@ -17,6 +17,7 @@ use datatypes::data_types;
 use datatypes::{DANUBE_PORT, GANGES_PORT, NILE_PORT, PARANA_PORT, TIGRIS_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
 
@@ -48,19 +49,27 @@ impl Operator for Hamburg {
         Ok(Self {
             input_tigris: inputs
                 .take(TIGRIS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", TIGRIS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", TIGRIS_PORT))
+                .typed(|buf| Ok(data_types::Float32::decode(buf)?)),
             input_ganges: inputs
                 .take(GANGES_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", GANGES_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", GANGES_PORT))
+                .typed(|buf| Ok(data_types::Int64::decode(buf)?)),
             input_nile: inputs
                 .take(NILE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", NILE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", NILE_PORT))
+                .typed(|buf| Ok(data_types::Int32::decode(buf)?)),
             input_danube: inputs
                 .take(DANUBE_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", DANUBE_PORT))
+                .typed(|buf| Ok(data_types::String::decode(buf)?)),
             output_parana: outputs
                 .take(PARANA_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", PARANA_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", PARANA_PORT))
+                .typed(|buf, v: &data_types::String| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
             state: Arc::new(Mutex::new(HamburgState {
                 ganges_last_val: 0i64,
                 nile_last_val: 0i32,
@@ -75,27 +84,35 @@ impl Node for Hamburg {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_tigris.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.tigris_last_val = inner_data.value;
+                }
                 }
             },
             msg  = self.input_ganges.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.ganges_last_val = inner_data.value;
                 }
+            }
             },
             msg  = self.input_nile.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     self.state.lock().await.nile_last_val = inner_data.value;
                 }
+            }
             },
             msg  = self.input_danube.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     let new_value = data_types::String {
                         value: format!("hamburg/parana:{}", inner_data.value)
                     };
                     self.output_parana.send(new_value, None).await?;
                 }
+            }
             }
         }
         Ok(())

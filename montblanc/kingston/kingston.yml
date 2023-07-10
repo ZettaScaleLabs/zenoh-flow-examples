@@ -4,6 +4,6 @@ id : Kingston
 #   length: 100
 #   unit: ms
 
-uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/release/libkingston.so
+uri: file:///home/ato/Workspace/zenoh-flow-examples/montblanc/target/debug/libkingston.so
 
 outputs: [Yamuna]

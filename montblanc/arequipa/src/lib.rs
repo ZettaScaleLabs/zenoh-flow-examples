@@ -14,6 +14,7 @@
 
 use async_std::{fs::File, io::WriteExt, sync::Mutex};
 use datatypes::ARKANSAS_PORT;
+use prost::Message;
 use zenoh_flow::prelude::*;
 
 static OUT_FILE: &str = "/tmp/montblanc.out";
@@ -28,8 +29,7 @@ pub struct Arequipa {
 impl Node for Arequipa {
     async fn iteration(&self) -> Result<()> {
         let (message, _) = self.input.recv().await?;
-
-        if let Message::Data(data) = message {
+        if let zenoh_flow::prelude::Message::Data(data) = message {
             let mut file = self.file.lock().await;
             let final_data = format!("{}\n", data.value);
             file.write_all(final_data.as_bytes())
@@ -55,7 +55,9 @@ impl Sink for Arequipa {
         Ok(Self {
             input: inputs
                 .take(ARKANSAS_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", ARKANSAS_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", ARKANSAS_PORT))
+                .typed(|d| Ok(datatypes::data_types::String::decode(d)?)),
+
             file: Mutex::new(
                 File::create(OUT_FILE)
                     .await

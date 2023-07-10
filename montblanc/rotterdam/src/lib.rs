@@ -16,6 +16,7 @@ use datatypes::data_types;
 use datatypes::{MEKONG_PORT, MURRAY_PORT};
 use futures::prelude::*;
 use futures::select;
+use prost::Message;
 use rand::random;
 use zenoh_flow::prelude::*;
 
@@ -36,10 +37,15 @@ impl Operator for Rotterdam {
         Ok(Self {
             input_mekong: inputs
                 .take(MEKONG_PORT)
-                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT)),
+                .unwrap_or_else(|| panic!("No Input called '{}' found", MEKONG_PORT))
+                .typed(|buf| Ok(data_types::TwistWithCovarianceStamped::decode(buf)?)),
             output_murray: outputs
                 .take(MURRAY_PORT)
-                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT)),
+                .unwrap_or_else(|| panic!("No Output called '{}' found", MURRAY_PORT))
+                .typed(|buf, v: &data_types::Vector3Stamped| {
+                    buf.resize(v.encoded_len(), 0);
+                    Ok(v.encode(buf)?)
+                }),
         })
     }
 }
@@ -49,7 +55,8 @@ impl Node for Rotterdam {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg  = self.input_mekong.recv().fuse() => {
-                if let Ok((Message::Data(inner_data),_)) = msg {
+                if let Ok((msg, _ts)) = msg {
+                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
                     let value = data_types::Vector3Stamped {
                         header: Some(inner_data.header.clone().unwrap_or(random())),
                         vector: inner_data
@@ -64,7 +71,7 @@ impl Node for Rotterdam {
                     };
                     self.output_murray.send(value, None).await?;
                 }
-            }
+            }}
         }
         Ok(())
     }
