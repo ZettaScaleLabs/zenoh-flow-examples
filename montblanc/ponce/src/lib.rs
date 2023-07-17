@@ -20,7 +20,7 @@ use datatypes::{
 };
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use rand::random;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
@@ -135,56 +135,47 @@ impl Node for Ponce {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_danube.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.danube_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_tagus.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.tagus_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg = self.input_missouri.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.missouri_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_loire.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.loire_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg = self.input_yamuna.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.yamuna_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_ohio.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.ohio_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_volga.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.volga_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_brazos.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(_inner_data) = msg {
-
+                if let Ok((Message::Data(_inner_data), _ts)) = msg {
                     let guard_state = self.state.lock().await;
 
                     self.output_congo.send(guard_state.twist_data.clone(), None).await?;
                     self.output_mekong.send(guard_state.twist_w_cov_data.clone(), None).await?;
-                }}
+                }
             }
         }
         Ok(())

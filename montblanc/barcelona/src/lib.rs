@@ -16,7 +16,7 @@ use datatypes::data_types;
 use datatypes::{LENA_PORT, MEKONG_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use rand::random;
 use zenoh_flow::prelude::*;
 
@@ -54,34 +54,32 @@ impl Operator for Barcelona {
 impl Node for Barcelona {
     async fn iteration(&self) -> Result<()> {
         select! {
-            msg  = self.input_mekong.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                    if let zenoh_flow::prelude::Message::Data(data) = msg {
-                        let value = data_types::WrenchStamped {
-                            header: Some(data.header.clone().unwrap_or(random())),
-                            wrench: Some(data_types::Wrench {
-                                force: data
-                                    .twist
-                                    .as_ref()
-                                    .ok_or_else(|| zferror!(ErrorKind::Empty))?
-                                    .twist
-                                    .as_ref()
-                                    .ok_or_else(|| zferror!(ErrorKind::Empty))?
-                                    .linear
-                                    .clone(),
-                                torque: data
-                                    .twist
-                                    .as_ref()
-                                    .ok_or_else(|| zferror!(ErrorKind::Empty))?
-                                    .twist
-                                    .as_ref()
-                                    .ok_or_else(|| zferror!(ErrorKind::Empty))?
-                                    .angular
-                                    .clone(),
-                            }),
-                        };
-                        self.output_lena.send(value, None).await?;
-                    }
+            msg = self.input_mekong.recv().fuse() => {
+                if let Ok((Message::Data(data), _ts)) = msg {
+                    let value = data_types::WrenchStamped {
+                        header: Some(data.header.clone().unwrap_or(random())),
+                        wrench: Some(data_types::Wrench {
+                            force: data
+                                .twist
+                                .as_ref()
+                                .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                                .twist
+                                .as_ref()
+                                .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                                .linear
+                                .clone(),
+                            torque: data
+                                .twist
+                                .as_ref()
+                                .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                                .twist
+                                .as_ref()
+                                .ok_or_else(|| zferror!(ErrorKind::Empty))?
+                                .angular
+                                .clone(),
+                        }),
+                    };
+                    self.output_lena.send(value, None).await?;
                 }
             }
         }

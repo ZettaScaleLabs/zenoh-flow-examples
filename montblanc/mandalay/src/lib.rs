@@ -20,7 +20,7 @@ use datatypes::{
 };
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as _;
 use rand::random;
 use std::sync::Arc;
 use std::time::Duration;
@@ -129,40 +129,34 @@ impl Node for Mandalay {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_danube.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.danube_last_val = (*inner_data).clone();
-                }}
+                }
             },
-            msg  = self.input_chenab.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+            msg = self.input_chenab.recv().fuse() => {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.chenab_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg = self.input_salween.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.salween_last_val = (*inner_data).clone();
-                }}
+                }
             },
-            msg  = self.input_godavari.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+            msg = self.input_godavari.recv().fuse() => {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.godavari_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg = self.input_loire.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.loire_last_val = (*inner_data).clone();
-                }}
+                }
             },
-            msg  = self.input_yamuna.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+            msg = self.input_yamuna.recv().fuse() => {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.yamuna_last_val = (*inner_data).clone();
-                }}
+                }
             },
             // Output every 100ms
             _ = async_std::task::sleep(Duration::from_millis(100)).fuse() => {

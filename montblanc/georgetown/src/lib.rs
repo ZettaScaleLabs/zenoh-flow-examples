@@ -17,7 +17,7 @@ use datatypes::data_types;
 use datatypes::{LENA_PORT, MURRAY_PORT, VOLGA_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use rand::random;
 use std::sync::Arc;
 use std::time::Duration;
@@ -77,18 +77,14 @@ impl Node for Georgetown {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_murray.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.murray_last_val = (*inner_data).clone();
                 }
-            }
             },
             msg  = self.input_lena.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.lena_last_val = (*inner_data).clone();
                 }
-            }
             },
             // Output every 50ms
             _ = async_std::task::sleep(Duration::from_millis(50)).fuse() => {

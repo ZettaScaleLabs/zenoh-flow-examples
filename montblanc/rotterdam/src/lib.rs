@@ -16,7 +16,7 @@ use datatypes::data_types;
 use datatypes::{MEKONG_PORT, MURRAY_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use rand::random;
 use zenoh_flow::prelude::*;
 
@@ -55,8 +55,7 @@ impl Node for Rotterdam {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg  = self.input_mekong.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     let value = data_types::Vector3Stamped {
                         header: Some(inner_data.header.clone().unwrap_or(random())),
                         vector: inner_data
@@ -71,7 +70,7 @@ impl Node for Rotterdam {
                     };
                     self.output_murray.send(value, None).await?;
                 }
-            }}
+            }
         }
         Ok(())
     }

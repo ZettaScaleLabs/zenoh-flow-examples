@@ -16,7 +16,7 @@ use datatypes::data_types;
 use datatypes::{CONGO_PORT, OHIO_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use rand::random;
 use zenoh_flow::prelude::*;
 
@@ -55,11 +55,9 @@ impl Node for Monaco {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg  = self.input_congo.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(_inner_data) = msg {
+                if let Ok((Message::Data(_inner_data), _ts)) = msg {
                     let value = data_types::Float32 { value: random() };
                     self.output_ohio.send(value, None).await?;
-                }
             }}
         }
         Ok(())

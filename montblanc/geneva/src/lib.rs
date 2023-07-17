@@ -17,7 +17,7 @@ use datatypes::data_types;
 use datatypes::{ARKANSAS_PORT, CONGO_PORT, DANUBE_PORT, PARANA_PORT, TAGUS_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as _;
 use rand::random;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
@@ -86,35 +86,28 @@ impl Node for Geneva {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_danube.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                    if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
-                        self.state.lock().await.danube_last_val = (*inner_data).clone();
-                    }
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
+                    self.state.lock().await.danube_last_val = (*inner_data).clone();
                 }
             },
             msg  = self.input_tagus.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.tagus_last_val = (*inner_data).clone();
                 }
-            }
             },
             msg  = self.input_congo.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.congo_last_val = (*inner_data).clone();
-                }}
+                }
             },
             msg  = self.input_parana.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     let value = data_types::String {
                         value: format!("geneva/arkansas:{}", inner_data.value),
                     };
 
                     self.output_arkansas.send(value, None).await?;
                 }
-            }
             }
         }
         Ok(())

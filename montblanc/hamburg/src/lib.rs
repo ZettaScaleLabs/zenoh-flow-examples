@@ -17,7 +17,7 @@ use datatypes::data_types;
 use datatypes::{DANUBE_PORT, GANGES_PORT, NILE_PORT, PARANA_PORT, TIGRIS_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as pMessage;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
 
@@ -84,35 +84,27 @@ impl Node for Hamburg {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_tigris.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.tigris_last_val = inner_data.value;
-                }
                 }
             },
             msg  = self.input_ganges.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.ganges_last_val = inner_data.value;
                 }
-            }
             },
             msg  = self.input_nile.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.nile_last_val = inner_data.value;
                 }
-            }
             },
             msg  = self.input_danube.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     let new_value = data_types::String {
                         value: format!("hamburg/parana:{}", inner_data.value)
                     };
                     self.output_parana.send(new_value, None).await?;
                 }
-            }
             }
         }
         Ok(())

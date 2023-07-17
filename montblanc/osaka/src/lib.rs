@@ -17,7 +17,7 @@ use datatypes::data_types;
 use datatypes::{COLORADO_PORT, COLUMBIA_PORT, GODAVARI_PORT, PARANA_PORT, SALWEEN_PORT};
 use futures::prelude::*;
 use futures::select;
-use prost::Message;
+use prost::Message as _;
 use rand::random;
 use std::sync::Arc;
 use zenoh_flow::prelude::*;
@@ -94,26 +94,22 @@ impl Node for Osaka {
     async fn iteration(&self) -> Result<()> {
         select! {
             msg = self.input_parana.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.parana_last_val = (*inner_data).clone();
-                }}
+                }
             },
-            msg  = self.input_columbia.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(inner_data) = msg {
+            msg = self.input_columbia.recv().fuse() => {
+                if let Ok((Message::Data(inner_data), _ts)) = msg {
                     self.state.lock().await.columbia_last_val = (*inner_data).clone();
-                }}
+                }
             },
-            msg  = self.input_colorado.recv().fuse() => {
-                if let Ok((msg, _ts)) = msg {
-                if let zenoh_flow::prelude::Message::Data(_inner_data) = msg {
-
+            msg = self.input_colorado.recv().fuse() => {
+                if let Ok((Message::Data(_inner_data), _ts)) = msg {
                     let guard_state = self.state.lock().await;
 
                     self.output_salween.send(guard_state.pointcloud2_data.clone(), None).await?;
                     self.output_godavari.send(guard_state.laserscan_data.clone(), None).await?;
-                }}
+                }
             }
         }
         Ok(())
