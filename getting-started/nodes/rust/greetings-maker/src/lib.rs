@@ -12,7 +12,8 @@
 //   ZettaScale Zenoh Team, <zenoh@zettascale.tech>
 //
 
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
+use prost::Message as pMessage;
 
 #[export_operator]
 pub struct GreetingsMaker {
@@ -29,10 +30,16 @@ impl Operator for GreetingsMaker {
         mut outputs: Outputs,
     ) -> Result<Self> {
         Ok(GreetingsMaker {
-            input: inputs.take("name").expect("No input 'name' found"),
+            input: inputs
+                .take("name")
+                .expect("No input 'name' found")
+                .typed(|bytes| String::from_utf8(bytes.into()).map_err(|e| anyhow!(e))),
             output: outputs
                 .take("greeting")
-                .expect("No output 'greeting' found"),
+                .expect("No output 'greeting' found")
+                .typed(|buffer, data: &String| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
         })
     }
 }

@@ -13,7 +13,7 @@
 #
 
 from zenoh_flow.interfaces import Sink
-from zenoh_flow import Input
+from zenoh_flow import Inputs
 from zenoh_flow.types import Context
 from typing import Dict, Any
 
@@ -23,21 +23,22 @@ class FileWriter(Sink):
         self,
         context: Context,
         configuration: Dict[str, Any],
-        inputs: Dict[str, Input],
+        inputs: Inputs,
     ):
-        self.input = inputs.get("in", None)
+        self.input = inputs.take("in", str, lambda buf: buf.decode("utf-8"))
         if self.input is None:
             raise ValueError("Unable to find input")
-        self.out_file = open("tmp/greetings.txt")
+        self.out_file = open("/tmp/greetings.txt", "w+")
 
     def finalize(self) -> None:
         self.out_file.close()
 
     async def iteration(self) -> None:
-        data_msg = await self.input.recv()
-        greeting = data_msg.data.decode("utf-8")
-        self.out_file.write(greeting)
-        self.out_file.flush()
+        message = await self.input.recv()
+        greeting = message.get_data()
+        if greeting is not None:
+            self.out_file.write(greeting)
+            self.out_file.flush()
 
 
 def register():

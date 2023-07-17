@@ -1,7 +1,7 @@
-flow: hello-world
+flow: getting-started
 
 vars:
- BASE_DIR: "/Volumes/Workspace/Workspace/zettascale/zenoh-flow/zenoh-flow-examples/getting-started"
+ BASE_DIR: "/path/to/zenoh-flow-examples/getting-started"
 
 sources:
   - id: zenoh-sub
@@ -13,12 +13,13 @@ sources:
 
 operators:
   - id: greetings-maker
-    descriptor: "file://{{ BASE_DIR }}/nodes/rust/greetings-maker/greetings-maker.yaml"
+    descriptor: "file://{{ BASE_DIR }}/nodes/python/greetings-maker/greetings-maker.yaml"
 
 
 sinks:
   - id: file-writer
-    descriptor: "file://{{ BASE_DIR }}/nodes/rust/file-writer/file-writer.yaml"
+    descriptor: "file://{{ BASE_DIR }}/nodes/python/file-writer/file-writer.yaml"
+
   - id: zenoh-writer
     configuration:
       key-expressions:

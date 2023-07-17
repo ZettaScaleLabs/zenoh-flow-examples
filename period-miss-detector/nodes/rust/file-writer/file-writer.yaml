@@ -1,7 +1,7 @@
 id: file-writer
 
 vars:
-  BASE_DIR: ./zenoh-flow-examples/period-miss-detector
+  BASE_DIR: "/path/to/zenoh-flow-examples/period-miss-detector"
 
 # Do not forget to change the extension depending on your operating system!
 # Linux   -> .so

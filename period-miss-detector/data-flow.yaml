@@ -2,7 +2,7 @@ flow: period-miss-detector
 
 
 vars:
-  BASE_DIR: ./zenoh-flow-examples/period-miss-detector/nodes
+  BASE_DIR: "/path/to/zenoh-flow-examples/period-miss-detector/nodes"
 
 
 sources:
@@ -15,12 +15,12 @@ sources:
 
 operators:
   - id: period-miss-detector
-    descriptor: "file://{{ BASE_DIR }}/rust/period-miss-detector/period-miss-detector.yaml"
+    descriptor: "file://{{ BASE_DIR }}/python/period-miss-detector/period-miss-detector.yaml"
 
 
 sinks:
   - id: file-writer
-    descriptor: "file://{{ BASE_DIR }}/rust/file-writer/file-writer.yaml"
+    descriptor: "file://{{ BASE_DIR }}/python/file-writer/file-writer.yaml"
 
 
 links:

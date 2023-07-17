@@ -15,7 +15,8 @@
 use async_std::prelude::FutureExt;
 use async_std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
+use prost::Message as pMessage;
 
 #[export_operator]
 pub struct PeriodMissDetector {
@@ -35,8 +36,16 @@ impl Operator for PeriodMissDetector {
     ) -> Result<Self> {
         let period_duration = Duration::from_secs(5);
         Ok(PeriodMissDetector {
-            input: inputs.take("in").expect("No input 'in' found"),
-            output: outputs.take("out").expect("No output 'out' found"),
+            input: inputs
+                .take("in")
+                .expect("No input 'in' found")
+                .typed(|bytes| String::from_utf8(bytes.into()).map_err(|e| anyhow!(e))),
+            output: outputs
+                .take("out")
+                .expect("No output 'out' found")
+                .typed(|buffer, data: &String| {
+                    data.encode(buffer).map_err(|e| anyhow!(e))
+                }),
             // CAVEAT: There can be a delay between the moment the node is created and the moment it
             // is actually run.
             next_period: Arc::new(Mutex::new(

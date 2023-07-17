@@ -13,12 +13,11 @@
 #
 
 from zenoh_flow.interfaces import Operator
-from zenoh_flow import Input, Output
+from zenoh_flow import Inputs, Outputs
 from zenoh_flow.types import Context
 from typing import Dict, Any
 import datetime
 import asyncio
-import struct
 
 
 class PeriodMissDetector(Operator):
@@ -26,12 +25,12 @@ class PeriodMissDetector(Operator):
         self,
         context: Context,
         configuration: Dict[str, Any],
-        inputs: Dict[str, Input],
-        outputs: Dict[str, Output],
+        inputs: Inputs,
+        outputs: Outputs,
     ):
         print(f"Context: {context}")
-        self.output = outputs.get("in", None)
-        self.in_stream = inputs.get("out", None)
+        self.output = outputs.take("out", str, lambda s: bytes(s, "utf-8"))
+        self.in_stream = inputs.take("in", str, lambda buf: buf.decode("utf-8"))
 
         if self.in_stream is None:
             raise ValueError("No input 'in' found")
@@ -53,7 +52,7 @@ class PeriodMissDetector(Operator):
             sleep_duration = self.period
 
         (done, pending) = await asyncio.wait(
-            self.create_task_list(),
+            self.create_task_list(sleep_duration),
             return_when=asyncio.FIRST_COMPLETED,
         )
 
@@ -64,15 +63,15 @@ class PeriodMissDetector(Operator):
 
     async def default(self, sleep_duration):
         await asyncio.sleep(sleep_duration)
-        self.output.send("(default) 0\n".encode("utf-8"))
+        await self.output.send("(default) 0\n")
         self.next_period = \
              self.next_period + datetime.timedelta(seconds=self.period)
         return "tick"
 
     async def wait_input(self):
         data_msg = await self.in_stream.recv()
-        number = struct.unpack("!d", data_msg.data)
-        self.output.send(f"Received: {number}\n".encode("utf-8"))
+        value = data_msg.get_data()
+        await self.output.send(f"Received: {value}\n")
 
         now = datetime.datetime.now()
         interval = self.next_period.timestamp() - now.timestamp()

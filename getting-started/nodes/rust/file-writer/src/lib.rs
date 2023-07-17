@@ -13,7 +13,8 @@
 //
 
 use async_std::{fs::File, io::WriteExt, sync::Mutex};
-use zenoh_flow::prelude::*;
+use zenoh_flow::{anyhow, prelude::*};
+use prost::Message as pMessage;
 
 #[export_sink]
 pub struct FileWriter {
@@ -54,7 +55,10 @@ impl Sink for FileWriter {
                     .await
                     .expect("Could not create '/tmp/greetings.txt'"),
             ),
-            input: inputs.take("in").expect("No Input called 'in' found"),
+            input: inputs
+                .take("in")
+                .expect("No Input called 'in' found")
+                .typed(|bytes| String::decode(bytes).map_err(|e| anyhow!(e))),
         })
     }
 }

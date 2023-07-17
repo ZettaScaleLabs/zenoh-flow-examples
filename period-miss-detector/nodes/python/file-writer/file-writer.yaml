@@ -1,7 +1,7 @@
 id: file-writer
 
 vars:
-  BASE_DIR: ./zenoh-flow-examples/period-miss-detector
+  BASE_DIR: "/path/to/zenoh-flow-examples/period-miss-detector"
 
 uri: "file://{{ BASE_DIR }}/nodes/python/file-writer/file-writer.py"
 

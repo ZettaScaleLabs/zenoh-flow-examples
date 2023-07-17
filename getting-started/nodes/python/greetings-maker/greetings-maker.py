@@ -13,7 +13,7 @@
 #
 
 from zenoh_flow.interfaces import Operator
-from zenoh_flow import Input, Output
+from zenoh_flow import Inputs, Outputs
 from zenoh_flow.types import Context
 from typing import Dict, Any
 
@@ -23,12 +23,12 @@ class GreetingsMaker(Operator):
         self,
         context: Context,
         configuration: Dict[str, Any],
-        inputs: Dict[str, Input],
-        outputs: Dict[str, Output],
+        inputs: Inputs,
+        outputs: Outputs,
     ):
         print(f"Context: {context}")
-        self.output = outputs.get("greeting", None)
-        self.in_stream = inputs.get("name", None)
+        self.output = outputs.take("greeting", str, lambda s: bytes(s, "utf-8"))
+        self.in_stream = inputs.take("name", str, lambda buf: buf.decode("utf-8"))
 
         if self.in_stream is None:
             raise ValueError("No input 'name' found")
@@ -39,11 +39,12 @@ class GreetingsMaker(Operator):
         return None
 
     async def iteration(self) -> None:
-        data_msg = await self.in_stream.recv()
-        name = data_msg.data.decode("utf-8")
-        greetings = self.generate_greetings(name)
+        message = await self.in_stream.recv()
+        name = message.get_data()
+        if name is not None:
+            greetings = self.generate_greetings(name)
+            await self.output.send(greetings)
 
-        await self.output.send(greetings.encode("utf-8"))
         return None
 
     def generate_greetings(self, name: str) -> str:
@@ -53,7 +54,7 @@ class GreetingsMaker(Operator):
             "Lucia": "¡Hola, {}!\n",
             "Martin": "¡Hola, {}!\n",
             "Jade": "Bonjour, {}!\n",
-            "Gabriel": "Bonjour, {}!\n",
+            "Gabriele": "Ciao, PaaS manager!\n",
         }
 
         greet = greetings_dict.get(name, "Hello, {}!\n")

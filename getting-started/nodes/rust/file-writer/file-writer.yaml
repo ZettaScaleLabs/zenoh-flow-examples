@@ -1,7 +1,7 @@
 id: file-writer
 
 vars:
- BASE_DIR: "/Volumes/Workspace/Workspace/zettascale/zenoh-flow/zenoh-flow-examples/getting-started"
+  BASE_DIR: "/path/to/zenoh-flow-examples/getting-started"
 
 # Do not forget to change the extension depending on your operating system!
 # Linux   -> .so
