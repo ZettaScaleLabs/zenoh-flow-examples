@@ -13,8 +13,8 @@
 //
 
 use async_std::{fs::File, io::WriteExt, sync::Mutex};
-use zenoh_flow::{anyhow, prelude::*};
 use prost::Message as pMessage;
+use zenoh_flow::{anyhow, prelude::*};
 
 #[export_sink]
 pub struct FileWriter {

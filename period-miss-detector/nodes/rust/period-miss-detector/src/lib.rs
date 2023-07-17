@@ -14,9 +14,9 @@
 
 use async_std::prelude::FutureExt;
 use async_std::sync::{Arc, Mutex};
+use prost::Message as pMessage;
 use std::time::{Duration, Instant};
 use zenoh_flow::{anyhow, prelude::*};
-use prost::Message as pMessage;
 
 #[export_operator]
 pub struct PeriodMissDetector {
@@ -43,9 +43,7 @@ impl Operator for PeriodMissDetector {
             output: outputs
                 .take("out")
                 .expect("No output 'out' found")
-                .typed(|buffer, data: &String| {
-                    data.encode(buffer).map_err(|e| anyhow!(e))
-                }),
+                .typed(|buffer, data: &String| data.encode(buffer).map_err(|e| anyhow!(e))),
             // CAVEAT: There can be a delay between the moment the node is created and the moment it
             // is actually run.
             next_period: Arc::new(Mutex::new(
