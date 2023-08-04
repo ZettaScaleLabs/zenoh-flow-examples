@@ -1,0 +1,35 @@
+flow: Transcoder
+vars:
+ BASE_DIR: "/var/zenoh-flow/flows"
+
+operators:
+  - id : Conversion
+    descriptor: "file://{{ BASE_DIR }}/transcoder.yml"
+sources:
+  - id : ZenohSrc
+    configuration:
+      key-expressions:
+        proto: data/proto
+    descriptor: "builtin://zenoh"
+
+sinks:
+  - id : ZenohSink
+    configuration:
+      key-expressions:
+        cdr: data/cdr
+    descriptor: "builtin://zenoh"
+
+links:
+- from:
+    node : ZenohSrc
+    output : proto
+  to:
+    node : Conversion
+    input : in
+
+- from:
+    node : Conversion
+    output : out
+  to:
+    node : ZenohSink
+    input : cdr

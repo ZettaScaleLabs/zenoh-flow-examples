@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message MyMsg {
+    uint64 u_value = 1;
+    string s_value = 2;
+}

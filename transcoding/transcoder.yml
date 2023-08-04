@@ -1,0 +1,8 @@
+id: compute-proximity
+vars:
+ BASE_DIR: "/var/zenoh-flow/flows"
+uri: "file://{{BASE_DIR }}/transcoder.py"
+
+
+inputs: [in]
+outputs: [out]
